@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Commission #{{ commission.id }} | Ripple Capital{% endblock %}
+
+{% block content %}
+<div class="page-header mb-3">
+    <div>
+        <h1 class="page-title mb-1">Commission #{{ commission.id }}</h1>
+        <p class="page-subtitle text-muted mb-0">
+            Policy {{ commission.policy.policy_number }} — {{ commission.policy.client.full_name }}
+        </p>
+    </div>
+    <div>
+        <a href="{% url 'commissions:commission_list' %}" class="btn btn-outline-secondary">
+            &larr; Back to list
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2 class="card-title mb-0">Commission details</h2>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Policy number</dt>
+                    <dd class="col-sm-8">{{ commission.policy.policy_number }}</dd>
+
+                    <dt class="col-sm-4">Client</dt>
+                    <dd class="col-sm-8">{{ commission.policy.client.full_name }}</dd>
+
+                    <dt class="col-sm-4">Insurer</dt>
+                    <dd class="col-sm-8">{{ commission.policy.insurance_company.name }}</dd>
+
+                    <dt class="col-sm-4">Handled by</dt>
+                    <dd class="col-sm-8">
+                        {% if commission.policy.agent %}
+                            {{ commission.policy.agent.get_full_name|default:commission.policy.agent.username }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-4">Payment receipt</dt>
+                    <dd class="col-sm-8">
+                        {% if commission.payment %}
+                            {{ commission.payment.receipt_number }}
+                            ({{ commission.payment.payment_date|date:"Y-m-d H:i" }})
+                        {% else %}
+                            —
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-4">Rate</dt>
+                    <dd class="col-sm-8">{{ commission.rate }}%</dd>
+
+                    <dt class="col-sm-4">Original amount</dt>
+                    <dd class="col-sm-8">KES {{ commission.amount|floatformat:2 }}</dd>
+
+                    <dt class="col-sm-4">Total adjustments</dt>
+                    <dd class="col-sm-8">
+                        {% with adj=commission.total_adjustments %}
+                            {% if adj < 0 %}
+                                <span class="text-danger">KES {{ adj|floatformat:2 }}</span>
+                            {% elif adj > 0 %}
+                                <span class="text-success">KES +{{ adj|floatformat:2 }}</span>
+                            {% else %}
+                                KES 0.00
+                            {% endif %}
+                        {% endwith %}
+                    </dd>
+
+                    <dt class="col-sm-4">Net amount</dt>
+                    <dd class="col-sm-8">
+                        <strong>KES {{ commission.net_amount|floatformat:2 }}</strong>
+                    </dd>
+
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">
+                        {% if commission.status == "PENDING" %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% elif commission.status == "CONFIRMED" %}
+                            <span class="badge bg-success">Confirmed</span>
+                        {% elif commission.status == "REVERSED" %}
+                            <span class="badge bg-danger">Reversed</span>
+                        {% elif commission.status == "SETTLED" %}
+                            <span class="badge bg-primary">Settled</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-4">Disbursement batch</dt>
+                    <dd class="col-sm-8">
+                        {% if commission.disbursement %}
+                            Settled in batch #{{ commission.disbursement.id }}
+                        {% else %}
+                            Not settled (insurer not fully remitted yet)
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-4">Created at</dt>
+                    <dd class="col-sm-8">{{ commission.created_at|date:"Y-m-d H:i" }}</dd>
+
+                    <dt class="col-sm-4">Confirmed at</dt>
+                    <dd class="col-sm-8">
+                        {% if commission.confirmed_at %}
+                            {{ commission.confirmed_at|date:"Y-m-d H:i" }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2 class="card-title mb-0">Adjustments</h2>
+            </div>
+            <div class="card-body">
+                {% if commission.adjustments.all %}
+                    <ul class="list-group list-group-flush">
+                        {% for adj in commission.adjustments.all %}
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <div>
+                                            <strong>{{ adj.get_reason_display }}</strong>
+                                        </div>
+                                        {% if adj.notes %}
+                                            <div class="text-muted small">{{ adj.notes }}</div>
+                                        {% endif %}
+                                        <div class="small text-muted">
+                                            By {{ adj.adjusted_by.username }}
+                                            on {{ adj.created_at|date:"Y-m-d H:i" }}
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        {% if adj.adjustment_amount < 0 %}
+                                            <span class="text-danger">
+                                                KES {{ adj.adjustment_amount|floatformat:2 }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-success">
+                                                KES +{{ adj.adjustment_amount|floatformat:2 }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">
+                                No adjustments recorded.
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">No adjustments recorded.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

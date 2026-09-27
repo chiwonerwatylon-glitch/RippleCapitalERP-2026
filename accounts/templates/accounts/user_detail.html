@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}User {{ user_obj.username }} | Ripple Capital ERP{% endblock %}
+
+{% block content %}
+<div class="page-header mb-3">
+    <div>
+        <h1 class="page-title mb-1">User: {{ user_obj.username }}</h1>
+        <p class="page-subtitle text-muted mb-0">
+            Role: {{ user_obj.get_role_display }}
+        </p>
+    </div>
+    <div>
+        <a href="{% url 'accounts:user_edit' user_obj.id %}" class="btn btn-primary">
+            Edit
+        </a>
+        <a href="{% url 'accounts:user_list' %}" class="btn btn-outline-secondary ms-2">
+            Back to list
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Username</dt>
+            <dd class="col-sm-9">{{ user_obj.username }}</dd>
+
+            <dt class="col-sm-3">Full name</dt>
+            <dd class="col-sm-9">{{ user_obj.get_full_name }}</dd>
+
+            <dt class="col-sm-3">Email</dt>
+            <dd class="col-sm-9">{{ user_obj.email }}</dd>
+
+            <dt class="col-sm-3">Phone</dt>
+            <dd class="col-sm-9">{{ user_obj.phone_number|default:"—" }}</dd>
+
+            <dt class="col-sm-3">Role</dt>
+            <dd class="col-sm-9">{{ user_obj.get_role_display }}</dd>
+
+            <dt class="col-sm-3">Active</dt>
+            <dd class="col-sm-9">
+                {% if user_obj.is_active %}
+                    <span class="badge bg-success">Yes</span>
+                {% else %}
+                    <span class="badge bg-danger">No</span>
+                {% endif %}
+            </dd>
+
+            <dt class="col-sm-3">Can log in</dt>
+            <dd class="col-sm-9">
+                {% if user_obj.is_active_staff %}
+                    <span class="badge bg-success">Yes</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">Disabled</span>
+                {% endif %}
+            </dd>
+
+            <dt class="col-sm-3">Joined</dt>
+            <dd class="col-sm-9">{{ user_obj.date_joined|date:"Y-m-d H:i" }}</dd>
+
+            <dt class="col-sm-3">Last login</dt>
+            <dd class="col-sm-9">
+                {% if user_obj.last_login %}
+                    {{ user_obj.last_login|date:"Y-m-d H:i" }}
+                {% else %}
+                    —
+                {% endif %}
+            </dd>
+        </dl>
+    </div>
+</div>
+{% endblock %}

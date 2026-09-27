@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+
+{% block title %}Outstanding Premium Report | Ripple Capital ERP{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+    <div>
+        <h1 class="page-title mb-1">Outstanding Premium Report</h1>
+        <p class="page-subtitle text-muted mb-0">
+            Aging of unpaid premiums (clients → Ripple Capital → insurers).
+        </p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <p class="mb-3">
+            As of <strong>{{ today }}</strong>.
+        </p>
+
+        <table class="table table-sm align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Bucket</th>
+                    <th class="text-end">Outstanding (KES)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Current (not yet due)</td>
+                    <td class="text-end">{{ totals.current|currency }}</td>
+                </tr>
+                <tr>
+                    <td>0–30 days overdue</td>
+                    <td class="text-end">{{ totals.overdue_0_30|currency }}</td>
+                </tr>
+                <tr>
+                    <td>31–60 days overdue</td>
+                    <td class="text-end">{{ totals.overdue_31_60|currency }}</td>
+                </tr>
+                <tr>
+                    <td>61–90 days overdue</td>
+                    <td class="text-end">{{ totals.overdue_61_90|currency }}</td>
+                </tr>
+                <tr>
+                    <td>90+ days overdue</td>
+                    <td class="text-end text-danger">{{ totals.overdue_90_plus|currency }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="small text-muted mb-0">
+            Note: Premiums shown here are amounts clients still owe to insurers.
+            Ripple Capital holds them as a liability and must remit to insurers
+            once collected.
+        </p>
+    </div>
+</div>
+{% endblock %}

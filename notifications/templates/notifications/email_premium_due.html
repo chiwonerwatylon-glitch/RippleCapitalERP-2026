@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Premium Due Reminder</title>
+</head>
+<body style="font-family: Arial, sans-serif; font-size:14px; color:#111827;">
+    <p>Dear {{ client.full_name }},</p>
+
+    <p>
+        This is a friendly reminder that your premium installment for policy
+        <strong>{{ policy.policy_number }}</strong> is due on
+        <strong>{{ installment.due_date }}</strong>.
+    </p>
+
+    <p>
+        Amount due: <strong>KES {{ installment.balance|floatformat:2 }}</strong>
+    </p>
+
+    <p>
+        Ripple Capital Private Limited is collecting this premium on behalf of
+        <strong>{{ policy.insurance_company.name }}</strong>. Please arrange
+        payment to ensure your cover remains active.
+    </p>
+
+    <p>Thank you,<br>
+       Ripple Capital Private Limited</p>
+</body>
+</html>

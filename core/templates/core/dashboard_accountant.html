@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+
+{% block title %}Accountant Dashboard | {{ BRAND_SHORT }}{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+    <div>
+        <h1 class="page-title mb-1">Accountant Dashboard</h1>
+        <p class="page-subtitle text-muted mb-0">
+            Review commissions, recent payments and remittance obligations to insurers.
+        </p>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-label">Total commission (all time)</div>
+            <div class="stat-value">{{ summary.total_earned|currency }}</div>
+            <div class="stat-note text-muted">Confirmed + settled</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-label">Pending commissions</div>
+            <div class="stat-value text-warning">{{ summary.total_pending|currency }}</div>
+            <div class="stat-note text-muted">Need review</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-label">Unsettled commissions</div>
+            <div class="stat-value text-primary">
+                {{ summary.total_undisbursed|currency }}
+            </div>
+            <div class="stat-note text-muted">Not yet included in remittance batches</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h2 class="card-title mb-0">Pending commissions</h2>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Policy</th>
+                            <th>Client</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in pending_commissions %}
+                            <tr>
+                                <td>#{{ c.id }}</td>
+                                <td>{{ c.policy.policy_number }}</td>
+                                <td>{{ c.policy.client.full_name }}</td>
+                                <td class="text-end">{{ c.amount|currency }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-muted text-center py-3">
+                                    No pending commissions.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h2 class="card-title mb-0">Recent payments</h2>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Receipt</th>
+                            <th>Client</th>
+                            <th>Insurer</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pay in recent_payments %}
+                            <tr>
+                                <td>{{ pay.receipt_number }}</td>
+                                <td>{{ pay.installment.policy.client.full_name }}</td>
+                                <td>{{ pay.installment.policy.insurance_company.name }}</td>
+                                <td class="text-end">{{ pay.amount|currency }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-muted text-center py-3">
+                                    No recent payments.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <hr>
+                <h2 class="card-title mb-0">Unsettled commissions (top 10)</h2>
+                <table class="table table-sm align-middle mt-2">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Policy</th>
+                            <th>Insurer</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in unsettled_commissions %}
+                            <tr>
+                                <td>#{{ c.id }}</td>
+                                <td>{{ c.policy.policy_number }}</td>
+                                <td>{{ c.policy.insurance_company.name }}</td>
+                                <td class="text-end">{{ c.amount|currency }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-muted text-center py-3">
+                                    No unsettled commissions.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

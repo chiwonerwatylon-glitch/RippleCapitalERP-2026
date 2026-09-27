@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Installment Schedule - {{ policy.policy_number }} | Ripple Capital ERP{% endblock %}
+
+{% block content %}
+<div class="page-header mb-3">
+    <div>
+        <h1 class="page-title mb-1">Installment Schedule</h1>
+        <p class="page-subtitle text-muted mb-0">
+            Policy {{ policy.policy_number }} &mdash; {{ policy.client.full_name }}
+        </p>
+    </div>
+    <div>
+        <a href="{% url 'policies:policy_detail' policy.id %}" class="btn btn-outline-secondary">
+            &larr; Back to policy
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body table-responsive">
+        <table class="table table-sm align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Due date</th>
+                    <th class="text-end">Amount due (KES)</th>
+                    <th class="text-end">Paid (KES)</th>
+                    <th class="text-end">Balance (KES)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inst in installments %}
+                    <tr>
+                        <td>{{ inst.installment_number }}</td>
+                        <td>{{ inst.due_date }}</td>
+                        <td class="text-end">{{ inst.amount_due|floatformat:2 }}</td>
+                        <td class="text-end">{{ inst.amount_paid|floatformat:2 }}</td>
+                        <td class="text-end">{{ inst.balance|floatformat:2 }}</td>
+                        <td>{{ inst.get_status_display }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-muted text-center py-3">
+                            No installment schedule available.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="small text-muted mb-0">
+            Premium installments represent the client's obligation to pay
+            premium to the insurer via Ripple Capital as broker.
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Record Payment | Ripple Capital ERP{% endblock %}
+
+{% block content %}
+<div class="page-header mb-3">
+    <div>
+        <h1 class="page-title mb-1">Record Premium Payment</h1>
+        <p class="page-subtitle text-muted mb-0">
+            Record a payment made by a client towards their premium installment.
+            (Premiums belong to the insurer; Ripple Capital collects and remits.)
+        </p>
+    </div>
+</div>
+
+{% include "partials/messages.html" %}
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                {{ form.installment.label_tag }}
+                {{ form.installment }}
+                {% if form.installment.errors %}
+                    <div class="text-danger small">{{ form.installment.errors.as_text }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.amount.label_tag }}
+                {{ form.amount }}
+                {% if form.amount.errors %}
+                    <div class="text-danger small">{{ form.amount.errors.as_text }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.method.label_tag }}
+                {{ form.method }}
+                {% if form.method.errors %}
+                    <div class="text-danger small">{{ form.method.errors.as_text }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.reference_number.label_tag }}
+                {{ form.reference_number }}
+                {% if form.reference_number.errors %}
+                    <div class="text-danger small">{{ form.reference_number.errors.as_text }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save payment</button>
+            <a href="{% url 'payments:payment_list' %}" class="btn btn-secondary ms-2">
+                Cancel
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

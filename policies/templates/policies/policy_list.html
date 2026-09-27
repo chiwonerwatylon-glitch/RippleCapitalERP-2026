@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Policies | Ripple Capital ERP{% endblock %}
+
+{% block content %}
+<div class="page-header mb-3">
+    <div>
+        <h1 class="page-title mb-1">Policies</h1>
+        <p class="page-subtitle text-muted mb-0">
+            Policies placed by Ripple Capital with various insurance companies on behalf of clients.
+        </p>
+    </div>
+    <div>
+        <a href="{% url 'policies:policy_add' %}" class="btn btn-primary">Add policy</a>
+    </div>
+</div>
+
+{% include "partials/messages.html" %}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-4">
+                <input type="text" name="q" class="form-control"
+                       placeholder="Search by policy, client, insurer..."
+                       value="{{ request.GET.q }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary w-100">Search</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body table-responsive">
+        <table class="table table-sm align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Policy</th>
+                    <th>Client</th>
+                    <th>Insurer</th>
+                    <th>Class</th>
+                    <th class="text-end">Sum insured</th>
+                    <th class="text-end">Premium (KES)</th>
+                    <th>Period</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in policies %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'policies:policy_detail' p.id %}">
+                                {{ p.policy_number }}
+                            </a>
+                        </td>
+                        <td>{{ p.client.full_name }}</td>
+                        <td>{{ p.insurance_company.name }}</td>
+                        <td>{{ p.class_of_business.name }}</td>
+                        <td class="text-end">{{ p.sum_insured|floatformat:2 }}</td>
+                        <td class="text-end">{{ p.premium_amount|floatformat:2 }}</td>
+                        <td>{{ p.start_date }} → {{ p.end_date }}</td>
+                        <td>{{ p.get_status_display }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-muted text-center py-3">
+                            No policies found.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if is_paginated %}
+            <nav aria-label="Policy pagination">
+                <ul class="pagination justify-content-end">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+                                Prev
+                            </a>
+                        </li>
+                    {% endif %}
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+                                Next
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

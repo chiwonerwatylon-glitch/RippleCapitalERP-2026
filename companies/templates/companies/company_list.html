@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Insurance Companies | Ripple Capital ERP{% endblock %}
+
+{% block content %}
+<div class="page-header mb-3">
+    <div>
+        <h1 class="page-title mb-1">Insurance Companies</h1>
+        <p class="page-subtitle text-muted mb-0">
+            Underwriters that Ripple Capital represents as broker.
+        </p>
+    </div>
+    <div>
+        <a href="{% url 'companies:company_add' %}" class="btn btn-primary">Add company</a>
+    </div>
+</div>
+
+{% include "partials/messages.html" %}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-4">
+                <input type="text" name="q" class="form-control"
+                       placeholder="Search by name or short code..."
+                       value="{{ request.GET.q }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary w-100">Search</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body table-responsive">
+        <table class="table table-sm align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Short code</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Active</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in companies %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'companies:company_detail' c.id %}">
+                                {{ c.name }}
+                            </a>
+                        </td>
+                        <td>{{ c.short_code }}</td>
+                        <td>{{ c.contact_email|default:"—" }}</td>
+                        <td>{{ c.contact_phone|default:"—" }}</td>
+                        <td>
+                            {% if c.is_active %}
+                                <span class="badge bg-success">Yes</span>
+                            {% else %}
+                                <span class="badge bg-danger">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-muted text-center py-3">
+                            No insurance companies found.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if is_paginated %}
+            <nav aria-label="Company pagination">
+                <ul class="pagination justify-content-end">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Prev</a>
+                        </li>
+                    {% endif %}
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

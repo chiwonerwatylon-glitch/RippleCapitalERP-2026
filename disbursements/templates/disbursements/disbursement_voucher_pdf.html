@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Disbursement Voucher #{{ disbursement.id }} - {{ disbursement.insurance_company.short_code }}</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            font-size: 12px;
+            color: #111827;
+            margin: 20px;
+        }
+        .header, .footer {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .section-title {
+            font-weight: 600;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        th, td {
+            padding: 6px 8px;
+            border: 1px solid #e5e7eb;
+        }
+        th {
+            background: #f3f4f6;
+            text-align: left;
+        }
+        .text-right { text-align: right; }
+        .small { font-size: 11px; color: #6b7280; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div style="float:left;">
+        <h1>Ripple Capital Private Limited</h1>
+        <h2>Disbursement Voucher</h2>
+    </div>
+    <div style="float:right; text-align:right;">
+        <div><strong>Voucher #:</strong> {{ disbursement.id }}</div>
+        <div><strong>Date:</strong> {{ disbursement.created_at|date:"Y-m-d" }}</div>
+    </div>
+    <div style="clear:both;"></div>
+</div>
+
+<div>
+    <div class="section-title">Payee (Insurance Company)</div>
+    <table>
+        <tr>
+            <th>Company</th>
+            <td>{{ disbursement.insurance_company.name }}</td>
+        </tr>
+        <tr>
+            <th>Short code</th>
+            <td>{{ disbursement.insurance_company.short_code }}</td>
+        </tr>
+        <tr>
+            <th>Bank details</th>
+            <td>{{ disbursement.insurance_company.bank_account_details|linebreaksbr }}</td>
+        </tr>
+        <tr>
+            <th>Period covered</th>
+            <td>{{ disbursement.period_start }} → {{ disbursement.period_end }}</td>
+        </tr>
+    </table>
+
+    <div class="section-title">Summary</div>
+    <table>
+        <tr>
+            <th>Premium collected (on behalf of insurer)</th>
+            <td class="text-right">KES {{ disbursement.total_premium_collected|floatformat:2 }}</td>
+        </tr>
+        <tr>
+            <th>Commission retained by Ripple Capital</th>
+            <td class="text-right">KES {{ disbursement.total_commission|floatformat:2 }}</td>
+        </tr>
+        <tr>
+            <th>Net amount payable to insurer</th>
+            <td class="text-right"><strong>KES {{ disbursement.net_amount_payable|floatformat:2 }}</strong></td>
+        </tr>
+    </table>
+
+    <div class="section-title">Commission details</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Policy</th>
+                <th>Client</th>
+                <th class="text-right">Commission (KES)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in commissions %}
+                <tr>
+                    <td>{{ c.policy.policy_number }}</td>
+                    <td>{{ c.policy.client.full_name }}</td>
+                    <td class="text-right">{{ c.amount|floatformat:2 }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3" class="small">No linked commissions.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="margin-top:30px;">
+        <table>
+            <tr>
+                <th style="width:50%;">Prepared by</th>
+                <th style="width:50%;">Approved by</th>
+            </tr>
+            <tr>
+                <td style="height:60px; vertical-align:bottom;">
+                    Name: ___________________________<br>
+                    Signature: ______________________
+                </td>
+                <td style="height:60px; vertical-align:bottom;">
+                    Name: ___________________________<br>
+                    Signature: ______________________
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <p class="small" style="margin-top:20px;">
+        This voucher summarizes funds collected by Ripple Capital Private Limited
+        as broker on behalf of the above insurance company. Premium amounts are
+        due to the insurer; commissions are retained by Ripple Capital as
+        brokerage income.
+    </p>
+</div>
+
+</body>
+</html>

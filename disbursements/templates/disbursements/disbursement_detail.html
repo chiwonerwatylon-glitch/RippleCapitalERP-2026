@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Disbursement #{{ disbursement.id }} | Ripple Capital ERP{% endblock %}
+
+{% block content %}
+<div class="page-header mb-3">
+    <div>
+        <h1 class="page-title mb-1">Disbursement #{{ disbursement.id }}</h1>
+        <p class="page-subtitle text-muted mb-0">
+            To {{ disbursement.insurance_company.name }} — {{ disbursement.period_start }} → {{ disbursement.period_end }}
+        </p>
+    </div>
+    <div>
+        <a href="{% url 'disbursements:disbursement_list' %}" class="btn btn-outline-secondary">
+            &larr; Back to list
+        </a>
+        <a href="{% url 'disbursements:disbursement_voucher' disbursement.id %}" class="btn btn-outline-primary ms-2" target="_blank">
+            View voucher
+        </a>
+        {% if disbursement.status == "PENDING" %}
+            <form method="post" action="{% url 'disbursements:disbursement_mark_processed' disbursement.id %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success ms-2">
+                    Mark as processed
+                </button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/messages.html" %}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Summary</h2>
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Insurance company</dt>
+                    <dd class="col-sm-7">{{ disbursement.insurance_company.name }}</dd>
+
+                    <dt class="col-sm-5">Period</dt>
+                    <dd class="col-sm-7">{{ disbursement.period_start }} → {{ disbursement.period_end }}</dd>
+
+                    <dt class="col-sm-5">Premium collected</dt>
+                    <dd class="col-sm-7">KES {{ disbursement.total_premium_collected|floatformat:2 }}</dd>
+
+                    <dt class="col-sm-5">Commission (Ripple Capital)</dt>
+                    <dd class="col-sm-7">KES {{ disbursement.total_commission|floatformat:2 }}</dd>
+
+                    <dt class="col-sm-5">Net amount payable</dt>
+                    <dd class="col-sm-7">
+                        <strong>KES {{ disbursement.net_amount_payable|floatformat:2 }}</strong>
+                    </dd>
+
+                    <dt class="col-sm-5">Status</dt>
+                    <dd class="col-sm-7">{{ disbursement.get_status_display }}</dd>
+
+                    <dt class="col-sm-5">Processed by</dt>
+                    <dd class="col-sm-7">
+                        {% if disbursement.processed_by %}
+                            {{ disbursement.processed_by.get_full_name|default:disbursement.processed_by.username }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-5">Processed at</dt>
+                    <dd class="col-sm-7">
+                        {% if disbursement.processed_at %}
+                            {{ disbursement.processed_at|date:"Y-m-d H:i" }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </dd>
+                </dl>
+                <p class="small text-muted mt-3 mb-0">
+                    Premiums collected belong to the insurer. Ripple Capital retains commission
+                    as revenue and remits the net amount payable.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Linked commissions</h2>
+                <table class="table table-sm align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Policy</th>
+                            <th>Client</th>
+                            <th class="text-end">Commission (KES)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in commissions %}
+                            <tr>
+                                <td>{{ c.policy.policy_number }}</td>
+                                <td>{{ c.policy.client.full_name }}</td>
+                                <td class="text-end">{{ c.amount|floatformat:2 }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-muted text-center py-3">
+                                    No commissions linked to this disbursement.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <p class="small text-muted mb-0">
+                    These commissions represent Ripple Capital's revenue earned on the
+                    premiums included in this disbursement.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

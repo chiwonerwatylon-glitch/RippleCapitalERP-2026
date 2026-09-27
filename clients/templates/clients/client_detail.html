@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Client {{ client_obj.full_name }} | Ripple Capital ERP{% endblock %}
+
+{% block content %}
+<div class="page-header mb-3">
+    <div>
+        <h1 class="page-title mb-1">{{ client_obj.full_name }}</h1>
+        <p class="page-subtitle text-muted mb-0">
+            {{ client_obj.get_client_type_display }} &mdash; Managed by Ripple Capital as broker.
+        </p>
+    </div>
+    <div>
+        <a href="{% url 'clients:client_edit' client_obj.id %}" class="btn btn-primary">
+            Edit
+        </a>
+        <a href="{% url 'clients:client_statement' client_obj.id %}" class="btn btn-outline-primary ms-2">
+            View statement
+        </a>
+        <a href="{% url 'clients:client_list' %}" class="btn btn-outline-secondary ms-2">
+            Back to list
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Contact information</h2>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">ID / Reg No.</dt>
+                    <dd class="col-sm-8">{{ client_obj.id_number|default:"—" }}</dd>
+
+                    <dt class="col-sm-4">Tax PIN</dt>
+                    <dd class="col-sm-8">{{ client_obj.tax_pin|default:"—" }}</dd>
+
+                    <dt class="col-sm-4">Email</dt>
+                    <dd class="col-sm-8">{{ client_obj.email|default:"—" }}</dd>
+
+                    <dt class="col-sm-4">Phone</dt>
+                    <dd class="col-sm-8">{{ client_obj.phone_number }}</dd>
+
+                    <dt class="col-sm-4">Address</dt>
+                    <dd class="col-sm-8">{{ client_obj.address|linebreaksbr|default:"—" }}</dd>
+
+                    <dt class="col-sm-4">Created at</dt>
+                    <dd class="col-sm-8">{{ client_obj.created_at|date:"Y-m-d H:i" }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Financial summary</h2>
+                <dl class="row mb-0">
+                    <dt class="col-sm-6">Total premium paid</dt>
+                    <dd class="col-sm-6 text-end">KES {{ total_paid|floatformat:2 }}</dd>
+
+                    <dt class="col-sm-6">Outstanding premium</dt>
+                    <dd class="col-sm-6 text-end">KES {{ total_outstanding|floatformat:2 }}</dd>
+                </dl>
+                <p class="text-muted small mt-3 mb-0">
+                    Note: Premiums are collected by Ripple Capital on behalf of insurers.
+                    Only commissions are Ripple Capital's revenue.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h2 class="card-title mb-0">Policies</h2>
+    </div>
+    <div class="card-body table-responsive">
+        <table class="table table-sm align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Policy</th>
+                    <th>Insurer</th>
+                    <th>Sum insured</th>
+                    <th>Premium (KES)</th>
+                    <th>Period</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in policies %}
+                    <tr>
+                        <td>{{ p.policy_number }}</td>
+                        <td>{{ p.insurance_company.name }}</td>
+                        <td>{{ p.sum_insured|floatformat:2 }}</td>
+                        <td>{{ p.premium_amount|floatformat:2 }}</td>
+                        <td>{{ p.start_date }} → {{ p.end_date }}</td>
+                        <td>{{ p.get_status_display }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-muted text-center py-3">
+                            No policies for this client yet.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title mb-0">Recent payments</h2>
+    </div>
+    <div class="card-body table-responsive">
+        <table class="table table-sm align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Receipt</th>
+                    <th>Policy</th>
+                    <th>Insurer</th>
+                    <th>Date</th>
+                    <th class="text-end">Amount (KES)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pay in payments %}
+                    <tr>
+                        <td>{{ pay.receipt_number }}</td>
+                        <td>{{ pay.installment.policy.policy_number }}</td>
+                        <td>{{ pay.installment.policy.insurance_company.name }}</td>
+                        <td>{{ pay.payment_date|date:"Y-m-d H:i" }}</td>
+                        <td class="text-end">{{ pay.amount|floatformat:2 }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-muted text-center py-3">
+                            No payments recorded for this client yet.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+
+{% block title %}Company Report | Ripple Capital ERP{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+    <div>
+        <h1 class="page-title mb-1">Company Report</h1>
+        <p class="page-subtitle text-muted mb-0">
+            Select an insurance company to view detailed figures.
+        </p>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Insurance company</label>
+                {{ form.insurance_company }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Start date</label>
+                {{ form.start_date }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">End date</label>
+                {{ form.end_date }}
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Run report</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if report %}
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-label">Premium collected</div>
+                <div class="stat-value">
+                    {{ report.total_premium_collected|currency }}
+                </div>
+                <div class="stat-note text-muted">
+                    Collected from clients on behalf of {{ report.insurance_company.name }}.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-label">Commission (Ripple Capital)</div>
+                <div class="stat-value">
+                    {{ report.total_commission|currency }}
+                </div>
+                <div class="stat-note text-muted">
+                    Brokerage income from this insurer.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-label">Net payable to insurer</div>
+                <div class="stat-value">
+                    {{ report.net_premium_to_insurer|currency }}
+                </div>
+                <div class="stat-note text-muted">
+                    Premium minus commission.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-label">Policies in period</div>
+                <div class="stat-value">{{ report.policy_count }}</div>
+                <div class="stat-note text-muted">
+                    New policies recorded for this insurer.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="card-title mb-0">Top clients (by premium volume)</h2>
+            {% include "reports/export_buttons.html" %}
+        </div>
+        <div class="card-body table-responsive">
+            <table class="table table-sm align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Client</th>
+                        <th class="text-end">Premium (KES)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in report.top_clients %}
+                        <tr>
+                            <td>{{ row.installment__policy__client__full_name }}</td>
+                            <td class="text-end">{{ row.total_premium|currency }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="2" class="text-muted text-center py-3">
+                                No data for this company/period.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

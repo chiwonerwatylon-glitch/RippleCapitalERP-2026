@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+
+{% block title %}Reports Dashboard | Ripple Capital ERP{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+    <div>
+        <h1 class="page-title mb-1">Reports Dashboard</h1>
+        <p class="page-subtitle text-muted mb-0">
+            Overview of premiums collected and commissions earned by Ripple Capital as broker.
+        </p>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Start date</label>
+                {{ form.start_date }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">End date</label>
+                {{ form.end_date }}
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Apply</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-label">Total premium collected</div>
+            <div class="stat-value">{{ summary.total_premium_collected|currency }}</div>
+            <div class="stat-note text-muted">
+                Collected from clients on behalf of insurers.
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-label">Total commission earned</div>
+            <div class="stat-value">{{ summary.total_commission_earned|currency }}</div>
+            <div class="stat-note text-muted">
+                Brokerage revenue for Ripple Capital.
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-label">Outstanding premium</div>
+            <div class="stat-value text-warning">
+                {{ summary.total_outstanding_premium|currency }}
+            </div>
+            <div class="stat-note text-muted">
+                Unpaid installments (owed by clients to insurers).
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="card-title mb-0">Commission by insurer</h2>
+        {% include "reports/export_buttons.html" %}
+    </div>
+    <div class="card-body table-responsive">
+        <table class="table table-sm align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Insurer</th>
+                    <th class="text-end">Commission (KES)</th>
+                    <th class="text-end">Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in commission_by_insurer %}
+                    <tr>
+                        <td>{{ row.policy__insurance_company__name }}</td>
+                        <td class="text-end">{{ row.total_commission|currency }}</td>
+                        <td class="text-end">{{ row.commission_count }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-muted text-center py-3">
+                            No commission data for the selected period.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

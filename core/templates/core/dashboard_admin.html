@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+
+{% block title %}Admin Dashboard | {{ BRAND_SHORT }}{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+    <div>
+        <h1 class="page-title mb-1">Admin Dashboard</h1>
+        <p class="page-subtitle text-muted mb-0">
+            Overview of Ripple Capital's brokerage performance.
+        </p>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Commission this month</div>
+            <div class="stat-value">
+                {{ summary.total_earned|currency }}
+            </div>
+            <div class="stat-note text-muted">
+                {{ month_start }} – {{ month_end }}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Pending commissions</div>
+            <div class="stat-value text-warning">
+                {{ summary.total_pending|currency }}
+            </div>
+            <div class="stat-note text-muted">Awaiting review</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Reversed this month</div>
+            <div class="stat-value text-danger">
+                {{ summary.total_reversed|currency }}
+            </div>
+            <div class="stat-note text-muted">Commission reversals</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Commission records</div>
+            <div class="stat-value">
+                {{ summary.commission_count }}
+            </div>
+            <div class="stat-note text-muted">This month</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h2 class="card-title mb-0">Top insurers by commission</h2>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Insurer</th>
+                            <th class="text-end">Commission</th>
+                            <th class="text-end">Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in by_insurer %}
+                            <tr>
+                                <td>{{ row.policy__insurance_company__name }}</td>
+                                <td class="text-end">{{ row.total_commission|currency }}</td>
+                                <td class="text-end">{{ row.commission_count }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-muted text-center py-3">
+                                    No commission data for this period.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h2 class="card-title mb-0">Recent policies</h2>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Policy</th>
+                            <th>Client</th>
+                            <th>Insurer</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in recent_policies %}
+                            <tr>
+                                <td>{{ p.policy_number }}</td>
+                                <td>{{ p.client.full_name }}</td>
+                                <td>{{ p.insurance_company.name }}</td>
+                                <td>{{ p.created_at|short_date }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-muted text-center py-3">
+                                    No recent policies.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <hr>
+                <h2 class="card-title mb-2">Recent payments</h2>
+                <table class="table table-sm align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Receipt</th>
+                            <th>Client</th>
+                            <th>Insurer</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pay in recent_payments %}
+                            <tr>
+                                <td>{{ pay.receipt_number }}</td>
+                                <td>{{ pay.installment.policy.client.full_name }}</td>
+                                <td>{{ pay.installment.policy.insurance_company.name }}</td>
+                                <td class="text-end">{{ pay.amount|currency }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-muted text-center py-3">
+                                    No recent payments.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

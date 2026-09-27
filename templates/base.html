@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% load static %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Ripple Capital ERP{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body>
+  {% include 'partials/navbar.html' %}
+  <div class="layout">
+    {% include 'partials/sidebar.html' %}
+    <main class="layout-main">
+      {% include 'partials/messages.html' %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  {% include 'partials/footer.html' %}
+  <script src="{% static 'js/base.js' %}"></script>
+  <script src="{% static 'js/charts.js' %}"></script>
+</body>
+</html>
