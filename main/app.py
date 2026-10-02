@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from flask import Flask, render_template, redirect, url_for, flash, request, Blueprint
 from flask_login import (
     LoginManager,
@@ -33,6 +35,8 @@ from .utils import role_required
 from .admin import admin_bp
 from .email_tasks import send_expiry_reminders
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 login_manager = LoginManager()
 login_manager.login_view = "auth.login"
@@ -45,7 +49,11 @@ def load_user(user_id):
 
 
 def create_app(config_name=None):
-    app = Flask(__name__, static_folder="static", template_folder="templates")
+    app = Flask(
+        __name__,
+        static_folder=str(BASE_DIR / "static"),
+        template_folder=str(BASE_DIR / "templates"),
+    )
 
     config_name = config_name or "default"
     app.config.from_object(config_by_name[config_name])
