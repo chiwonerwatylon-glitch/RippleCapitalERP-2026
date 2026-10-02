@@ -1,37 +1,186 @@
-{% extends "layout_agent.html" %}
-{% block agent_title %}Company{% endblock %}
-{% block agent_content %}
-<h3>{{ company.name if company else "New Company" }}</h3>
-<form method="post">
+{% extends "sidebar_layout.html" %}
+
+{% block title %}{% if company %}Edit {% endif %}Company - Ripple Capital Insurance ERP{% endblock %}
+
+{% block page_title %}{% if company %}Edit Company: {{ company.name }}{% else %}Add New Insurance Company{% endif %}{% endblock %}
+
+{% block page_subtitle %}{% if company %}Update company information and details{% else %}Create a new insurance company partner account{% endif %}{% endblock %}
+
+{% block content %}
+<style>
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+    }
+
+    .form-section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .form-input,
+    .form-textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-family: inherit;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .form-error {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.4rem;
+        display: block;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 0.75rem 1.75rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    .btn-secondary:hover {
+        background: #d1d5db;
+    }
+
+    @media (max-width: 768px) {
+        .form-section {
+            padding: 1.5rem;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+
+<form method="post" novalidate>
     {{ form.hidden_tag() }}
-    <div class="mb-3">
-        {{ form.name.label(class="form-label") }}
-        {{ form.name(class="form-control") }}
-        {% for error in form.name.errors %}
-        <div class="text-danger small">{{ error }}</div>
-        {% endfor %}
+
+    <div class="form-section">
+        <h3 class="form-section-title">🏢 Company Information</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                {{ form.name.label(class="form-label") }}
+                {{ form.name(class="form-input", placeholder="Insurance Company Name") }}
+                {% for error in form.name.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form.contact_email.label(class="form-label") }}
+                {{ form.contact_email(class="form-input", placeholder="contact@company.com", type="email") }}
+                {% for error in form.contact_email.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form.phone.label(class="form-label") }}
+                {{ form.phone(class="form-input", placeholder="+1 (555) 123-4567") }}
+                {% for error in form.phone.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+            <div class="form-group">
+                {{ form.address.label(class="form-label") }}
+                {{ form.address(class="form-input", placeholder="123 Business Ave, City, State") }}
+                {% for error in form.address.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+        </div>
     </div>
-    <div class="mb-3">
-        {{ form.contact_email.label(class="form-label") }}
-        {{ form.contact_email(class="form-control") }}
-        {% for error in form.contact_email.errors %}
-        <div class="text-danger small">{{ error }}</div>
-        {% endfor %}
+
+    <div class="form-section">
+        <div class="form-actions">
+            {{ form.submit(class="btn btn-primary", value="💾 Save Company") }}
+            <a href="{{ url_for('admin.companies') }}" class="btn btn-secondary">Cancel</a>
+        </div>
     </div>
-    <div class="mb-3">
-        {{ form.phone.label(class="form-label") }}
-        {{ form.phone(class="form-control") }}
-        {% for error in form.phone.errors %}
-        <div class="text-danger small">{{ error }}</div>
-        {% endfor %}
-    </div>
-    <div class="mb-3">
-        {{ form.address.label(class="form-label") }}
-        {{ form.address(class="form-control") }}
-        {% for error in form.address.errors %}
-        <div class="text-danger small">{{ error }}</div>
-        {% endfor %}
-    </div>
-    <button type="submit" class="btn btn-primary">Save</button>
 </form>
 {% endblock %}
+

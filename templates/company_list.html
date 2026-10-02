@@ -1,43 +1,253 @@
-{% extends "layout_agent.html" %}
-{% block agent_title %}Companies{% endblock %}
-{% block agent_content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Insurance Companies</h3>
-    <a href="{{ url_for('admin.company_create') }}" class="btn btn-primary btn-sm">New Company</a>
+{% extends "sidebar_layout.html" %}
+
+{% block title %}Companies - Ripple Capital Insurance ERP{% endblock %}
+
+{% block page_title %}Insurance Companies{% endblock %}
+
+{% block page_subtitle %}Manage insurance company partners and details{% endblock %}
+
+{% block content %}
+<style>
+    .header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 0.75rem 1.75rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .search-box {
+        flex: 1;
+        min-width: 250px;
+        padding: 0.75rem 1rem;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-box:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    thead {
+        background: #f9fafb;
+    }
+
+    th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 2px solid #e5e7eb;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    td {
+        padding: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+        color: #6b7280;
+    }
+
+    tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .company-name {
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .company-email {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-btn {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+        background: #764ba2;
+        transform: translateY(-2px);
+    }
+
+    .action-btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .action-btn-secondary:hover {
+        background: #e5e7eb;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6b7280;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .header-actions {
+            flex-direction: column;
+        }
+
+        .search-box {
+            width: 100%;
+        }
+
+        .btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        table {
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 0.75rem 0.5rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .action-btn {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="header-actions">
+    <input type="text" class="search-box" placeholder="🔍 Search companies by name...">
+    <a href="{{ url_for('admin.company_create') }}" class="btn">
+        <i class="fas fa-plus"></i> Add New Company
+    </a>
 </div>
-<div class="table-responsive">
-    <table class="table table-sm table-striped align-middle">
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Address</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for c in companies %}
-        <tr>
-            <td>{{ c.name }}</td>
-            <td>{{ c.contact_email }}</td>
-            <td>{{ c.phone }}</td>
-            <td>{{ c.address }}</td>
-            <td>
-                <a href="{{ url_for('admin.company_edit', company_id=c.id) }}" class="btn btn-sm btn-outline-primary">
-                    Edit
-                </a>
-                <a href="{{ url_for('admin.commission_rules', company_id=c.id) }}" class="btn btn-sm btn-outline-secondary">
-                    Commission Rules
-                </a>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="5" class="text-center text-muted">No companies.</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+
+<div class="content-card">
+    {% if companies %}
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Company Name</th>
+                        <th>Contact Email</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for company in companies %}
+                    <tr>
+                        <td><div class="company-name">{{ company.name }}</div></td>
+                        <td>
+                            {% if company.contact_email %}
+                                <a href="mailto:{{ company.contact_email }}" class="company-email">{{ company.contact_email }}</a>
+                            {% else %}
+                                <span class="company-email" style="color: #d1d5db;">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ company.phone or '-' }}</td>
+                        <td style="color: #6b7280;">{{ company.address or '-' }}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ url_for('admin.company_edit', company_id=company.id) }}" class="action-btn">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <a href="{{ url_for('admin.commission_rules', company_id=company.id) }}" class="action-btn action-btn-secondary">
+                                    <i class="fas fa-percent"></i> Commissions
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">🏢</div>
+            <div class="empty-state-title">No Companies Added Yet</div>
+            <p style="margin-bottom: 1.5rem;">Start by adding your first insurance company partner</p>
+            <a href="{{ url_for('admin.company_create') }}" class="btn">Add Your First Company</a>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
+
