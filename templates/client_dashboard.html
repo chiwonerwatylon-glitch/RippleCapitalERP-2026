@@ -1,39 +1,364 @@
-{% extends "layout_client.html" %}
-{% block client_title %}Dashboard{% endblock %}
-{% block client_content %}
-<h3>Your Policies</h3>
-<div class="table-responsive">
-    <table class="table table-sm table-striped align-middle">
-        <thead>
-        <tr>
-            <th>Policy #</th>
-            <th>Company</th>
-            <th>Product</th>
-            <th>Coverage</th>
-            <th>Premium</th>
-            <th>Status</th>
-            <th>Start</th>
-            <th>End</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for policy in policies %}
-        <tr>
-            <td><a href="{{ url_for('core.policy_view', policy_id=policy.id) }}">{{ policy.policy_number }}</a></td>
-            <td>{{ policy.company.name }}</td>
-            <td>{{ policy.product_name }}</td>
-            <td>{{ policy.coverage_amount }}</td>
-            <td>{{ policy.premium_amount }}</td>
-            <td>{{ policy.status }}</td>
-            <td>{{ policy.start_date }}</td>
-            <td>{{ policy.end_date }}</td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="8" class="text-center text-muted">No policies found.</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Client Dashboard - Ripple Capital Insurance ERP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem 1rem;
+            margin-bottom: 2rem;
+            border-radius: 0 0 24px 24px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .dashboard-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-subtitle {
+            font-size: 1rem;
+            opacity: 0.95;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #f5f7fa 0%, white 100%);
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .policy-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .policy-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .policy-number {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .policy-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .policy-detail {
+            font-size: 0.9rem;
+        }
+
+        .policy-detail-label {
+            color: #6b7280;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .policy-detail-value {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .policy-footer {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-expired {
+            background: #fee2e2;
+            color: #7f1d1d;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #78350f;
+        }
+
+        .action-btn {
+            display: inline-block;
+            padding: 0.5rem 1.25rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6b7280;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state-text {
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-title {
+                font-size: 1.5rem;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .policy-details {
+                grid-template-columns: 1fr;
+            }
+
+            .policy-footer {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .action-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation -->
+<nav style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1rem 2rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-size: 1.5rem; font-weight: 700; color: white;">💼 Ripple Capital</div>
+        <div style="display: flex; gap: 1.5rem; align-items: center; color: rgba(255,255,255,0.9);">
+            <span style="font-weight: 500;">{{ current_user.full_name }}</span>
+            <a href="{{ url_for('core.profile') }}" style="color: rgba(255,255,255,0.9); text-decoration: none; font-weight: 500;">Profile</a>
+            <a href="{{ url_for('auth.logout') }}" style="color: rgba(255,255,255,0.9); text-decoration: none; font-weight: 500;">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <div class="container">
+        <h1 class="dashboard-title">Welcome, {{ current_user.full_name }}!</h1>
+        <p class="dashboard-subtitle">Manage and view all your insurance policies</p>
+    </div>
 </div>
-{% endblock %}
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Alerts -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div style="background: {% if category == 'success' %}#d1fae5{% elif category == 'danger' %}#fee2e2{% else %}#dbeafe{% endif %}; border-left: 4px solid {% if category == 'success' %}#10b981{% elif category == 'danger' %}#ef4444{% else %}#667eea{% endif %}; color: {% if category == 'success' %}#065f46{% elif category == 'danger' %}#7f1d1d{% else %}#0c2d6b{% endif %}; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-weight: 500;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- Stats Cards -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-value">{{ policies|length }}</div>
+            <div class="stat-label">Total Policies</div>
+        </div>
+        <div class="stat-card" style="border-left-color: #10b981;">
+            <div class="stat-value" style="color: #10b981;">{{ policies|selectattr('status', 'equalto', 'active')|list|length }}</div>
+            <div class="stat-label">Active Policies</div>
+        </div>
+        <div class="stat-card" style="border-left-color: #f59e0b;">
+            <div class="stat-value" style="color: #f59e0b;">{{ policies|selectattr('status', 'equalto', 'expired')|list|length }}</div>
+            <div class="stat-label">Expired Policies</div>
+        </div>
+    </div>
+
+    <!-- Policies List -->
+    <div class="content-card">
+        <div class="card-header">
+            <h2 class="card-title">Your Insurance Policies</h2>
+        </div>
+        <div class="card-body">
+            {% if policies %}
+                {% for policy in policies %}
+                    <div class="policy-card">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <div class="policy-number">{{ policy.product_name }}</div>
+                                <div style="font-size: 0.9rem; color: #6b7280;">Policy #{{ policy.policy_number }}</div>
+                            </div>
+                            <span class="status-badge {% if policy.status == 'active' %}status-active{% elif policy.status == 'expired' %}status-expired{% else %}status-pending{% endif %}">
+                                {{ policy.status|upper }}
+                            </span>
+                        </div>
+
+                        <div class="policy-details">
+                            <div class="policy-detail">
+                                <div class="policy-detail-label">Insurance Company</div>
+                                <div class="policy-detail-value">{{ policy.company.name }}</div>
+                            </div>
+                            <div class="policy-detail">
+                                <div class="policy-detail-label">Coverage Amount</div>
+                                <div class="policy-detail-value">${{ "%.2f"|format(policy.coverage_amount) }}</div>
+                            </div>
+                            <div class="policy-detail">
+                                <div class="policy-detail-label">Premium Amount</div>
+                                <div class="policy-detail-value">${{ "%.2f"|format(policy.premium_amount) }}</div>
+                            </div>
+                            <div class="policy-detail">
+                                <div class="policy-detail-label">Frequency</div>
+                                <div class="policy-detail-value">{{ policy.premium_frequency|capitalize }}</div>
+                            </div>
+                            <div class="policy-detail">
+                                <div class="policy-detail-label">Start Date</div>
+                                <div class="policy-detail-value">{{ policy.start_date.strftime('%b %d, %Y') }}</div>
+                            </div>
+                            <div class="policy-detail">
+                                <div class="policy-detail-label">End Date</div>
+                                <div class="policy-detail-value">{{ policy.end_date.strftime('%b %d, %Y') }}</div>
+                            </div>
+                        </div>
+
+                        <div class="policy-footer">
+                            <div style="font-size: 0.9rem; color: #6b7280;">
+                                {% set days_left = policy.days_to_expiry() %}
+                                {% if days_left > 0 %}
+                                    <strong style="color: #10b981;">{{ days_left }} days remaining</strong>
+                                {% else %}
+                                    <strong style="color: #ef4444;">Expired</strong>
+                                {% endif %}
+                            </div>
+                            <a href="{{ url_for('core.policy_view', policy_id=policy.id) }}" class="action-btn">View Details</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <div class="empty-state-title">No Policies Yet</div>
+                    <div class="empty-state-text">You don't have any insurance policies yet. Contact an agent to get started.</div>
+                    <p style="color: #6b7280; font-size: 0.95rem;">Our agents are ready to help you find the perfect insurance coverage for your needs.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
