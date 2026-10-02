@@ -1,36 +1,268 @@
-{% extends "base.html" %}
-{% block title %}Login{% endblock %}
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-12 col-md-4">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h4 class="card-title mb-3 text-center">Login</h4>
-                <form method="post">
-                    {{ form.hidden_tag() }}
-                    <div class="mb-3">
-                        {{ form.email.label(class="form-label") }}
-                        {{ form.email(class="form-control") }}
-                        {% for error in form.email.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    <div class="mb-3">
-                        {{ form.password.label(class="form-label") }}
-                        {{ form.password(class="form-control") }}
-                        {% for error in form.password.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    <div class="d-grid">
-                        {{ form.submit(class="btn btn-primary") }}
-                    </div>
-                </form>
-                <div class="mt-3 text-center">
-                    <a href="{{ url_for('auth.register') }}">Register as new client</a>
-                </div>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Login - Ripple Capital Insurance ERP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}">
+    <style>
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 3rem;
+            width: 100%;
+            max-width: 420px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .login-logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .login-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            font-size: 0.95rem;
+            color: #6b7280;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #d1d5db;
+        }
+
+        .form-error {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.4rem;
+            display: block;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1.5rem;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            text-align: center;
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .divider-text {
+            background: white;
+            padding: 0 1rem;
+            position: relative;
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .login-footer-text {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+
+        .login-footer-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .login-footer-link:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .alert-banner {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            color: #7f1d1d;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .test-credentials {
+            background: #dbeafe;
+            border-left: 4px solid #667eea;
+            color: #0c2d6b;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        .credential-row {
+            margin: 0.5rem 0;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+
+        .credential-label {
+            font-weight: 600;
+            color: #0c4a6e;
+        }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-logo">💼</div>
+            <h1 class="login-title">Ripple Capital</h1>
+            <p class="login-subtitle">Insurance ERP System</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert-banner">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <form method="post" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="form-group">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-input", placeholder="your@email.com", autocomplete="email") }}
+                {% for error in form.email.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-input", placeholder="Enter your password", autocomplete="current-password") }}
+                {% for error in form.password.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            {{ form.submit(class="submit-btn", value="Sign In") }}
+        </form>
+
+        <div class="divider">
+            <span class="divider-text">or</span>
+        </div>
+
+        <div class="login-footer">
+            <p class="login-footer-text">
+                New client? <a href="{{ url_for('auth.register') }}" class="login-footer-link">Create an account</a>
+            </p>
+        </div>
+
+        <div class="test-credentials">
+            <div style="font-weight: 600; margin-bottom: 0.5rem;">Test Credentials:</div>
+            <div class="credential-row">
+                <span class="credential-label">Agent:</span> agent@insurance.com / password123
+            </div>
+            <div class="credential-row">
+                <span class="credential-label">Admin:</span> admin@insurance.com / admin123
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
+</body>
+</html>
+
