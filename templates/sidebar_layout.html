@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Ripple Capital Insurance ERP{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f7fa;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 0 2rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-logo {
+            font-size: 1.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar-logo-text {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 0.5rem;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 1rem;
+        }
+
+        .sidebar-menu-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-menu-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .sidebar-menu-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: translateX(4px);
+        }
+
+        .sidebar-menu-link.active {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            border-left: 4px solid white;
+            padding-left: calc(1.5rem - 4px);
+        }
+
+        .sidebar-menu-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-user {
+            position: absolute;
+            bottom: 2rem;
+            left: 0;
+            right: 0;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+        }
+
+        .sidebar-user-name {
+            font-weight: 600;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-user-role {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            background: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .page-subtitle {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .top-nav-right {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1.25rem;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left-color: #10b981;
+        }
+
+        .alert-danger {
+            background: #fee2e2;
+            color: #7f1d1d;
+            border-left-color: #ef4444;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #78350f;
+            border-left-color: #f59e0b;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #0c2d6b;
+            border-left-color: #667eea;
+        }
+
+        /* Responsive */
+        .hamburger-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                padding: 0;
+                transition: width 0.3s ease;
+            }
+
+            .sidebar.open {
+                width: 280px;
+                padding: 2rem 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .hamburger-toggle {
+                display: block;
+            }
+
+            .content-area {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.25rem;
+            }
+
+            .top-nav {
+                padding: 1rem;
+            }
+
+            .top-nav-right {
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-title {
+                font-size: 1.1rem;
+            }
+
+            .sidebar-header {
+                padding: 0 1.5rem 1.5rem;
+            }
+
+            .sidebar-menu-link {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Scrollbar */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+<!-- Sidebar Navigation -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <span>💼</span>
+            <span>Ripple Capital</span>
+        </div>
+        <div class="sidebar-logo-text">Insurance ERP System</div>
+    </div>
+
+    <nav class="sidebar-menu">
+        {% if current_user.role in ['agent', 'admin'] %}
+            <li class="sidebar-menu-item">
+                <a href="{{ url_for('core.agent_dashboard') }}" class="sidebar-menu-link {% if request.endpoint == 'core.agent_dashboard' %}active{% endif %}">
+                    <i class="sidebar-menu-icon fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="{{ url_for('core.policy_create') }}" class="sidebar-menu-link {% if request.endpoint == 'core.policy_create' %}active{% endif %}">
+                    <i class="sidebar-menu-icon fas fa-plus-circle"></i>
+                    <span>New Policy</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="{{ url_for('core.policy_view', policy_id=0) }}" class="sidebar-menu-link" onclick="alert('Select a policy from dashboard'); return false;">
+                    <i class="sidebar-menu-icon fas fa-file-contract"></i>
+                    <span>Policies</span>
+                </a>
+            </li>
+            {% if current_user.role == 'admin' %}
+            <li class="sidebar-menu-item">
+                <a href="{{ url_for('admin.dashboard') }}" class="sidebar-menu-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+                    <i class="sidebar-menu-icon fas fa-cog"></i>
+                    <span>Admin Panel</span>
+                </a>
+            </li>
+            {% endif %}
+        {% else %}
+            <li class="sidebar-menu-item">
+                <a href="{{ url_for('core.client_dashboard') }}" class="sidebar-menu-link {% if request.endpoint == 'core.client_dashboard' %}active{% endif %}">
+                    <i class="sidebar-menu-icon fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="{{ url_for('core.client_dashboard') }}" class="sidebar-menu-link {% if request.endpoint == 'core.client_dashboard' %}active{% endif %}">
+                    <i class="sidebar-menu-icon fas fa-file-contract"></i>
+                    <span>My Policies</span>
+                </a>
+            </li>
+        {% endif %}
+
+        <li class="sidebar-menu-item">
+            <a href="{{ url_for('core.profile') }}" class="sidebar-menu-link {% if request.endpoint == 'core.profile' %}active{% endif %}">
+                <i class="sidebar-menu-icon fas fa-user-circle"></i>
+                <span>Profile</span>
+            </a>
+        </li>
+    </nav>
+
+    <div class="sidebar-user">
+        <div class="sidebar-user-name">{{ current_user.full_name }}</div>
+        <div class="sidebar-user-role">{{ current_user.role }}</div>
+    </div>
+</aside>
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Top Navigation -->
+    <div class="top-nav">
+        <div>
+            <button class="hamburger-toggle" id="hamburger" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="page-title">{% block page_title %}Page{% endblock %}</h1>
+            <p class="page-subtitle">{% block page_subtitle %}{% endblock %}</p>
+        </div>
+        <div class="top-nav-right">
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    <strong>{{ message }}</strong>
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('open');
+    }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('sidebar');
+        const hamburger = document.getElementById('hamburger');
+        
+        if (window.innerWidth <= 768) {
+            if (!sidebar.contains(event.target) && !hamburger.contains(event.target)) {
+                sidebar.classList.remove('open');
+            }
+        }
+    });
+
+    // Set active link based on current page
+    document.addEventListener('DOMContentLoaded', function() {
+        const links = document.querySelectorAll('.sidebar-menu-link');
+        links.forEach(link => {
+            if (link.href === window.location.href) {
+                link.classList.add('active');
+            }
+        });
+    });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>
+
