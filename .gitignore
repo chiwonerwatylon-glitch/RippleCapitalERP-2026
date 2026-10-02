@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.env
+.venv
+venv/
+env/
+
+# SQLite DB files (if you don't want them in git)
+*.db
+*.sqlite3
+
+# Flask instance folder
+instance/
+
+# VS Code / IDE
+.vscode/
+.idea/
+
+# OS-specific
+.DS_Store
+Thumbs.db
