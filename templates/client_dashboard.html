@@ -1,0 +1,39 @@
+{% extends "layout_client.html" %}
+{% block client_title %}Dashboard{% endblock %}
+{% block client_content %}
+<h3>Your Policies</h3>
+<div class="table-responsive">
+    <table class="table table-sm table-striped align-middle">
+        <thead>
+        <tr>
+            <th>Policy #</th>
+            <th>Company</th>
+            <th>Product</th>
+            <th>Coverage</th>
+            <th>Premium</th>
+            <th>Status</th>
+            <th>Start</th>
+            <th>End</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for policy in policies %}
+        <tr>
+            <td><a href="{{ url_for('core.policy_view', policy_id=policy.id) }}">{{ policy.policy_number }}</a></td>
+            <td>{{ policy.company.name }}</td>
+            <td>{{ policy.product_name }}</td>
+            <td>{{ policy.coverage_amount }}</td>
+            <td>{{ policy.premium_amount }}</td>
+            <td>{{ policy.status }}</td>
+            <td>{{ policy.start_date }}</td>
+            <td>{{ policy.end_date }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="8" class="text-center text-muted">No policies found.</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

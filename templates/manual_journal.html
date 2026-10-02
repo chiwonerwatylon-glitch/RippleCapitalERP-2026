@@ -1,0 +1,63 @@
+{% extends "layout_agent.html" %}
+{% block agent_title %}Manual Journal{% endblock %}
+{% block agent_content %}
+<h3>Manual Journal Entries</h3>
+<form method="post" class="mb-4">
+    {{ form.hidden_tag() }}
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control") }}
+            {% for error in form.description.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="col-md-3 mb-3">
+            {{ form.debit_account.label(class="form-label") }}
+            {{ form.debit_account(class="form-control") }}
+            {% for error in form.debit_account.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="col-md-3 mb-3">
+            {{ form.credit_account.label(class="form-label") }}
+            {{ form.credit_account(class="form-control") }}
+            {% for error in form.credit_account.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="col-md-3 mb-3">
+            {{ form.amount.label(class="form-label") }}
+            {{ form.amount(class="form-control") }}
+            {% for error in form.amount.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Post Entry</button>
+</form>
+
+<h4>Recent Entries</h4>
+<div class="table-responsive">
+    <table class="table table-sm table-striped">
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Debit</th>
+            <th>Credit</th>
+            <th>Amount</th>
+            <th>By</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for e in entries %}
+        <tr>
+            <td>{{ e.date }}</td>
+            <td>{{ e.description }}</td>
+            <td>{{ e.debit_account }}</td>
+            <td>{{ e.credit_account }}</td>
+            <td>{{ e.amount }}</td>
+            <td>{{ e.created_by.full_name if e.created_by else '' }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="6" class="text-center text-muted">No journal entries.</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

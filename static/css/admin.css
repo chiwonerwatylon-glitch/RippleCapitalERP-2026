@@ -1,0 +1,291 @@
+/* ==========================================================================
+   ADMIN / AGENT THEME
+   ========================================================================== */
+
+/* Base tweaks for admin/agent views */
+
+body.admin-layout {
+    background-color: #f5f7fb;
+}
+
+/* Card styling – slightly elevated, clean look */
+.card-admin {
+    border-radius: 0.6rem;
+    border: 1px solid #e1e5f2;
+    box-shadow: 0 0.125rem 0.5rem rgba(15, 23, 42, 0.05);
+    background-color: #ffffff;
+}
+
+.card-admin-header {
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid #e1e5f2;
+    background-color: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.card-admin-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.card-admin-body {
+    padding: 1rem 1.25rem;
+}
+
+.card-admin-footer {
+    padding: 0.75rem 1.25rem;
+    border-top: 1px solid #e1e5f2;
+    background-color: #f9fafb;
+}
+
+/* ==========================================================================
+   ADMIN SIDEBAR
+   ========================================================================== */
+
+.admin-sidebar {
+    background-color: #0f172a;
+    min-height: 100vh;
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+}
+
+.admin-sidebar .nav-link {
+    color: #cbd5f5;
+    padding: 0.45rem 1rem;
+    border-radius: 0;
+    font-size: 0.93rem;
+    display: flex;
+    align-items: center;
+    border-left: 3px solid transparent;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.admin-sidebar .nav-link i {
+    font-size: 1rem;
+    margin-right: 0.4rem;
+}
+
+.admin-sidebar .nav-link:hover {
+    background-color: #1f2937;
+    color: #ffffff;
+}
+
+.admin-sidebar .nav-link.active {
+    background-color: #111827;
+    color: #ffffff;
+    border-left-color: #3b82f6;
+    font-weight: 500;
+}
+
+/* Sidebar header/user info */
+.admin-sidebar-header {
+    padding: 0 1rem 1rem 1rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+    margin-bottom: 0.75rem;
+}
+
+.admin-sidebar-header .brand-text {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+.admin-sidebar-user {
+    padding: 0.5rem 1rem 0 1rem;
+    font-size: 0.85rem;
+    color: #9ca3af;
+}
+
+.admin-sidebar-user strong {
+    color: #e5e7eb;
+}
+
+/* ==========================================================================
+   LISTS & TABLES
+   ========================================================================== */
+
+/* Table enhancements */
+.table-admin {
+    font-size: 0.9rem;
+}
+
+.table-admin thead th {
+    background-color: #f9fafb;
+    color: #4b5563;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+}
+
+.table-admin tbody tr:hover {
+    background-color: #f3f4f6;
+}
+
+.table-admin td,
+.table-admin th {
+    padding: 0.5rem 0.75rem;
+    vertical-align: middle;
+}
+
+/* Mini tag/pill */
+.badge-soft {
+    padding: 0.2rem 0.45rem;
+    border-radius: 50rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.badge-soft-success {
+    color: #166534;
+    background-color: #dcfce7;
+}
+
+.badge-soft-warning {
+    color: #92400e;
+    background-color: #fef3c7;
+}
+
+.badge-soft-danger {
+    color: #991b1b;
+    background-color: #fee2e2;
+}
+
+.badge-soft-info {
+    color: #0f766e;
+    background-color: #ccfbf1;
+}
+
+/* ==========================================================================
+   FORMS
+   ========================================================================== */
+
+.form-label {
+    font-weight: 500;
+    color: #374151;
+    font-size: 0.92rem;
+}
+
+.form-control,
+.form-select {
+    border-radius: 0.45rem;
+    border-color: #d1d5db;
+    font-size: 0.9rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 0.15rem rgba(37, 99, 235, 0.15);
+}
+
+/* Small helper text */
+.form-text-muted {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+/* ==========================================================================
+   PROFILE PAGE
+   ========================================================================== */
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.profile-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f9fafb;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.profile-name {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.profile-role {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.profile-meta {
+    font-size: 0.85rem;
+    color: #9ca3af;
+}
+
+.profile-section-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #111827;
+}
+
+.profile-field-label {
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b7280;
+    margin-bottom: 0.2rem;
+}
+
+.profile-field-value {
+    font-size: 0.95rem;
+    color: #111827;
+}
+
+/* ==========================================================================
+   UTILITIES
+   ========================================================================== */
+
+.text-muted-soft {
+    color: #9ca3af !important;
+}
+
+.text-xs {
+    font-size: 0.75rem !important;
+}
+
+.text-sm {
+    font-size: 0.87rem !important;
+}
+
+.border-dashed {
+    border-style: dashed !important;
+}
+
+/* Responsive spacing for cards on small screens */
+@media (max-width: 767.98px) {
+    .card-admin-body {
+        padding: 0.85rem;
+    }
+
+    .card-admin-header,
+    .card-admin-footer {
+        padding: 0.65rem 0.85rem;
+    }
+
+    .profile-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .admin-sidebar {
+        min-height: auto;
+        position: static;
+    }
+}

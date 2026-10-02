@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Client - {% block client_title %}{% endblock %}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12 col-md-3 mb-3">
+        <div class="list-group">
+            <a href="{{ url_for('core.client_dashboard') }}" class="list-group-item list-group-item-action">
+                Dashboard
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="list-group-item list-group-item-action">
+                Logout
+            </a>
+        </div>
+    </div>
+    <div class="col-12 col-md-9">
+        {% block client_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

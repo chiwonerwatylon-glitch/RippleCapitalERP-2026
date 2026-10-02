@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Agent - {% block agent_title %}{% endblock %}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12 col-md-3 mb-3">
+        <div class="list-group">
+            <a href="{{ url_for('core.agent_dashboard') }}" class="list-group-item list-group-item-action">
+                Dashboard
+            </a>
+            <a href="{{ url_for('core.policy_create') }}" class="list-group-item list-group-item-action">
+                New Policy
+            </a>
+            {% if current_user.role == 'admin' %}
+            <a href="{{ url_for('admin.dashboard') }}" class="list-group-item list-group-item-action">
+                Admin Panel
+            </a>
+            {% endif %}
+            <a href="{{ url_for('auth.logout') }}" class="list-group-item list-group-item-action">
+                Logout
+            </a>
+        </div>
+    </div>
+    <div class="col-12 col-md-9">
+        {% block agent_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

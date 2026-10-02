@@ -1,0 +1,55 @@
+{% extends "layout_agent.html" %}
+{% block agent_title %}Commission Rules{% endblock %}
+{% block agent_content %}
+<h3>Commission Rules for {{ company.name }}</h3>
+
+<form method="post" class="mb-4">
+    {{ form.hidden_tag() }}
+    <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control") }}
+        </div>
+        <div class="col-md-3">
+            {{ form.commission_percent.label(class="form-label") }}
+            {{ form.commission_percent(class="form-control") }}
+        </div>
+        <div class="col-md-2">
+            <div class="form-check mt-4">
+                {{ form.is_active(class="form-check-input") }}
+                {{ form.is_active.label(class="form-check-label") }}
+            </div>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary w-100 mt-4">Add Rule</button>
+        </div>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-sm table-striped">
+        <thead>
+        <tr>
+            <th>Description</th>
+            <th>Percent</th>
+            <th>Active</th>
+            <th>Created</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for r in rules %}
+        <tr>
+            <td>{{ r.description }}</td>
+            <td>{{ r.commission_percent }}%</td>
+            <td>{{ 'Yes' if r.is_active else 'No' }}</td>
+            <td>{{ r.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="4" class="text-center text-muted">No rules.</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
