@@ -4,22 +4,33 @@
     <meta charset="utf-8">
     <title>Register - Ripple Capital Insurance ERP</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231B702D' width='100' height='100'/><text x='50' y='60' font-size='60' font-weight='bold' fill='%23FBA300' text-anchor='middle'>RC</text></svg>">
+
     <style>
-        .register-container {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: linear-gradient(135deg, #1B702D 0%, #2D9F42 50%, #1B702D 100%);
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 1rem;
+            overflow-x: hidden;
+            padding: 2rem 1rem;
         }
 
-        .register-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 3rem;
+        .register-container {
             width: 100%;
             max-width: 480px;
             animation: slideUp 0.6s ease-out;
@@ -28,7 +39,7 @@
         @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
@@ -36,31 +47,66 @@
             }
         }
 
+        .register-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 20px 60px rgba(27, 112, 45, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #1B702D, #FBA300);
+        }
+
         .register-header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
 
         .register-logo {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1rem;
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1.25rem;
+            background: linear-gradient(135deg, #1B702D 0%, #2D9F42 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            box-shadow: 0 8px 20px rgba(27, 112, 45, 0.2);
         }
 
         .register-title {
             font-size: 1.75rem;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 0.5rem;
+            font-weight: 800;
+            color: #1B702D;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.03em;
         }
 
         .register-subtitle {
             font-size: 0.95rem;
-            color: #6b7280;
+            color: #6B7280;
+            font-weight: 500;
+        }
+
+        .info-box {
+            background: #E8F5EA;
+            border-left: 4px solid #1B702D;
+            color: #155724;
+            padding: 0.9rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
         }
 
         .form-group {
@@ -69,56 +115,82 @@
 
         .form-label {
             display: block;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 0.75rem;
-            font-size: 0.95rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            letter-spacing: -0.01em;
         }
 
         .form-input {
             width: 100%;
-            padding: 0.875rem 1rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
+            padding: 0.85rem 1.1rem;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
             font-family: inherit;
+            color: #111827;
+            background: white;
+        }
+
+        .form-input::placeholder {
+            color: #9CA3AF;
         }
 
         .form-input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #1B702D;
+            box-shadow: 0 0 0 3px rgba(27, 112, 45, 0.1);
+            background: white;
         }
 
-        .form-input::placeholder {
-            color: #d1d5db;
+        .form-input.error {
+            border-color: #EF4444;
+        }
+
+        .form-input.error:focus {
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
         }
 
         .form-error {
-            color: #ef4444;
-            font-size: 0.875rem;
-            margin-top: 0.4rem;
+            color: #DC2626;
+            font-size: 0.8rem;
+            margin-top: 0.35rem;
             display: block;
+            font-weight: 500;
         }
 
         .submit-btn {
             width: 100%;
-            padding: 0.875rem 1rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            padding: 0.95rem 1.5rem;
             border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 1rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
+            color: white;
+            background: linear-gradient(135deg, #1B702D 0%, #2D9F42 100%);
+            box-shadow: 0 10px 25px rgba(27, 112, 45, 0.3);
+            letter-spacing: -0.01em;
             margin-top: 1.5rem;
         }
 
         .submit-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 14px 35px rgba(27, 112, 45, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 6px 15px rgba(27, 112, 45, 0.2);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .register-footer {
@@ -127,40 +199,46 @@
         }
 
         .register-footer-text {
-            color: #6b7280;
-            font-size: 0.95rem;
+            color: #6B7280;
+            font-weight: 500;
         }
 
         .register-footer-link {
-            color: #667eea;
+            color: #FBA300;
+            font-weight: 700;
             text-decoration: none;
-            font-weight: 600;
-            transition: color 0.3s ease;
+            transition: all 0.2s ease;
+            display: inline-block;
         }
 
         .register-footer-link:hover {
-            color: #764ba2;
+            color: #1B702D;
             text-decoration: underline;
         }
 
         .alert-banner {
-            background: #fee2e2;
-            border-left: 4px solid #ef4444;
-            color: #7f1d1d;
+            background: rgba(239, 68, 68, 0.08);
+            border-left: 4px solid #EF4444;
+            color: #7F1D1D;
             padding: 1rem;
             border-radius: 8px;
-            margin-bottom: 2rem;
-            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
         }
 
-        .info-box {
-            background: #dbeafe;
-            border-left: 4px solid #667eea;
-            color: #0c2d6b;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            font-size: 0.875rem;
+        @media (max-width: 480px) {
+            .register-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .register-title {
+                font-size: 1.5rem;
+            }
+
+            .submit-btn {
+                padding: 0.8rem 1.25rem;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
@@ -170,42 +248,44 @@
         <div class="register-header">
             <div class="register-logo">💼</div>
             <h1 class="register-title">Join Us</h1>
-            <p class="register-subtitle">Create your client account</p>
+            <p class="register-subtitle">Create your account</p>
         </div>
 
         <div class="info-box">
-            ℹ️ Register as a client to purchase and manage insurance policies with our agents.
+            ✓ Register to purchase and manage insurance policies with Ripple Capital
         </div>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert-banner">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert-banner">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
         {% endwith %}
 
         <form method="post" novalidate>
             {{ form.hidden_tag() }}
 
             <div class="form-group">
-                {{ form.full_name.label(class="form-label") }}
-                {{ form.full_name(class="form-input", placeholder="John Doe") }}
+                <label class="form-label" for="{{ form.full_name.id }}">Full Name</label>
+                {% set fn_classes = 'form-input' + (' error' if form.full_name.errors else '') %}
+                {{ form.full_name(class=fn_classes, placeholder="John Doe", required=true) }}
                 {% for error in form.full_name.errors %}
                     <span class="form-error">{{ error }}</span>
                 {% endfor %}
             </div>
 
             <div class="form-group">
-                {{ form.email.label(class="form-label") }}
-                {{ form.email(class="form-input", placeholder="your@email.com", autocomplete="email") }}
+                <label class="form-label" for="{{ form.email.id }}">Email Address</label>
+                {% set email_classes = 'form-input' + (' error' if form.email.errors else '') %}
+                {{ form.email(class=email_classes, placeholder="your@email.com", autocomplete="email", required=true) }}
                 {% for error in form.email.errors %}
                     <span class="form-error">{{ error }}</span>
                 {% endfor %}
             </div>
 
             <div class="form-group">
-                {{ form.phone.label(class="form-label") }}
+                <label class="form-label" for="{{ form.phone.id }}">Phone Number</label>
                 {{ form.phone(class="form-input", placeholder="+1 (555) 123-4567") }}
                 {% for error in form.phone.errors %}
                     <span class="form-error">{{ error }}</span>
@@ -213,17 +293,10 @@
             </div>
 
             <div class="form-group">
-                {{ form.password.label(class="form-label") }}
-                {{ form.password(class="form-input", placeholder="Secure password") }}
+                <label class="form-label" for="{{ form.password.id }}">Password</label>
+                {% set pw_classes = 'form-input' + (' error' if form.password.errors else '') %}
+                {{ form.password(class=pw_classes, placeholder="Create a secure password", required=true) }}
                 {% for error in form.password.errors %}
-                    <span class="form-error">{{ error }}</span>
-                {% endfor %}
-            </div>
-
-            <div class="form-group">
-                {{ form.confirm_password.label(class="form-label") }}
-                {{ form.confirm_password(class="form-input", placeholder="Confirm password") }}
-                {% for error in form.confirm_password.errors %}
                     <span class="form-error">{{ error }}</span>
                 {% endfor %}
             </div>
