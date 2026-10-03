@@ -295,7 +295,7 @@
                     Review the policies you have placed and their premium performance.
                 </p>
             </div>
-            <button class="add-btn" type="button" onclick="alert('Add policy functionality coming soon');">
+            <button class="add-btn" type="button" href="{{ url_for('core.add_policy') }}"
                 <i class="fas fa-plus"></i>
                 <span>Add New Policy</span>
             </button>
@@ -355,7 +355,7 @@
                                 <button
                                     type="button"
                                     class="action-btn action-btn-view"
-                                    onclick="alert('View functionality coming soon');"
+                                    href="{{ url_for('core.add_policy') }}"
                                 >
                                     <i class="fas fa-eye"></i>
                                     <span>View</span>
@@ -363,7 +363,7 @@
                                 <button
                                     type="button"
                                     class="action-btn action-btn-delete"
-                                    onclick="alert('Delete functionality coming soon');"
+                                    href="{{ url_for('core.add_policy') }}"
                                 >
                                     <i class="fas fa-trash"></i>
                                     <span>Delete</span>
@@ -382,7 +382,7 @@
             <div class="empty-text">
                 Start by creating your first insurance policy to begin tracking coverage and premiums.
             </div>
-            <button class="empty-btn" type="button" onclick="alert('Add policy functionality coming soon');">
+            <button class="empty-btn" type="button" href="{{ url_for('core.add_policy') }}"
                 <i class="fas fa-plus"></i>
                 <span>Create Your First Policy</span>
             </button>

@@ -244,7 +244,7 @@
         <div class="stat-icon">👥</div>
         <div class="stat-value">{{ users_count }}</div>
         <div class="stat-label">Total Users</div>
-        <a href="#" class="stat-action">View Users →</a>
+        <a href="{{ url_for('admin.users') }}" class="stat-action">View Users →</a>
     </div>
 
     <div class="stat-card companies">
@@ -258,14 +258,14 @@
         <div class="stat-icon">📋</div>
         <div class="stat-value">0</div>
         <div class="stat-label">Total Policies</div>
-        <a href="#" class="stat-action">View Policies →</a>
+        <a href="{{ url_for('core.policies') }}" class="stat-action">View Policies →</a>
     </div>
 
     <div class="stat-card commissions">
         <div class="stat-icon">💰</div>
         <div class="stat-value">$0.00</div>
         <div class="stat-label">Total Commission</div>
-        <a href="#" class="stat-action">View Reports →</a>
+        <a href="{{ url_for('core.reports') }}" class="stat-action">View Reports →</a>
     </div>
 </div>
 
@@ -275,7 +275,7 @@
         <span class="section-icon">⚡</span> Quick Actions
     </h3>
     <div class="quick-actions">
-        <a href="{{ url_for('admin.company_create') }}" class="btn">
+        <a href="{{ url_for('admin.add_company') }}" class="btn">
             <i class="fas fa-plus"></i> Add Company
         </a>
         <a href="{{ url_for('admin.companies') }}" class="btn btn-secondary">
@@ -307,7 +307,7 @@
             <div class="action-card-arrow">→</div>
         </a>
 
-        <a href="{{ url_for('core.agent_dashboard') }}" class="action-card">
+        <a href="{{ url_for('core.dashboard') }}" class="action-card">
             <div class="action-card-icon">👨‍💼</div>
             <div class="action-card-title">Agent Dashboard</div>
             <p class="action-card-desc">View agent policies and commissions.</p>
