@@ -190,25 +190,56 @@
             margin-bottom: 2rem;
         }
 
+        /* Logo with white background and grey-gold ribbon outer ring */
         .login-logo {
-            width: 70px;
-            height: 70px;
+            width: 100px;
+            height: 100px;
             margin: 0 auto 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 999px;
-            background: radial-gradient(circle at 30% 20%, #ffffff 0, transparent 45%),
-                        radial-gradient(circle at 70% 80%, #fbbf24 0, transparent 45%),
-                        #0f172a;
-            box-shadow: 0 12px 26px rgba(15, 23, 42, 0.6);
+            position: relative;
+            animation: pulse 2s infinite;
         }
 
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.95;
+            }
+        }
+
+        /* Outer grey-gold ribbon/ring */
+        .login-logo::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #9CA3AF 0%, #D4AF37 50%, #9CA3AF 100%);
+            padding: 6px;
+            z-index: 0;
+        }
+
+        /* Inner white container */
+        .login-logo::after {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            border-radius: 8px;
+            background: #ffffff;
+            z-index: 1;
+        }
+
+        /* Logo image */
         .login-logo img {
-            width: 60%;
-            height: 60%;
+            width: 70%;
+            height: 70%;
             object-fit: contain;
-            filter: drop-shadow(0 4px 12px rgba(27, 112, 45, 0.28));
+            position: relative;
+            z-index: 2;
+            filter: drop-shadow(0 4px 12px rgba(27, 112, 45, 0.2));
         }
 
         .login-title {
@@ -466,6 +497,11 @@
                 padding: 1.9rem 1.5rem 1.7rem;
             }
 
+            .login-logo {
+                width: 90px;
+                height: 90px;
+            }
+
             .login-title {
                 font-size: 1.3rem;
             }
@@ -599,3 +635,4 @@
 </div>
 </body>
 </html>
+
