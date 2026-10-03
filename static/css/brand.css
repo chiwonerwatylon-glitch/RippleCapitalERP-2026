@@ -1,24 +1,24 @@
 /* 
  * Ripple Capital Insurance ERP - Premium Brand Color System
- * Company Colors:
- * - Primary Green: #1B702D (Deep Professional Green)
- * - Secondary Orange: #FBA300 (Premium Gold Orange)
+ * Company Colors - CMYK:
+ * - Primary Green: C=84, M=33, Y=93, K=23 → #1B702D
+ * - Secondary Orange: C=2, M=40, Y=100, K=0 → #FBA300
  */
 
 :root {
-    /* Brand Colors */
-    --ripple-primary: #1B702D;        /* Primary Green */
-    --ripple-primary-light: #2D9F42;  /* Light Green */
-    --ripple-primary-lighter: #E8F5EA; /* Very Light Green Background */
-    --ripple-secondary: #FBA300;      /* Orange Accent */
-    --ripple-secondary-light: #FDB833;
-    --ripple-secondary-lighter: #FFF3E0; /* Orange Light Background */
-    
-    /* Gradients */
+    /* Brand Colors (Core) */
+    --ripple-primary: #1B702D;           /* Primary Green */
+    --ripple-primary-light: #2D9F42;     /* Light Green Accent (derived tint) */
+    --ripple-primary-lighter: #E8F5EA;   /* Very Light Green Background */
+    --ripple-secondary: #FBA300;         /* Premium Orange */
+    --ripple-secondary-light: #FDB833;   /* Slightly Lighter Orange */
+    --ripple-secondary-lighter: #FFF3E0; /* Soft Orange Background */
+
+    /* Mixed Gradient */
     --ripple-gradient-primary: linear-gradient(135deg, #1B702D 0%, #2D9F42 100%);
     --ripple-gradient-secondary: linear-gradient(135deg, #FBA300 0%, #FDB833 100%);
     --ripple-gradient-mixed: linear-gradient(135deg, #1B702D 0%, #FBA300 100%);
-    
+
     /* Neutral Colors */
     --ripple-dark: #0F1419;
     --ripple-gray-900: #111827;
@@ -31,19 +31,19 @@
     --ripple-gray-200: #E5E7EB;
     --ripple-gray-100: #F3F4F6;
     --ripple-gray-50: #F9FAFB;
-    
+
     /* Status Colors */
     --ripple-success: #10B981;
     --ripple-warning: #F59E0B;
     --ripple-error: #EF4444;
     --ripple-info: #3B82F6;
-    
+
     /* Shadows */
     --ripple-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --ripple-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --ripple-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     --ripple-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    --ripple-shadow-brand: 0 10px 30px rgba(27, 112, 45, 0.15);
+    --ripple-shadow-brand: 0 10px 30px rgba(27, 112, 45, 0.20); /* soft brand green */
 }
 
 /* ==================== Global Styles ==================== */
@@ -89,7 +89,7 @@ a:hover {
 .navbar-brand {
     font-size: 1.35rem;
     font-weight: 800;
-    color: white !important;
+    color: #ffffff !important;
     letter-spacing: -0.03em;
     display: flex;
     align-items: center;
@@ -110,7 +110,8 @@ a:hover {
     border-radius: 6px;
 }
 
-.navbar-nav .nav-link:hover {
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus {
     background: rgba(255, 255, 255, 0.15);
     color: var(--ripple-secondary) !important;
 }
@@ -125,7 +126,7 @@ a:hover {
 .btn-primary {
     background: var(--ripple-gradient-primary);
     border: none;
-    color: white;
+    color: #ffffff;
     font-weight: 600;
     box-shadow: var(--ripple-shadow-lg);
     transition: all 0.2s ease;
@@ -135,7 +136,7 @@ a:hover {
     background: var(--ripple-gradient-primary);
     transform: translateY(-2px);
     box-shadow: 0 14px 28px rgba(27, 112, 45, 0.25);
-    color: white;
+    color: #ffffff;
 }
 
 .btn-primary:active {
@@ -145,7 +146,7 @@ a:hover {
 .btn-secondary {
     background: var(--ripple-gradient-secondary);
     border: none;
-    color: white;
+    color: #ffffff;
     font-weight: 600;
     box-shadow: var(--ripple-shadow-lg);
     transition: all 0.2s ease;
@@ -155,7 +156,7 @@ a:hover {
     background: var(--ripple-gradient-secondary);
     transform: translateY(-2px);
     box-shadow: 0 14px 28px rgba(251, 163, 0, 0.25);
-    color: white;
+    color: #ffffff;
 }
 
 .btn-secondary:active {
@@ -165,12 +166,14 @@ a:hover {
 .btn-outline-primary {
     color: var(--ripple-primary);
     border: 2px solid var(--ripple-primary);
+    background: transparent;
+    font-weight: 600;
 }
 
 .btn-outline-primary:hover {
     background: var(--ripple-primary);
     border-color: var(--ripple-primary);
-    color: white;
+    color: #ffffff;
 }
 
 /* ==================== Cards ==================== */
@@ -180,6 +183,7 @@ a:hover {
     box-shadow: var(--ripple-shadow-md);
     border-radius: 12px;
     transition: all 0.3s ease;
+    background: #ffffff;
 }
 
 .card:hover {
@@ -190,7 +194,7 @@ a:hover {
 
 .card-header {
     background: var(--ripple-gradient-primary);
-    color: white;
+    color: #ffffff;
     border-bottom: 2px solid var(--ripple-secondary);
     border-radius: 11px 11px 0 0 !important;
     font-weight: 600;
@@ -208,7 +212,7 @@ a:hover {
 
 .form-control:focus {
     border-color: var(--ripple-primary);
-    box-shadow: 0 0 0 3px rgba(27, 112, 45, 0.1);
+    box-shadow: 0 0 0 3px rgba(27, 112, 45, 0.15);
     color: var(--ripple-gray-900);
 }
 
@@ -224,7 +228,7 @@ a:hover {
 
 .form-control.is-invalid:focus {
     border-color: var(--ripple-error);
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
 }
 
 /* ==================== Alerts ==================== */
@@ -235,6 +239,8 @@ a:hover {
     display: flex;
     align-items: flex-start;
     gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.88rem;
 }
 
 .alert-success {
@@ -266,11 +272,12 @@ a:hover {
 .table {
     border-collapse: collapse;
     font-size: 0.9rem;
+    width: 100%;
 }
 
 .table thead {
     background: var(--ripple-gradient-primary);
-    color: white;
+    color: #ffffff;
 }
 
 .table thead th {
@@ -307,22 +314,22 @@ a:hover {
 
 .badge-primary {
     background: var(--ripple-primary);
-    color: white;
+    color: #ffffff;
 }
 
 .badge-success {
     background: var(--ripple-success);
-    color: white;
+    color: #ffffff;
 }
 
 .badge-warning {
     background: var(--ripple-warning);
-    color: white;
+    color: #ffffff;
 }
 
 .badge-danger {
     background: var(--ripple-error);
-    color: white;
+    color: #ffffff;
 }
 
 /* ==================== Pagination ==================== */
@@ -342,6 +349,7 @@ a:hover {
 .pagination .page-item.active .page-link {
     background: var(--ripple-gradient-primary);
     border-color: var(--ripple-primary);
+    color: #ffffff;
 }
 
 /* ==================== Dropdowns ==================== */
@@ -360,7 +368,7 @@ a:hover {
 
 .dropdown-item.active {
     background: var(--ripple-gradient-primary);
-    color: white;
+    color: #ffffff;
 }
 
 /* ==================== Utility Classes ==================== */
@@ -400,7 +408,7 @@ a:hover {
 /* ==================== Stat Cards (Dashboard) ==================== */
 
 .stat-card {
-    background: white;
+    background: #ffffff;
     border: 1px solid var(--ripple-gray-200);
     border-radius: 12px;
     padding: 1.5rem;
@@ -444,7 +452,7 @@ a:hover {
 /* ==================== Action Cards ==================== */
 
 .action-card {
-    background: white;
+    background: #ffffff;
     border: 1.5px solid var(--ripple-gray-200);
     border-radius: 12px;
     padding: 1.25rem;
@@ -491,6 +499,7 @@ a:hover {
     background: var(--ripple-gray-200);
     border-radius: 999px;
     height: 6px;
+    overflow: hidden;
 }
 
 .progress-bar {
@@ -502,7 +511,7 @@ a:hover {
 
 .modal-header {
     background: var(--ripple-gradient-primary);
-    color: white;
+    color: #ffffff;
     border-bottom: 2px solid var(--ripple-secondary);
 }
 
@@ -574,12 +583,11 @@ a:hover {
     }
 
     body {
-        background: white;
+        background: #ffffff;
     }
 
     .card {
         box-shadow: none;
-        border: 1px solid #ccc;
+        border: 1px solid #cccccc;
     }
 }
-

@@ -1,23 +1,35 @@
 body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--ripple-gray-900);
+    background-color: var(--ripple-gray-50);
 }
 
+/* Brand the main navbar title slightly heavier, consistent with other views */
 .navbar-brand {
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: -0.02em;
 }
 
+/* Slightly softer rounding to match other cards (12px) */
 .card {
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--ripple-gray-200);
+    box-shadow: var(--ripple-shadow-sm);
 }
 
-.table-sm td, .table-sm th {
-    padding: 0.4rem 0.5rem;
+/* Compact table spacing, consistent across the system */
+.table-sm td,
+.table-sm th {
+    padding: 0.4rem 0.6rem;
+    vertical-align: middle;
+    font-size: 0.88rem;
 }
 
 /* Small screens improvements */
 @media (max-width: 576px) {
     .navbar .navbar-text {
         font-size: 0.85rem;
+        color: var(--ripple-gray-100);
     }
 
     .card-body {
@@ -26,5 +38,6 @@ body {
 
     h3 {
         font-size: 1.3rem;
+        letter-spacing: -0.01em;
     }
 }
