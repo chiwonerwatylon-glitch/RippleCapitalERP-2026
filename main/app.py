@@ -68,25 +68,6 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-DEFAULT_COMPANIES = [
-    {
-        "name": "Ripple Capital Insurance",
-        "contact_email": "info@ripplecapitalinsurance.com",
-        "phone": "555-1000",
-        "address": "1 Ripple Plaza, Main Street",
-        "website": "https://www.ripplecapitalinsurance.com",
-        "description": "Default underwriting company.",
-    },
-    {
-        "name": "Partner Insurance Company",
-        "contact_email": "info@partnerinsurance.com",
-        "phone": "555-2000",
-        "address": "25 Partner Avenue, Central Business District",
-        "website": "https://www.partnerinsurance.com",
-        "description": "Default partner underwriting company.",
-    },
-]
-
 DEFAULT_PRODUCTS = [
     {
         "name": "Motor Comprehensive",
@@ -137,40 +118,33 @@ DEFAULT_PRODUCTS = [
 
 
 def ensure_user_has_default_products(user):
-    """Create the default companies and products for a user if they have none.
+    """Create the default insurance products for a user if they have none.
 
-    Returns the user's list of products.
+    Products are generic (company_id is NULL) so each product type exists
+    exactly once per user. Returns the user's list of products.
     """
     products = InsuranceProduct.query.filter_by(owner_id=user.id).all()
     if products:
         return products
 
-    for company_data in DEFAULT_COMPANIES:
-        company = Company.query.filter_by(
-            owner_id=user.id, name=company_data["name"]
+    for product_data in DEFAULT_PRODUCTS:
+        exists = InsuranceProduct.query.filter_by(
+            owner_id=user.id,
+            company_id=None,
+            name=product_data["name"],
         ).first()
-        if not company:
-            company = Company(owner_id=user.id, **company_data)
-            db.session.add(company)
-            db.session.flush()
-
-        for product_data in DEFAULT_PRODUCTS:
-            exists = InsuranceProduct.query.filter_by(
-                owner_id=user.id,
-                company_id=company.id,
-                name=product_data["name"],
-            ).first()
-            if not exists:
-                db.session.add(
-                    InsuranceProduct(
-                        owner_id=user.id,
-                        company_id=company.id,
-                        **product_data,
-                    )
+        if not exists:
+            db.session.add(
+                InsuranceProduct(
+                    owner_id=user.id,
+                    company_id=None,
+                    **product_data,
                 )
+            )
 
     db.session.commit()
     return InsuranceProduct.query.filter_by(owner_id=user.id).all()
+
 
 
 def create_app(config_name=None):
@@ -752,7 +726,7 @@ def create_app(config_name=None):
             flash("Policies feature not available in this version.", "warning")
             return redirect(url_for("core.policies"))
         
-        # Make sure the user has the default companies and products
+        # Make sure the user has the default products
         ensure_user_has_default_products(current_user)
 
         # Get owned resources for dropdowns

@@ -5,8 +5,8 @@ Seed script to create initial admin/owner users for testing.
 Run this after database migrations. If no migrations have been generated yet,
 the script creates any missing tables so the seed can still succeed.
 """
-from main.app import create_app, db, DEFAULT_COMPANIES, DEFAULT_PRODUCTS
-from main.models import User, Company, InsuranceProduct, ROLE_OWNER, ROLE_ADMIN
+from main.app import create_app, db, DEFAULT_PRODUCTS
+from main.models import User, InsuranceProduct, ROLE_OWNER, ROLE_ADMIN
 
 
 def seed_db():
@@ -43,34 +43,25 @@ def seed_db():
             db.session.add(admin)
             print("Created admin user: admin@insurance.com / admin123")
 
-        # Ensure the owner has an id before linking companies and products
+        # Ensure the owner has an id before linking products
         db.session.flush()
 
-        for company_data in DEFAULT_COMPANIES:
-            company = Company.query.filter_by(
-                owner_id=owner.id, name=company_data["name"]
+        # Create the default products once, without tying them to a company
+        for product_data in DEFAULT_PRODUCTS:
+            exists = InsuranceProduct.query.filter_by(
+                owner_id=owner.id,
+                company_id=None,
+                name=product_data["name"],
             ).first()
-            if not company:
-                company = Company(owner_id=owner.id, **company_data)
-                db.session.add(company)
-                db.session.flush()
-                print(f"Created company: {company.name}")
-
-            for product_data in DEFAULT_PRODUCTS:
-                exists = InsuranceProduct.query.filter_by(
-                    owner_id=owner.id,
-                    company_id=company.id,
-                    name=product_data["name"],
-                ).first()
-                if not exists:
-                    db.session.add(
-                        InsuranceProduct(
-                            owner_id=owner.id,
-                            company_id=company.id,
-                            **product_data,
-                        )
+            if not exists:
+                db.session.add(
+                    InsuranceProduct(
+                        owner_id=owner.id,
+                        company_id=None,
+                        **product_data,
                     )
-                    print(f"Created product: {product_data['name']} ({company.name})")
+                )
+                print(f"Created product: {product_data['name']}")
 
         db.session.commit()
         print("Database seeding complete!")
