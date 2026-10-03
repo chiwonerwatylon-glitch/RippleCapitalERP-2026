@@ -3,7 +3,7 @@ import re
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from .models import db, User, ROLE_ADMIN
-from .utils import role_required
+from .utils import role_required, get_account_owner_id
 
 # Safely import optional models
 try:
@@ -189,7 +189,7 @@ def add_company():
 
         try:
             company = Company(
-                owner_id=current_user.id,
+                owner_id=get_account_owner_id(),
                 name=name,
                 contact_email=contact_email,
             )

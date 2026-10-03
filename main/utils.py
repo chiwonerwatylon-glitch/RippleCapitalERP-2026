@@ -1,7 +1,26 @@
 from flask import flash, redirect, url_for
 from flask_login import current_user
 from functools import wraps
-from .models import ROLE_ADMIN, ROLE_OWNER, ROLE_CLIENT
+from .models import User, ROLE_ADMIN, ROLE_OWNER, ROLE_CLIENT
+
+
+def get_account_owner_id(user=None):
+    """Return the id of the account owner whose data the user works with.
+
+    Owners are the account owner of their own data. Admin and agent users
+    belong to the primary (earliest registered, active) owner's account, so
+    every staff member reads and writes the same shared data set via owner_id.
+    """
+    user = user or current_user
+    if user.role == ROLE_OWNER:
+        return user.id
+
+    primary_owner = (
+        User.query.filter_by(role=ROLE_OWNER, is_active=True)
+        .order_by(User.id)
+        .first()
+    )
+    return primary_owner.id if primary_owner else user.id
 
 
 def role_required(*roles):

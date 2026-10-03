@@ -18,7 +18,7 @@ except ImportError:
 
 from .config import config_by_name
 from .models import db, User, ROLE_ADMIN, ROLE_CLIENT
-from .utils import role_required
+from .utils import role_required, get_account_owner_id
 
 # Safely import the models
 try:
@@ -123,27 +123,28 @@ def ensure_user_has_default_products(user):
     Products are generic (company_id is NULL) so each product type exists
     exactly once per user. Returns the user's list of products.
     """
-    products = InsuranceProduct.query.filter_by(owner_id=user.id).all()
+    account_id = get_account_owner_id(user)
+    products = InsuranceProduct.query.filter_by(owner_id=account_id).all()
     if products:
         return products
 
     for product_data in DEFAULT_PRODUCTS:
         exists = InsuranceProduct.query.filter_by(
-            owner_id=user.id,
+            owner_id=account_id,
             company_id=None,
             name=product_data["name"],
         ).first()
         if not exists:
             db.session.add(
                 InsuranceProduct(
-                    owner_id=user.id,
+                    owner_id=account_id,
                     company_id=None,
                     **product_data,
                 )
             )
 
     db.session.commit()
-    return InsuranceProduct.query.filter_by(owner_id=user.id).all()
+    return InsuranceProduct.query.filter_by(owner_id=account_id).all()
 
 
 
@@ -239,12 +240,12 @@ def create_app(config_name=None):
                     policies = Policy.query.filter_by(client_id=current_user.id).all()
                     return render_template("client_dashboard.html", policies=policies)
                 else:
-                    clients_count = Client.query.filter_by(owner_id=current_user.id).count()
-                    policies_count = Policy.query.filter_by(owner_id=current_user.id).count()
-                    companies_count = Company.query.filter_by(owner_id=current_user.id).count()
-                    products_count = InsuranceProduct.query.filter_by(owner_id=current_user.id).count()
+                    clients_count = Client.query.filter_by(owner_id=get_account_owner_id()).count()
+                    policies_count = Policy.query.filter_by(owner_id=get_account_owner_id()).count()
+                    companies_count = Company.query.filter_by(owner_id=get_account_owner_id()).count()
+                    products_count = InsuranceProduct.query.filter_by(owner_id=get_account_owner_id()).count()
                     
-                    policies = Policy.query.filter_by(owner_id=current_user.id).all()
+                    policies = Policy.query.filter_by(owner_id=get_account_owner_id()).all()
                     total_premiums = sum(p.total_premiums_paid() for p in policies) if policies else 0
                     total_commissions = sum(p.total_commission_earned() for p in policies) if policies else 0
                     
@@ -295,7 +296,7 @@ def create_app(config_name=None):
     @login_required
     def clients():
         if HAS_NEW_MODELS:
-            clients_list = Client.query.filter_by(owner_id=current_user.id).all()
+            clients_list = Client.query.filter_by(owner_id=get_account_owner_id()).all()
         else:
             clients_list = []
         return render_template("clients.html", clients=clients_list)
@@ -312,7 +313,7 @@ def create_app(config_name=None):
                         email=request.form.get("email"),
                         phone=request.form.get("phone"),
                         address=request.form.get("address"),
-                        owner_id=current_user.id
+                        owner_id=get_account_owner_id()
                     )
                     db.session.add(client)
                     db.session.commit()
@@ -351,7 +352,7 @@ def create_app(config_name=None):
             return redirect(url_for("core.clients"))
 
         client = Client.query.get_or_404(client_id)
-        if client.owner_id != current_user.id:
+        if client.owner_id != get_account_owner_id():
             flash("You don't have permission to edit this client.", "danger")
             return redirect(url_for("core.clients"))
 
@@ -392,7 +393,7 @@ def create_app(config_name=None):
             return redirect(url_for("core.clients"))
 
         client = Client.query.get_or_404(client_id)
-        if client.owner_id != current_user.id:
+        if client.owner_id != get_account_owner_id():
             flash("You don't have permission to delete this client.", "danger")
             return redirect(url_for("core.clients"))
 
@@ -412,7 +413,7 @@ def create_app(config_name=None):
     @login_required
     def companies():
         if HAS_NEW_MODELS:
-            companies_list = Company.query.filter_by(owner_id=current_user.id).all()
+            companies_list = Company.query.filter_by(owner_id=get_account_owner_id()).all()
         else:
             companies_list = []
         return render_template("companies.html", companies=companies_list)
@@ -451,7 +452,7 @@ def create_app(config_name=None):
                     address=address,
                     website=website,
                     description=description,
-                    owner_id=current_user.id,
+                    owner_id=get_account_owner_id(),
                 )
                 db.session.add(company)
                 db.session.flush()
@@ -467,7 +468,7 @@ def create_app(config_name=None):
                         if 0 <= percent <= 100:
                             db.session.add(
                                 CommissionRule(
-                                    owner_id=current_user.id,
+                                    owner_id=get_account_owner_id(),
                                     company_id=company.id,
                                     product_id=product.id,
                                     commission_percent=round(percent, 2),
@@ -508,13 +509,13 @@ def create_app(config_name=None):
             return redirect(url_for("core.companies"))
 
         company = Company.query.get_or_404(company_id)
-        if company.owner_id != current_user.id:
+        if company.owner_id != get_account_owner_id():
             flash("You don't have permission to edit this company.", "danger")
             return redirect(url_for("core.companies"))
 
         products_list = ensure_user_has_default_products(current_user)
         existing_commissions = CommissionRule.query.filter_by(
-            company_id=company_id, owner_id=current_user.id
+            company_id=company_id, owner_id=get_account_owner_id()
         ).all()
 
         if request.method == "POST":
@@ -543,7 +544,7 @@ def create_app(config_name=None):
                 for product in products_list:
                     commission_str = (request.form.get(f"commission_{product.id}") or "").strip()
                     rule = CommissionRule.query.filter_by(
-                        company_id=company_id, product_id=product.id, owner_id=current_user.id
+                        company_id=company_id, product_id=product.id, owner_id=get_account_owner_id()
                     ).first()
 
                     if commission_str:
@@ -557,7 +558,7 @@ def create_app(config_name=None):
                             else:
                                 db.session.add(
                                     CommissionRule(
-                                        owner_id=current_user.id,
+                                        owner_id=get_account_owner_id(),
                                         company_id=company_id,
                                         product_id=product.id,
                                         commission_percent=round(percent, 2),
@@ -594,7 +595,7 @@ def create_app(config_name=None):
         if not HAS_NEW_MODELS:
             return [], []
         products_list = ensure_user_has_default_products(current_user)
-        companies_list = Company.query.filter_by(owner_id=current_user.id).order_by(Company.name).all()
+        companies_list = Company.query.filter_by(owner_id=get_account_owner_id()).order_by(Company.name).all()
         return companies_list, products_list
 
     def _validate_rule_form(form, rule_id=None):
@@ -631,10 +632,10 @@ def create_app(config_name=None):
         if len(description) > 255:
             return None, "Description must be 255 characters or fewer."
 
-        product = InsuranceProduct.query.filter_by(id=product_id, owner_id=current_user.id).first()
+        product = InsuranceProduct.query.filter_by(id=product_id, owner_id=get_account_owner_id()).first()
         if not product:
             return None, "Selected product was not found."
-        company = Company.query.filter_by(id=company_id, owner_id=current_user.id).first()
+        company = Company.query.filter_by(id=company_id, owner_id=get_account_owner_id()).first()
         if not company:
             return None, "Selected company was not found."
 
@@ -657,7 +658,7 @@ def create_app(config_name=None):
     def commission_rules():
         if HAS_NEW_MODELS:
             rules = (
-                CommissionRule.query.filter_by(owner_id=current_user.id)
+                CommissionRule.query.filter_by(owner_id=get_account_owner_id())
                 .order_by(CommissionRule.created_at.desc())
                 .all()
             )
@@ -680,7 +681,7 @@ def create_app(config_name=None):
                 flash(error, "danger")
             else:
                 try:
-                    rule = CommissionRule(owner_id=current_user.id, **data)
+                    rule = CommissionRule(owner_id=get_account_owner_id(), **data)
                     db.session.add(rule)
                     db.session.commit()
                     flash("Commission rule created successfully.", "success")
@@ -705,7 +706,7 @@ def create_app(config_name=None):
             return redirect(url_for("core.commission_rules"))
 
         rule = CommissionRule.query.get_or_404(rule_id)
-        if rule.owner_id != current_user.id:
+        if rule.owner_id != get_account_owner_id():
             flash("You don't have permission to edit this commission rule.", "danger")
             return redirect(url_for("core.commission_rules"))
 
@@ -741,7 +742,7 @@ def create_app(config_name=None):
             return redirect(url_for("core.commission_rules"))
 
         rule = CommissionRule.query.get_or_404(rule_id)
-        if rule.owner_id != current_user.id:
+        if rule.owner_id != get_account_owner_id():
             flash("You don't have permission to delete this commission rule.", "danger")
             return redirect(url_for("core.commission_rules"))
 
@@ -761,7 +762,7 @@ def create_app(config_name=None):
             if current_user.role == ROLE_CLIENT:
                 policies_list = Policy.query.filter_by(client_id=current_user.id).all()
             else:
-                policies_list = Policy.query.filter_by(owner_id=current_user.id).all()
+                policies_list = Policy.query.filter_by(owner_id=get_account_owner_id()).all()
         else:
             policies_list = []
         return render_template("policies.html", policies=policies_list)
@@ -770,7 +771,7 @@ def create_app(config_name=None):
     @login_required
     def premium_remittance():
         if HAS_NEW_MODELS:
-            remittances = PremiumRemittance.query.filter_by(owner_id=current_user.id).all()
+            remittances = PremiumRemittance.query.filter_by(owner_id=get_account_owner_id()).all()
         else:
             remittances = []
         return render_template("premium_remittance.html", remittances=remittances)
@@ -779,7 +780,7 @@ def create_app(config_name=None):
     @login_required
     def add_premium_remittance():
         if HAS_NEW_MODELS:
-            policies_list = Policy.query.filter_by(owner_id=current_user.id).all()
+            policies_list = Policy.query.filter_by(owner_id=get_account_owner_id()).all()
         else:
             policies_list = []
 
@@ -791,7 +792,7 @@ def create_app(config_name=None):
                         amount=float(request.form.get("amount", 0)),
                         payment_method=request.form.get("payment_method"),
                         reference=request.form.get("reference"),
-                        owner_id=current_user.id
+                        owner_id=get_account_owner_id()
                     )
                     db.session.add(remittance)
                     db.session.commit()
@@ -807,13 +808,13 @@ def create_app(config_name=None):
     @login_required
     def reports():
         if HAS_NEW_MODELS:
-            clients_count = Client.query.filter_by(owner_id=current_user.id).count()
-            companies_count = Company.query.filter_by(owner_id=current_user.id).count()
-            policies = Policy.query.filter_by(owner_id=current_user.id).all()
+            clients_count = Client.query.filter_by(owner_id=get_account_owner_id()).count()
+            companies_count = Company.query.filter_by(owner_id=get_account_owner_id()).count()
+            policies = Policy.query.filter_by(owner_id=get_account_owner_id()).all()
             policies_count = len(policies)
             total_premiums = sum(p.total_premiums_paid() for p in policies) if policies else 0
             total_commissions = sum(p.total_commission_earned() for p in policies) if policies else 0
-            remittances = PremiumRemittance.query.filter_by(owner_id=current_user.id).all()
+            remittances = PremiumRemittance.query.filter_by(owner_id=get_account_owner_id()).all()
         else:
             clients_count = 0
             companies_count = 0
@@ -843,7 +844,7 @@ def create_app(config_name=None):
         try:
             if report_type == "premium-pdf":
                 # Generate Premium Report as PDF
-                policies = Policy.query.filter_by(owner_id=current_user.id).all()
+                policies = Policy.query.filter_by(owner_id=get_account_owner_id()).all()
                 total_premiums = sum(p.total_premiums_paid() for p in policies) if policies else 0
                 
                 filename = f"Premium_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
@@ -869,7 +870,7 @@ def create_app(config_name=None):
             
             elif report_type == "commission-pdf":
                 # Generate Commission Report
-                policies = Policy.query.filter_by(owner_id=current_user.id).all()
+                policies = Policy.query.filter_by(owner_id=get_account_owner_id()).all()
                 total_commissions = sum(p.total_commission_earned() for p in policies) if policies else 0
                 
                 filename = f"Commission_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
@@ -896,7 +897,7 @@ def create_app(config_name=None):
             
             elif report_type == "clients-excel":
                 # Generate Clients Report as CSV
-                clients = Client.query.filter_by(owner_id=current_user.id).all()
+                clients = Client.query.filter_by(owner_id=get_account_owner_id()).all()
                 
                 filename = f"Clients_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
                 content = "First Name,Last Name,Email,Phone,City,Address\n"
@@ -1007,9 +1008,9 @@ def create_app(config_name=None):
         ensure_user_has_default_products(current_user)
 
         # Get owned resources for dropdowns
-        clients_list = Client.query.filter_by(owner_id=current_user.id).all()
-        companies_list = Company.query.filter_by(owner_id=current_user.id).all()
-        products_list = InsuranceProduct.query.filter_by(owner_id=current_user.id).all()
+        clients_list = Client.query.filter_by(owner_id=get_account_owner_id()).all()
+        companies_list = Company.query.filter_by(owner_id=get_account_owner_id()).all()
+        products_list = InsuranceProduct.query.filter_by(owner_id=get_account_owner_id()).all()
         
         if request.method == "POST":
             try:
@@ -1046,7 +1047,7 @@ def create_app(config_name=None):
                 
                 # Create new policy
                 policy = Policy(
-                    owner_id=current_user.id,
+                    owner_id=get_account_owner_id(),
                     client_id=int(client_id),
                     company_id=int(company_id),
                     product_id=int(product_id),
@@ -1082,7 +1083,7 @@ def create_app(config_name=None):
         policy = Policy.query.get_or_404(policy_id)
         
         # Check ownership
-        if policy.owner_id != current_user.id and policy.client_id != current_user.id:
+        if policy.owner_id != get_account_owner_id() and policy.client_id != current_user.id:
             flash("You don't have permission to view this policy.", "danger")
             return redirect(url_for("core.policies"))
         
@@ -1107,7 +1108,7 @@ def create_app(config_name=None):
         policy = Policy.query.get_or_404(policy_id)
         
         # Check ownership
-        if policy.owner_id != current_user.id:
+        if policy.owner_id != get_account_owner_id():
             flash("You don't have permission to delete this policy.", "danger")
             return redirect(url_for("core.policies"))
         
