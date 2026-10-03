@@ -1,0 +1,585 @@
+/* 
+ * Ripple Capital Insurance ERP - Premium Brand Color System
+ * Company Colors:
+ * - Primary Green: #1B702D (Deep Professional Green)
+ * - Secondary Orange: #FBA300 (Premium Gold Orange)
+ */
+
+:root {
+    /* Brand Colors */
+    --ripple-primary: #1B702D;        /* Primary Green */
+    --ripple-primary-light: #2D9F42;  /* Light Green */
+    --ripple-primary-lighter: #E8F5EA; /* Very Light Green Background */
+    --ripple-secondary: #FBA300;      /* Orange Accent */
+    --ripple-secondary-light: #FDB833;
+    --ripple-secondary-lighter: #FFF3E0; /* Orange Light Background */
+    
+    /* Gradients */
+    --ripple-gradient-primary: linear-gradient(135deg, #1B702D 0%, #2D9F42 100%);
+    --ripple-gradient-secondary: linear-gradient(135deg, #FBA300 0%, #FDB833 100%);
+    --ripple-gradient-mixed: linear-gradient(135deg, #1B702D 0%, #FBA300 100%);
+    
+    /* Neutral Colors */
+    --ripple-dark: #0F1419;
+    --ripple-gray-900: #111827;
+    --ripple-gray-800: #1F2937;
+    --ripple-gray-700: #374151;
+    --ripple-gray-600: #4B5563;
+    --ripple-gray-500: #6B7280;
+    --ripple-gray-400: #9CA3AF;
+    --ripple-gray-300: #D1D5DB;
+    --ripple-gray-200: #E5E7EB;
+    --ripple-gray-100: #F3F4F6;
+    --ripple-gray-50: #F9FAFB;
+    
+    /* Status Colors */
+    --ripple-success: #10B981;
+    --ripple-warning: #F59E0B;
+    --ripple-error: #EF4444;
+    --ripple-info: #3B82F6;
+    
+    /* Shadows */
+    --ripple-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --ripple-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --ripple-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --ripple-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --ripple-shadow-brand: 0 10px 30px rgba(27, 112, 45, 0.15);
+}
+
+/* ==================== Global Styles ==================== */
+
+body {
+    background-color: var(--ripple-gray-50);
+    color: var(--ripple-gray-900);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==================== Typography ==================== */
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--ripple-gray-900);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+a {
+    color: var(--ripple-primary);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+a:hover {
+    color: var(--ripple-primary-light);
+    text-decoration: underline;
+}
+
+/* ==================== Navigation Bar ==================== */
+
+.navbar {
+    background: var(--ripple-gradient-primary) !important;
+    box-shadow: var(--ripple-shadow-xl);
+    border-bottom: 3px solid var(--ripple-secondary);
+    padding: 0.75rem 0;
+}
+
+.navbar-brand {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: white !important;
+    letter-spacing: -0.03em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.navbar-brand::before {
+    content: '💼';
+    font-size: 1.5rem;
+}
+
+.navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin: 0 0.25rem;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 6px;
+}
+
+.navbar-nav .nav-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--ripple-secondary) !important;
+}
+
+.navbar-text {
+    color: rgba(255, 255, 255, 0.95) !important;
+    font-weight: 500;
+}
+
+/* ==================== Buttons ==================== */
+
+.btn-primary {
+    background: var(--ripple-gradient-primary);
+    border: none;
+    color: white;
+    font-weight: 600;
+    box-shadow: var(--ripple-shadow-lg);
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: var(--ripple-gradient-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(27, 112, 45, 0.25);
+    color: white;
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: var(--ripple-gradient-secondary);
+    border: none;
+    color: white;
+    font-weight: 600;
+    box-shadow: var(--ripple-shadow-lg);
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: var(--ripple-gradient-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(251, 163, 0, 0.25);
+    color: white;
+}
+
+.btn-secondary:active {
+    transform: translateY(0);
+}
+
+.btn-outline-primary {
+    color: var(--ripple-primary);
+    border: 2px solid var(--ripple-primary);
+}
+
+.btn-outline-primary:hover {
+    background: var(--ripple-primary);
+    border-color: var(--ripple-primary);
+    color: white;
+}
+
+/* ==================== Cards ==================== */
+
+.card {
+    border: 1px solid var(--ripple-gray-200);
+    box-shadow: var(--ripple-shadow-md);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    border-color: var(--ripple-primary);
+    box-shadow: var(--ripple-shadow-brand);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background: var(--ripple-gradient-primary);
+    color: white;
+    border-bottom: 2px solid var(--ripple-secondary);
+    border-radius: 11px 11px 0 0 !important;
+    font-weight: 600;
+}
+
+/* ==================== Forms ==================== */
+
+.form-control {
+    border: 1.5px solid var(--ripple-gray-200);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: var(--ripple-primary);
+    box-shadow: 0 0 0 3px rgba(27, 112, 45, 0.1);
+    color: var(--ripple-gray-900);
+}
+
+.form-label {
+    color: var(--ripple-gray-700);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-control.is-invalid {
+    border-color: var(--ripple-error);
+}
+
+.form-control.is-invalid:focus {
+    border-color: var(--ripple-error);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* ==================== Alerts ==================== */
+
+.alert {
+    border: 1px solid transparent;
+    border-radius: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.alert-success {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: var(--ripple-success);
+    color: #047857;
+}
+
+.alert-danger {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: var(--ripple-error);
+    color: #991B1B;
+}
+
+.alert-warning {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: var(--ripple-warning);
+    color: #92400E;
+}
+
+.alert-info {
+    background: rgba(59, 130, 246, 0.08);
+    border-color: var(--ripple-info);
+    color: #1E40AF;
+}
+
+/* ==================== Tables ==================== */
+
+.table {
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.table thead {
+    background: var(--ripple-gradient-primary);
+    color: white;
+}
+
+.table thead th {
+    border: none;
+    font-weight: 700;
+    padding: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8rem;
+}
+
+.table tbody tr {
+    border-bottom: 1px solid var(--ripple-gray-200);
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background: var(--ripple-primary-lighter);
+}
+
+.table td {
+    padding: 0.85rem 1rem;
+    vertical-align: middle;
+}
+
+/* ==================== Badges & Pills ==================== */
+
+.badge {
+    font-weight: 600;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+}
+
+.badge-primary {
+    background: var(--ripple-primary);
+    color: white;
+}
+
+.badge-success {
+    background: var(--ripple-success);
+    color: white;
+}
+
+.badge-warning {
+    background: var(--ripple-warning);
+    color: white;
+}
+
+.badge-danger {
+    background: var(--ripple-error);
+    color: white;
+}
+
+/* ==================== Pagination ==================== */
+
+.pagination .page-link {
+    color: var(--ripple-primary);
+    border: 1px solid var(--ripple-gray-300);
+    transition: all 0.2s ease;
+}
+
+.pagination .page-link:hover {
+    background: var(--ripple-primary-lighter);
+    color: var(--ripple-primary);
+    border-color: var(--ripple-primary);
+}
+
+.pagination .page-item.active .page-link {
+    background: var(--ripple-gradient-primary);
+    border-color: var(--ripple-primary);
+}
+
+/* ==================== Dropdowns ==================== */
+
+.dropdown-menu {
+    border: 1px solid var(--ripple-gray-200);
+    box-shadow: var(--ripple-shadow-lg);
+    border-radius: 8px;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background: var(--ripple-primary-lighter);
+    color: var(--ripple-primary);
+}
+
+.dropdown-item.active {
+    background: var(--ripple-gradient-primary);
+    color: white;
+}
+
+/* ==================== Utility Classes ==================== */
+
+.text-primary {
+    color: var(--ripple-primary) !important;
+}
+
+.bg-primary-light {
+    background: var(--ripple-primary-lighter) !important;
+}
+
+.bg-primary {
+    background: var(--ripple-gradient-primary) !important;
+}
+
+.bg-secondary {
+    background: var(--ripple-gradient-secondary) !important;
+}
+
+.border-primary {
+    border-color: var(--ripple-primary) !important;
+}
+
+.border-top-brand {
+    border-top: 3px solid var(--ripple-secondary) !important;
+}
+
+.text-success {
+    color: var(--ripple-success) !important;
+}
+
+.text-error {
+    color: var(--ripple-error) !important;
+}
+
+/* ==================== Stat Cards (Dashboard) ==================== */
+
+.stat-card {
+    background: white;
+    border: 1px solid var(--ripple-gray-200);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    box-shadow: var(--ripple-shadow-md);
+}
+
+.stat-card:hover {
+    border-color: var(--ripple-primary);
+    box-shadow: var(--ripple-shadow-brand);
+    transform: translateY(-4px);
+}
+
+.stat-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: var(--ripple-primary-lighter);
+    color: var(--ripple-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-card-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--ripple-gray-900);
+}
+
+.stat-card-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ripple-gray-600);
+}
+
+/* ==================== Action Cards ==================== */
+
+.action-card {
+    background: white;
+    border: 1.5px solid var(--ripple-gray-200);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.action-card:hover {
+    border-color: var(--ripple-secondary);
+    box-shadow: 0 10px 30px rgba(251, 163, 0, 0.15);
+    transform: translateY(-4px);
+}
+
+.action-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--ripple-secondary-lighter);
+    color: var(--ripple-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.action-card-title {
+    font-weight: 700;
+    color: var(--ripple-gray-900);
+    font-size: 1rem;
+}
+
+.action-card-desc {
+    font-size: 0.85rem;
+    color: var(--ripple-gray-500);
+}
+
+/* ==================== Progress Bars ==================== */
+
+.progress {
+    background: var(--ripple-gray-200);
+    border-radius: 999px;
+    height: 6px;
+}
+
+.progress-bar {
+    background: var(--ripple-gradient-primary);
+    border-radius: 999px;
+}
+
+/* ==================== Modals ==================== */
+
+.modal-header {
+    background: var(--ripple-gradient-primary);
+    color: white;
+    border-bottom: 2px solid var(--ripple-secondary);
+}
+
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+/* ==================== Responsive Design ==================== */
+
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+
+    .stat-card {
+        padding: 1.25rem 1rem;
+    }
+
+    .stat-card-value {
+        font-size: 1.5rem;
+    }
+
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    h2 {
+        font-size: 1.4rem;
+    }
+}
+
+/* ==================== Animations ==================== */
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.animate-slide-in {
+    animation: slideInUp 0.4s ease-out;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* ==================== Print Styles ==================== */
+
+@media print {
+    .navbar,
+    .btn,
+    .alert {
+        display: none;
+    }
+
+    body {
+        background: white;
+    }
+
+    .card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+}
+
