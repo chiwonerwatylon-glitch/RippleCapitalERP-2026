@@ -3,28 +3,119 @@
 {% block title %}Policy {{ policy.policy_number if policy else 'Details' }} - Ripple Capital Insurance ERP{% endblock %}
 
 {% block page_title %}{% if policy %}Policy #{{ policy.policy_number }}{% else %}Create New Policy{% endif %}{% endblock %}
-
 {% block page_subtitle %}{% if policy %}View and manage policy details{% else %}Add a new insurance policy{% endif %}{% endblock %}
 
 {% block content %}
 <style>
-    .content-card {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        margin-bottom: 2rem;
+    :root {
+        /* Ripple brand tokens (if not already global) */
+        --ripple-primary: #1B702D;
+        --ripple-primary-light: #2D9F42;
+        --ripple-primary-lighter: #E8F5EA;
+        --ripple-secondary: #FBA300;
+        --ripple-secondary-lighter: #FFF3E0;
+
+        --ripple-gray-900: #111827;
+        --ripple-gray-800: #1F2937;
+        --ripple-gray-700: #374151;
+        --ripple-gray-600: #4B5563;
+        --ripple-gray-500: #6B7280;
+        --ripple-gray-400: #9CA3AF;
+        --ripple-gray-300: #D1D5DB;
+        --ripple-gray-200: #E5E7EB;
+        --ripple-gray-100: #F3F4F6;
+        --ripple-gray-50: #F9FAFB;
+
+        --ripple-shadow-md: 0 10px 25px rgba(15, 23, 42, 0.08);
+        --ripple-shadow-strong: 0 22px 45px rgba(15, 23, 42, 0.18);
     }
 
-    .card-title {
-        font-size: 1.25rem;
+    .policy-shell {
+        max-width: 1120px;
+        margin: 0 auto;
+    }
+
+    .content-card,
+    .form-section {
+        background: #ffffff;
+        border-radius: 1rem;
+        padding: 1.9rem 1.9rem 2.1rem;
+        box-shadow: var(--ripple-shadow-md), 0 0 0 1px rgba(148, 163, 184, 0.14);
+        border: 1px solid var(--ripple-gray-200);
+        margin-bottom: 1.8rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .content-card:first-of-type::before,
+    .form-section:first-of-type::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 12%;
+        right: 12%;
+        height: 4px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--ripple-primary), var(--ripple-secondary));
+    }
+
+    .card-title,
+    .form-section-title {
+        font-size: 1.05rem;
         font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid #e5e7eb;
+        color: var(--ripple-gray-900);
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.9rem;
+        border-bottom: 1px solid var(--ripple-gray-200);
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
     }
 
+    .card-title span.icon,
+    .form-section-title span.icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--ripple-primary-lighter);
+        color: var(--ripple-primary);
+        font-size: 1rem;
+    }
+
+    /* Policy meta grid (view mode) */
+    .policy-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.3rem 1.4rem;
+        margin-bottom: 1.8rem;
+    }
+
+    .policy-item {
+        padding: 0.9rem 1rem;
+        background: var(--ripple-gray-50);
+        border-radius: 0.75rem;
+        border-left: 4px solid var(--ripple-primary);
+    }
+
+    .policy-item-label {
+        font-size: 0.8rem;
+        color: var(--ripple-gray-500);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.35rem;
+    }
+
+    .policy-item-value {
+        font-size: 1.02rem;
+        font-weight: 700;
+        color: var(--ripple-gray-900);
+    }
+
+    /* Tables (premiums & commissions) */
     .table-responsive {
         overflow-x: auto;
     }
@@ -33,31 +124,34 @@
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
+        font-size: 0.9rem;
     }
 
     thead {
-        background: #f9fafb;
+        background: var(--ripple-gray-50);
     }
 
     th {
-        padding: 1rem;
+        padding: 0.9rem 0.9rem;
         text-align: left;
-        font-weight: 600;
-        color: #374151;
-        border-bottom: 2px solid #e5e7eb;
-        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--ripple-gray-700);
+        border-bottom: 1px solid var(--ripple-gray-200);
+        font-size: 0.78rem;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
     }
 
     td {
-        padding: 1rem;
-        border-bottom: 1px solid #e5e7eb;
-        color: #6b7280;
+        padding: 0.9rem 0.9rem;
+        border-bottom: 1px solid var(--ripple-gray-100);
+        color: var(--ripple-gray-600);
+        vertical-align: middle;
     }
 
     tbody tr:hover {
-        background: #f9fafb;
+        background: var(--ripple-gray-50);
     }
 
     tbody tr:last-child td {
@@ -66,190 +160,235 @@
 
     .empty-state {
         text-align: center;
-        padding: 2rem;
-        color: #6b7280;
+        padding: 1.6rem 1rem;
+        color: var(--ripple-gray-600);
+        font-size: 0.9rem;
     }
 
-    .policy-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
+    .premium-amount {
+        font-weight: 700;
+        color: #0f766e;
     }
 
-    .policy-item {
-        padding: 1rem;
-        background: #f9fafb;
-        border-radius: 8px;
-        border-left: 4px solid #667eea;
+    .commission-amount {
+        font-weight: 700;
+        color: var(--ripple-secondary);
     }
 
-    .policy-item-label {
-        font-size: 0.85rem;
-        color: #6b7280;
+    /* Status pill */
+    .status-pill {
+        display: inline-block;
+        padding: 0.35rem 0.8rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
         font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 0.5rem;
     }
 
-    .policy-item-value {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: #1f2937;
+    .status-active {
+        background: #d1fae5;
+        color: #065f46;
     }
 
-    .form-section {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    .status-expired {
+        background: #fee2e2;
+        color: #7f1d1d;
     }
 
-    .form-section-title {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid #e5e7eb;
+    .status-pending {
+        background: #fef3c7;
+        color: #78350f;
     }
 
+    /* Form layout (create mode) */
     .form-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.4rem 1.6rem;
     }
 
     .form-group {
-        margin-bottom: 1rem;
+        margin-bottom: 0.4rem;
     }
 
     .form-label {
         display: block;
         font-weight: 600;
-        color: #374151;
-        margin-bottom: 0.5rem;
-        font-size: 0.95rem;
+        color: var(--ripple-gray-800);
+        margin-bottom: 0.45rem;
+        font-size: 0.9rem;
     }
 
     .form-input,
     .form-select {
         width: 100%;
-        padding: 0.75rem 1rem;
-        border: 1.5px solid #e5e7eb;
-        border-radius: 8px;
-        font-size: 1rem;
+        padding: 0.75rem 0.95rem;
+        border: 1.6px solid var(--ripple-gray-200);
+        border-radius: 0.7rem;
+        font-size: 0.95rem;
         font-family: inherit;
-        transition: all 0.3s ease;
-        background: white;
+        transition: border 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        background: #ffffff;
+        color: var(--ripple-gray-900);
+    }
+
+    .form-input::placeholder {
+        color: var(--ripple-gray-400);
     }
 
     .form-input:focus,
     .form-select:focus {
         outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: var(--ripple-primary);
+        box-shadow:
+            0 0 0 1px var(--ripple-primary),
+            0 0 0 4px rgba(27, 112, 45, 0.15);
+        background: #ffffff;
     }
 
     .form-error {
-        color: #ef4444;
-        font-size: 0.875rem;
-        margin-top: 0.4rem;
+        color: #b91c1c;
+        font-size: 0.8rem;
+        margin-top: 0.35rem;
         display: block;
+        font-weight: 500;
+    }
+
+    .form-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
     }
 
     .btn {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
         padding: 0.75rem 1.75rem;
         border: none;
-        border-radius: 8px;
+        border-radius: 999px;
         font-weight: 600;
         cursor: pointer;
         text-decoration: none;
-        transition: all 0.3s ease;
-        font-size: 1rem;
+        transition: all 0.2s ease;
+        font-size: 0.95rem;
+        white-space: nowrap;
     }
 
     .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
+        color: #ffffff;
+        box-shadow: 0 12px 28px rgba(27, 112, 45, 0.45);
     }
 
     .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        transform: translateY(-1px);
+        box-shadow: 0 16px 34px rgba(27, 112, 45, 0.65);
     }
 
     .btn-secondary {
-        background: #e5e7eb;
-        color: #374151;
-        margin-left: 1rem;
+        background: #ffffff;
+        color: var(--ripple-gray-800);
+        border: 1px solid var(--ripple-gray-300);
     }
 
     .btn-secondary:hover {
-        background: #d1d5db;
+        background: var(--ripple-gray-100);
+        border-color: var(--ripple-primary);
+        color: var(--ripple-primary);
     }
 
     @media (max-width: 768px) {
-        .form-grid,
-        .policy-grid {
+        .content-card,
+        .form-section {
+            padding: 1.6rem 1.4rem 1.8rem;
+        }
+
+        .policy-grid,
+        .form-grid {
             grid-template-columns: 1fr;
         }
 
-        .form-section,
-        .content-card {
-            padding: 1.5rem;
+        .form-actions {
+            flex-direction: column;
         }
 
-        .btn-secondary {
-            margin-left: 0;
-            margin-top: 0.5rem;
+        .btn {
+            width: 100%;
+            text-align: center;
         }
     }
 </style>
 
+<div class="policy-shell">
 {% if policy %}
     <!-- Viewing Existing Policy -->
-    <div class="policy-grid">
-        <div class="policy-item">
-            <div class="policy-item-label">Client Name</div>
-            <div class="policy-item-value">{{ policy.client.full_name }}</div>
-        </div>
-        <div class="policy-item">
-            <div class="policy-item-label">Insurance Company</div>
-            <div class="policy-item-value">{{ policy.company.name }}</div>
-        </div>
-        <div class="policy-item">
-            <div class="policy-item-label">Product Name</div>
-            <div class="policy-item-value">{{ policy.product_name }}</div>
-        </div>
-        <div class="policy-item">
-            <div class="policy-item-label">Coverage Amount</div>
-            <div class="policy-item-value">${{ "%.2f"|format(policy.coverage_amount) }}</div>
-        </div>
-        <div class="policy-item">
-            <div class="policy-item-label">Premium Amount</div>
-            <div class="policy-item-value">${{ "%.2f"|format(policy.premium_amount) }}</div>
-        </div>
-        <div class="policy-item">
-            <div class="policy-item-label">Status</div>
-            <div class="policy-item-value">
-                <span style="background: {% if policy.status == 'active' %}#d1fae5{% elif policy.status == 'expired' %}#fee2e2{% else %}#fef3c7{% endif %}; color: {% if policy.status == 'active' %}#065f46{% elif policy.status == 'expired' %}#7f1d1d{% else %}#78350f{% endif %}; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; display: inline-block;">
-                    {{ policy.status|upper }}
-                </span>
+    <section class="content-card">
+        <h3 class="card-title">
+            <span class="icon">📋</span>
+            Policy Overview
+        </h3>
+        <div class="policy-grid">
+            <div class="policy-item">
+                <div class="policy-item-label">Client Name</div>
+                <div class="policy-item-value">
+                    {{ policy.client.full_name if policy.client and policy.client.full_name is defined else (policy.client.first_name ~ ' ' ~ policy.client.last_name) if policy.client else 'N/A' }}
+                </div>
+            </div>
+            <div class="policy-item">
+                <div class="policy-item-label">Insurance Company</div>
+                <div class="policy-item-value">
+                    {{ policy.company.name if policy.company else 'N/A' }}
+                </div>
+            </div>
+            <div class="policy-item">
+                <div class="policy-item-label">Product Name</div>
+                <div class="policy-item-value">
+                    {{ policy.product_name or 'N/A' }}
+                </div>
+            </div>
+            <div class="policy-item">
+                <div class="policy-item-label">Coverage Amount</div>
+                <div class="policy-item-value">
+                    ${{ "%.2f"|format(policy.coverage_amount or 0) }}
+                </div>
+            </div>
+            <div class="policy-item">
+                <div class="policy-item-label">Premium Amount</div>
+                <div class="policy-item-value">
+                    ${{ "%.2f"|format(policy.premium_amount or 0) }}
+                </div>
+            </div>
+            <div class="policy-item">
+                <div class="policy-item-label">Status</div>
+                <div class="policy-item-value">
+                    {% set status = policy.status or 'active' %}
+                    {% set status_lower = status|string|lower %}
+                    <span class="status-pill
+                        {% if 'active' in status_lower %}
+                            status-active
+                        {% elif 'expired' in status_lower or 'cancel' in status_lower %}
+                            status-expired
+                        {% else %}
+                            status-pending
+                        {% endif %}
+                    ">
+                        {{ status|upper }}
+                    </span>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
 
     <!-- Premiums Section -->
-    <div class="content-card">
-        <h3 class="card-title">💰 Premium Transactions</h3>
+    <section class="content-card">
+        <h3 class="card-title">
+            <span class="icon">💰</span>
+            Premium Transactions
+        </h3>
         {% if premiums %}
             <div class="table-responsive">
-                <table>
+                <table aria-label="Premium transactions">
                     <thead>
                         <tr>
                             <th>Date Received</th>
@@ -262,14 +401,22 @@
                     <tbody>
                         {% for premium in premiums %}
                             <tr>
-                                <td>{{ premium.date_received.strftime('%b %d, %Y') }}</td>
-                                <td><strong>${{ "%.2f"|format(premium.amount) }}</strong></td>
+                                <td>
+                                    {{ premium.date_received.strftime('%b %d, %Y') if premium.date_received else 'N/A' }}
+                                </td>
+                                <td>
+                                    <span class="premium-amount">
+                                        ${{ "%.2f"|format(premium.amount or 0) }}
+                                    </span>
+                                </td>
                                 <td>{{ premium.payment_method or 'N/A' }}</td>
                                 <td>{{ premium.reference or '-' }}</td>
                                 <td>
-                                    <span style="color: {% if premium.is_remitted_to_company %}#10b981{% else %}#ef4444{% endif %};">
-                                        {{ 'Yes' if premium.is_remitted_to_company else 'No' }}
-                                    </span>
+                                    {% if premium.is_remitted_to_company %}
+                                        <span style="color: #10B981; font-weight: 600;">Yes</span>
+                                    {% else %}
+                                        <span style="color: #EF4444; font-weight: 600;">No</span>
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}
@@ -278,17 +425,20 @@
             </div>
         {% else %}
             <div class="empty-state">
-                <p>No premium transactions recorded yet</p>
+                No premium transactions recorded yet for this policy.
             </div>
         {% endif %}
-    </div>
+    </section>
 
     <!-- Commissions Section -->
-    <div class="content-card">
-        <h3 class="card-title">📊 Commission Transactions</h3>
+    <section class="content-card">
+        <h3 class="card-title">
+            <span class="icon">📊</span>
+            Commission Transactions
+        </h3>
         {% if commissions %}
             <div class="table-responsive">
-                <table>
+                <table aria-label="Commission transactions">
                     <thead>
                         <tr>
                             <th>Date Earned</th>
@@ -299,8 +449,14 @@
                     <tbody>
                         {% for commission in commissions %}
                             <tr>
-                                <td>{{ commission.date_earned.strftime('%b %d, %Y') }}</td>
-                                <td><strong style="color: #667eea;">${{ "%.2f"|format(commission.amount) }}</strong></td>
+                                <td>
+                                    {{ commission.date_earned.strftime('%b %d, %Y') if commission.date_earned else 'N/A' }}
+                                </td>
+                                <td>
+                                    <span class="commission-amount">
+                                        ${{ "%.2f"|format(commission.amount or 0) }}
+                                    </span>
+                                </td>
                                 <td>{{ commission.notes or '-' }}</td>
                             </tr>
                         {% endfor %}
@@ -309,112 +465,145 @@
             </div>
         {% else %}
             <div class="empty-state">
-                <p>No commissions recorded yet</p>
+                No commissions recorded yet for this policy.
             </div>
         {% endif %}
-    </div>
+    </section>
 
 {% else %}
     <!-- Creating New Policy -->
-    <form method="post" novalidate>
-        {{ form.hidden_tag() }}
+    <div class="policy-shell">
+        <form method="post" novalidate>
+            {{ form.hidden_tag() }}
 
-        <!-- Basic Information -->
-        <div class="form-section">
-            <h3 class="form-section-title">📋 Basic Information</h3>
-            <div class="form-grid">
-                <div class="form-group">
-                    {{ form.policy_number.label(class="form-label") }}
-                    {{ form.policy_number(class="form-input", placeholder="POL-2024-001") }}
-                    {% for error in form.policy_number.errors %}
-                        <span class="form-error">{{ error }}</span>
-                    {% endfor %}
+            <!-- Basic Information -->
+            <section class="form-section">
+                <h3 class="form-section-title">
+                    <span class="icon">📋</span>
+                    Basic Information
+                </h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        {{ form.policy_number.label(class="form-label") }}
+                        {{ form.policy_number(
+                            class="form-input",
+                            placeholder="POL-2024-001"
+                        ) }}
+                        {% for error in form.policy_number.errors %}
+                            <span class="form-error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.client_id.label(class="form-label") }}
+                        {{ form.client_id(class="form-select") }}
+                        {% for error in form.client_id.errors %}
+                            <span class="form-error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.company_id.label(class="form-label") }}
+                        {{ form.company_id(class="form-select") }}
+                        {% for error in form.company_id.errors %}
+                            <span class="form-error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
                 </div>
+            </section>
 
-                <div class="form-group">
-                    {{ form.client_id.label(class="form-label") }}
-                    {{ form.client_id(class="form-select") }}
-                    {% for error in form.client_id.errors %}
-                        <span class="form-error">{{ error }}</span>
-                    {% endfor %}
+            <!-- Product Information -->
+            <section class="form-section">
+                <h3 class="form-section-title">
+                    <span class="icon">🏆</span>
+                    Product Details
+                </h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        {{ form.product_name.label(class="form-label") }}
+                        {{ form.product_name(
+                            class="form-input",
+                            placeholder="Life Insurance Plan"
+                        ) }}
+                        {% for error in form.product_name.errors %}
+                            <span class="form-error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.coverage_amount.label(class="form-label") }}
+                        {{ form.coverage_amount(
+                            class="form-input",
+                            placeholder="500000",
+                            type="number",
+                            step="0.01",
+                            min="0"
+                        ) }}
+                        {% for error in form.coverage_amount.errors %}
+                            <span class="form-error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.premium_amount.label(class="form-label") }}
+                        {{ form.premium_amount(
+                            class="form-input",
+                            placeholder="5000",
+                            type="number",
+                            step="0.01",
+                            min="0"
+                        ) }}
+                        {% for error in form.premium_amount.errors %}
+                            <span class="form-error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
                 </div>
+            </section>
 
-                <div class="form-group">
-                    {{ form.company_id.label(class="form-label") }}
-                    {{ form.company_id(class="form-select") }}
-                    {% for error in form.company_id.errors %}
-                        <span class="form-error">{{ error }}</span>
-                    {% endfor %}
+            <!-- Premium & Coverage Dates -->
+            <section class="form-section">
+                <h3 class="form-section-title">
+                    <span class="icon">📅</span>
+                    Coverage Period
+                </h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        {{ form.premium_frequency.label(class="form-label") }}
+                        {{ form.premium_frequency(class="form-select") }}
+                        {% for error in form.premium_frequency.errors %}
+                            <span class="form-error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.start_date.label(class="form-label") }}
+                        {{ form.start_date(class="form-input", type="date") }}
+                        {% for error in form.start_date.errors %}
+                            <span class="form-error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.end_date.label(class="form-label") }}
+                        {{ form.end_date(class="form-input", type="date") }}
+                        {% for error in form.end_date.errors %}
+                            <span class="form-error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
-        </div>
+            </section>
 
-        <!-- Product Information -->
-        <div class="form-section">
-            <h3 class="form-section-title">🏆 Product Details</h3>
-            <div class="form-grid">
-                <div class="form-group">
-                    {{ form.product_name.label(class="form-label") }}
-                    {{ form.product_name(class="form-input", placeholder="Life Insurance Plan") }}
-                    {% for error in form.product_name.errors %}
-                        <span class="form-error">{{ error }}</span>
-                    {% endfor %}
+            <!-- Actions -->
+            <section class="form-section">
+                <div class="form-actions">
+                    {{ form.submit(class="btn btn-primary", value="💾 Save Policy") }}
+                    <a href="{{ url_for('core.agent_dashboard') }}" class="btn btn-secondary">
+                        Cancel
+                    </a>
                 </div>
-
-                <div class="form-group">
-                    {{ form.coverage_amount.label(class="form-label") }}
-                    {{ form.coverage_amount(class="form-input", placeholder="500000", type="number", step="0.01") }}
-                    {% for error in form.coverage_amount.errors %}
-                        <span class="form-error">{{ error }}</span>
-                    {% endfor %}
-                </div>
-
-                <div class="form-group">
-                    {{ form.premium_amount.label(class="form-label") }}
-                    {{ form.premium_amount(class="form-input", placeholder="5000", type="number", step="0.01") }}
-                    {% for error in form.premium_amount.errors %}
-                        <span class="form-error">{{ error }}</span>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Premium & Coverage Dates -->
-        <div class="form-section">
-            <h3 class="form-section-title">📅 Coverage Period</h3>
-            <div class="form-grid">
-                <div class="form-group">
-                    {{ form.premium_frequency.label(class="form-label") }}
-                    {{ form.premium_frequency(class="form-select") }}
-                    {% for error in form.premium_frequency.errors %}
-                        <span class="form-error">{{ error }}</span>
-                    {% endfor %}
-                </div>
-
-                <div class="form-group">
-                    {{ form.start_date.label(class="form-label") }}
-                    {{ form.start_date(class="form-input", type="date") }}
-                    {% for error in form.start_date.errors %}
-                        <span class="form-error">{{ error }}</span>
-                    {% endfor %}
-                </div>
-
-                <div class="form-group">
-                    {{ form.end_date.label(class="form-label") }}
-                    {{ form.end_date(class="form-input", type="date") }}
-                    {% for error in form.end_date.errors %}
-                        <span class="form-error">{{ error }}</span>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="form-section">
-            {{ form.submit(class="btn btn-primary", value="💾 Save Policy") }}
-            <a href="{{ url_for('core.agent_dashboard') }}" class="btn btn-secondary">Cancel</a>
-        </div>
-    </form>
+            </section>
+        </form>
+    </div>
 {% endif %}
+</div>
 {% endblock %}
-

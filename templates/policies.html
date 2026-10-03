@@ -3,175 +3,391 @@
 {% block title %}Policies - Ripple Capital Insurance ERP{% endblock %}
 
 {% block page_title %}Policies{% endblock %}
-
-{% block page_subtitle %}Manage your insurance policies{% endblock %}
+{% block page_subtitle %}Manage insurance policies across your portfolio{% endblock %}
 
 {% block content %}
 <style>
+    :root {
+        /* Ripple brand tokens (if not already global) */
+        --ripple-primary: #1B702D;
+        --ripple-primary-light: #2D9F42;
+        --ripple-primary-lighter: #E8F5EA;
+        --ripple-secondary: #FBA300;
+        --ripple-secondary-lighter: #FFF3E0;
+
+        --ripple-gray-900: #111827;
+        --ripple-gray-800: #1F2937;
+        --ripple-gray-700: #374151;
+        --ripple-gray-600: #4B5563;
+        --ripple-gray-500: #6B7280;
+        --ripple-gray-400: #9CA3AF;
+        --ripple-gray-300: #D1D5DB;
+        --ripple-gray-200: #E5E7EB;
+        --ripple-gray-100: #F3F4F6;
+        --ripple-gray-50: #F9FAFB;
+
+        --ripple-shadow-md: 0 10px 25px rgba(15, 23, 42, 0.08);
+        --ripple-shadow-strong: 0 22px 45px rgba(15, 23, 42, 0.18);
+    }
+
+    .policies-shell {
+        max-width: 1120px;
+        margin: 0 auto;
+    }
+
     .policies-container {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        background: #ffffff;
+        border-radius: 1rem;
+        padding: 1.8rem 1.8rem 2rem;
+        box-shadow: var(--ripple-shadow-md), 0 0 0 1px rgba(148, 163, 184, 0.14);
+        border: 1px solid var(--ripple-gray-200);
     }
 
     .header-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 2rem;
-        padding-bottom: 1.5rem;
-        border-bottom: 2px solid #e5e7eb;
+        margin-bottom: 1.75rem;
+        padding-bottom: 1.3rem;
+        border-bottom: 1px solid var(--ripple-gray-200);
+        flex-wrap: wrap;
+        gap: 0.75rem;
     }
 
     .header-title {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
         font-weight: 700;
-        color: #1f2937;
+        color: var(--ripple-gray-900);
+        letter-spacing: -0.02em;
+    }
+
+    .header-subtext {
+        font-size: 0.85rem;
+        color: var(--ripple-gray-500);
+        margin-top: 0.15rem;
     }
 
     .add-btn {
-        display: inline-block;
-        padding: 0.75rem 1.75rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.6rem;
+        background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
+        color: #ffffff;
         border: none;
-        border-radius: 8px;
+        border-radius: 999px;
         font-weight: 600;
         cursor: pointer;
         text-decoration: none;
-        transition: all 0.3s ease;
-        font-size: 0.95rem;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        font-size: 0.9rem;
+        box-shadow: 0 10px 24px rgba(27, 112, 45, 0.45);
+        white-space: nowrap;
     }
 
     .add-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        transform: translateY(-1px);
+        box-shadow: 0 14px 30px rgba(27, 112, 45, 0.65);
+    }
+
+    .policies-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 0.75rem;
+        border: 1px solid var(--ripple-gray-200);
+        background: #ffffff;
     }
 
     .policies-table {
         width: 100%;
         border-collapse: collapse;
-    }
-
-    .policies-table thead th {
-        background: #f9fafb;
-        padding: 1rem;
-        text-align: left;
-        font-weight: 600;
-        color: #374151;
-        border-bottom: 2px solid #e5e7eb;
+        border-spacing: 0;
         font-size: 0.9rem;
     }
 
+    .policies-table thead {
+        background: var(--ripple-gray-50);
+    }
+
+    .policies-table thead th {
+        padding: 0.9rem 0.9rem;
+        text-align: left;
+        font-weight: 700;
+        color: var(--ripple-gray-700);
+        border-bottom: 1px solid var(--ripple-gray-200);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+    }
+
     .policies-table tbody td {
-        padding: 1rem;
-        border-bottom: 1px solid #e5e7eb;
-        color: #6b7280;
+        padding: 0.9rem 0.9rem;
+        border-bottom: 1px solid var(--ripple-gray-100);
+        color: var(--ripple-gray-600);
+        vertical-align: middle;
+    }
+
+    .policies-table tbody tr:last-child td {
+        border-bottom: none;
     }
 
     .policies-table tbody tr:hover {
-        background: #f9fafb;
+        background: var(--ripple-primary-lighter);
     }
 
     .status-badge {
         display: inline-block;
         padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+
+    .status-active {
         background: #d1fae5;
         color: #065f46;
-        border-radius: 4px;
-        font-size: 0.85rem;
+    }
+
+    .status-expired {
+        background: #fee2e2;
+        color: #7f1d1d;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #78350f;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.4rem;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
+        padding: 0.45rem 0.9rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
         font-weight: 600;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background 0.16s ease, color 0.16s ease, transform 0.12s ease, box-shadow 0.16s ease;
+        white-space: nowrap;
+    }
+
+    .action-btn-view {
+        background: #ffffff;
+        color: var(--ripple-primary);
+        border: 1px solid rgba(27, 112, 45, 0.4);
+    }
+
+    .action-btn-view:hover {
+        background: var(--ripple-primary-lighter);
+        border-color: var(--ripple-primary);
+        transform: translateY(-1px);
+    }
+
+    .action-btn-delete {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid rgba(239, 68, 68, 0.65);
+    }
+
+    .action-btn-delete:hover {
+        background: #fee2e2;
+        border-color: #ef4444;
+        transform: translateY(-1px);
     }
 
     .empty-state {
         text-align: center;
-        padding: 3rem 2rem;
-        color: #6b7280;
+        padding: 2.5rem 2rem;
+        color: var(--ripple-gray-600);
     }
 
     .empty-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
     }
 
     .empty-title {
-        font-size: 1.25rem;
+        font-size: 1.15rem;
         font-weight: 600;
-        color: #1f2937;
+        color: var(--ripple-gray-800);
         margin-bottom: 0.5rem;
     }
 
     .empty-text {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.3rem;
+        font-size: 0.92rem;
     }
 
     .empty-btn {
-        display: inline-block;
-        padding: 0.75rem 1.75rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.6rem;
+        background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
+        color: #ffffff;
+        border-radius: 999px;
         font-weight: 600;
         cursor: pointer;
         text-decoration: none;
-        transition: all 0.3s ease;
-        font-size: 0.95rem;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        font-size: 0.9rem;
+        box-shadow: 0 10px 24px rgba(27, 112, 45, 0.45);
     }
 
     .empty-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        transform: translateY(-1px);
+        box-shadow: 0 14px 30px rgba(27, 112, 45, 0.6);
+    }
+
+    @media (max-width: 768px) {
+        .policies-container {
+            padding: 1.5rem 1.3rem 1.8rem;
+        }
+
+        .header-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .add-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .policies-table {
+            font-size: 0.88rem;
+        }
+
+        .policies-table thead th,
+        .policies-table tbody td {
+            padding: 0.75rem 0.6rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .action-btn {
+            width: 100%;
+        }
     }
 </style>
 
-<div class="policies-container">
-    <div class="header-row">
-        <h2 class="header-title">Insurance Policies</h2>
-        <button class="add-btn" onclick="alert('Add policy functionality coming soon')">
-            <i class="fas fa-plus"></i> Add New Policy
-        </button>
-    </div>
+<div class="policies-shell">
+    <div class="policies-container">
+        <div class="header-row">
+            <div>
+                <h2 class="header-title">Insurance Policies</h2>
+                <p class="header-subtext">
+                    Review the policies you have placed and their premium performance.
+                </p>
+            </div>
+            <button class="add-btn" type="button" onclick="alert('Add policy functionality coming soon');">
+                <i class="fas fa-plus"></i>
+                <span>Add New Policy</span>
+            </button>
+        </div>
 
-    {% if policies %}
-    <table class="policies-table">
-        <thead>
-            <tr>
-                <th>Policy ID</th>
-                <th>Client ID</th>
-                <th>Company</th>
-                <th>Premium Amount</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for policy in policies %}
-            <tr>
-                <td>#{{ policy.id }}</td>
-                <td>{{ policy.client_id or 'N/A' }}</td>
-                <td>{{ policy.company_id or 'N/A' }}</td>
-                <td>${{ "%.2f"|format(policy.total_premiums_paid() if policy.total_premiums_paid else 0) }}</td>
-                <td><span class="status-badge">Active</span></td>
-                <td>
-                    <button onclick="alert('View functionality coming soon')" style="background: #667eea; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; margin-right: 0.5rem;">View</button>
-                    <button onclick="alert('Delete functionality coming soon')" style="background: #ef4444; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer;">Delete</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <div class="empty-state">
-        <div class="empty-icon">📋</div>
-        <div class="empty-title">No Policies Yet</div>
-        <div class="empty-text">Start by creating your first insurance policy.</div>
-        <button class="empty-btn" onclick="alert('Add policy functionality coming soon')">
-            <i class="fas fa-plus"></i> Create Your First Policy
-        </button>
+        {% if policies %}
+        <div class="policies-table-wrapper">
+            <table class="policies-table" aria-label="Policies table">
+                <thead>
+                    <tr>
+                        <th>Policy ID</th>
+                        <th>Client</th>
+                        <th>Company</th>
+                        <th>Premium Paid</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for policy in policies %}
+                    <tr>
+                        <td>#{{ policy.id }}</td>
+                        <td>
+                            {% if policy.client %}
+                                {{ policy.client.full_name() if policy.client.full_name is defined else (policy.client.first_name ~ ' ' ~ policy.client.last_name) }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if policy.company %}
+                                {{ policy.company.name }}
+                            {% else %}
+                                {{ policy.company_id or 'N/A' }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            ${{ "%.2f"|format(policy.total_premiums_paid() if policy.total_premiums_paid else 0) }}
+                        </td>
+                        <td>
+                            {% set status = policy.status if policy.status is defined else 'Active' %}
+                            {% set status_lower = status|string|lower %}
+                            <span class="status-badge
+                                {% if 'active' in status_lower %}
+                                    status-active
+                                {% elif 'expired' in status_lower or 'cancel' in status_lower %}
+                                    status-expired
+                                {% else %}
+                                    status-pending
+                                {% endif %}
+                            ">
+                                {{ status|upper }}
+                            </span>
+                        </td>
+                        <td style="text-align: right;">
+                            <div class="action-buttons">
+                                <button
+                                    type="button"
+                                    class="action-btn action-btn-view"
+                                    onclick="alert('View functionality coming soon');"
+                                >
+                                    <i class="fas fa-eye"></i>
+                                    <span>View</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="action-btn action-btn-delete"
+                                    onclick="alert('Delete functionality coming soon');"
+                                >
+                                    <i class="fas fa-trash"></i>
+                                    <span>Delete</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <div class="empty-title">No Policies Yet</div>
+            <div class="empty-text">
+                Start by creating your first insurance policy to begin tracking coverage and premiums.
+            </div>
+            <button class="empty-btn" type="button" onclick="alert('Add policy functionality coming soon');">
+                <i class="fas fa-plus"></i>
+                <span>Create Your First Policy</span>
+            </button>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </div>
 {% endblock %}
-

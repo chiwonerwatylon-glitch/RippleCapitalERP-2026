@@ -3,229 +3,403 @@
 {% block title %}Premium Remittance - Ripple Capital Insurance ERP{% endblock %}
 
 {% block page_title %}Premium Remittance{% endblock %}
-
-{% block page_subtitle %}Record and track premium payments{% endblock %}
+{% block page_subtitle %}Record and track premium payments against your policies{% endblock %}
 
 {% block content %}
 <style>
+    :root {
+        /* Ripple brand tokens (if not already global) */
+        --ripple-primary: #1B702D;
+        --ripple-primary-light: #2D9F42;
+        --ripple-primary-lighter: #E8F5EA;
+        --ripple-secondary: #FBA300;
+        --ripple-secondary-lighter: #FFF3E0;
+
+        --ripple-gray-900: #111827;
+        --ripple-gray-800: #1F2937;
+        --ripple-gray-700: #374151;
+        --ripple-gray-600: #4B5563;
+        --ripple-gray-500: #6B7280;
+        --ripple-gray-400: #9CA3AF;
+        --ripple-gray-300: #D1D5DB;
+        --ripple-gray-200: #E5E7EB;
+        --ripple-gray-100: #F3F4F6;
+        --ripple-gray-50: #F9FAFB;
+
+        --ripple-shadow-md: 0 10px 25px rgba(15, 23, 42, 0.08);
+        --ripple-shadow-strong: 0 22px 45px rgba(15, 23, 42, 0.18);
+    }
+
+    .remittance-shell {
+        max-width: 1120px;
+        margin: 0 auto;
+    }
+
     .remittance-container {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        background: #ffffff;
+        border-radius: 1rem;
+        padding: 1.9rem 1.9rem 2.1rem;
+        box-shadow: var(--ripple-shadow-md), 0 0 0 1px rgba(148, 163, 184, 0.14);
+        border: 1px solid var(--ripple-gray-200);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .remittance-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 12%;
+        right: 12%;
+        height: 4px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--ripple-primary), var(--ripple-secondary));
     }
 
     .header-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 2rem;
-        padding-bottom: 1.5rem;
-        border-bottom: 2px solid #e5e7eb;
+        margin-bottom: 1.75rem;
+        padding-top: 0.3rem;
+        padding-bottom: 1.3rem;
+        border-bottom: 1px solid var(--ripple-gray-200);
+        flex-wrap: wrap;
+        gap: 0.75rem;
     }
 
     .header-title {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
         font-weight: 700;
-        color: #1f2937;
+        color: var(--ripple-gray-900);
+        letter-spacing: -0.02em;
+    }
+
+    .header-subtext {
+        font-size: 0.85rem;
+        color: var(--ripple-gray-500);
+        margin-top: 0.15rem;
     }
 
     .add-btn {
-        display: inline-block;
-        padding: 0.75rem 1.75rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.6rem;
+        background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
+        color: #ffffff;
         border: none;
-        border-radius: 8px;
+        border-radius: 999px;
         font-weight: 600;
         cursor: pointer;
         text-decoration: none;
-        transition: all 0.3s ease;
-        font-size: 0.95rem;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        font-size: 0.9rem;
+        box-shadow: 0 10px 24px rgba(27, 112, 45, 0.45);
+        white-space: nowrap;
     }
 
     .add-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        transform: translateY(-1px);
+        box-shadow: 0 14px 30px rgba(27, 112, 45, 0.65);
+    }
+
+    .remittance-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 0.75rem;
+        border: 1px solid var(--ripple-gray-200);
+        background: #ffffff;
     }
 
     .remittance-table {
         width: 100%;
         border-collapse: collapse;
-    }
-
-    .remittance-table thead th {
-        background: #f9fafb;
-        padding: 1rem;
-        text-align: left;
-        font-weight: 600;
-        color: #374151;
-        border-bottom: 2px solid #e5e7eb;
+        border-spacing: 0;
         font-size: 0.9rem;
     }
 
+    .remittance-table thead {
+        background: var(--ripple-gray-50);
+    }
+
+    .remittance-table thead th {
+        padding: 0.9rem 0.9rem;
+        text-align: left;
+        font-weight: 700;
+        color: var(--ripple-gray-700);
+        border-bottom: 1px solid var(--ripple-gray-200);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+    }
+
     .remittance-table tbody td {
-        padding: 1rem;
-        border-bottom: 1px solid #e5e7eb;
-        color: #6b7280;
+        padding: 0.9rem 0.9rem;
+        border-bottom: 1px solid var(--ripple-gray-100);
+        color: var(--ripple-gray-600);
+        vertical-align: middle;
+    }
+
+    .remittance-table tbody tr:last-child td {
+        border-bottom: none;
     }
 
     .remittance-table tbody tr:hover {
-        background: #f9fafb;
+        background: var(--ripple-primary-lighter);
+    }
+
+    .amount-cell strong {
+        color: var(--ripple-gray-900);
     }
 
     .payment-method-badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        border-radius: 4px;
-        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.28rem 0.8rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
         font-weight: 600;
     }
 
     .method-bank {
-        background: #dbeafe;
-        color: #0c2d6b;
+        background: #DBEAFE;
+        color: #1D4ED8;
     }
 
     .method-cash {
-        background: #fef3c7;
-        color: #78350f;
+        background: #FEF3C7;
+        color: #92400E;
     }
 
     .method-mobile {
-        background: #d1fae5;
-        color: #065f46;
+        background: #D1FAE5;
+        color: #047857;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.35rem;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        padding: 0.45rem 0.9rem;
+        border: none;
+        border-radius: 999px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.78rem;
+        transition: all 0.18s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        text-decoration: none;
+    }
+
+    .edit-btn {
+        background: #ffffff;
+        color: var(--ripple-primary);
+        border: 1px solid rgba(27, 112, 45, 0.4);
+    }
+
+    .edit-btn:hover {
+        background: var(--ripple-primary-lighter);
+        border-color: var(--ripple-primary);
+        transform: translateY(-1px);
+    }
+
+    .delete-btn {
+        background: #FEF2F2;
+        color: #B91C1C;
+        border: 1px solid rgba(239, 68, 68, 0.65);
+    }
+
+    .delete-btn:hover {
+        background: #FEE2E2;
+        border-color: #EF4444;
+        transform: translateY(-1px);
     }
 
     .empty-state {
         text-align: center;
-        padding: 3rem 2rem;
-        color: #6b7280;
+        padding: 2.6rem 2rem;
+        color: var(--ripple-gray-600);
     }
 
     .empty-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
     }
 
     .empty-title {
-        font-size: 1.25rem;
+        font-size: 1.15rem;
         font-weight: 600;
-        color: #1f2937;
+        color: var(--ripple-gray-800);
         margin-bottom: 0.5rem;
     }
 
     .empty-text {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.3rem;
+        font-size: 0.92rem;
     }
 
     .empty-btn {
-        display: inline-block;
-        padding: 0.75rem 1.75rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.6rem;
+        background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
+        color: #ffffff;
+        border-radius: 999px;
         font-weight: 600;
         cursor: pointer;
         text-decoration: none;
-        transition: all 0.3s ease;
-        font-size: 0.95rem;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        font-size: 0.9rem;
+        box-shadow: 0 10px 24px rgba(27, 112, 45, 0.45);
     }
 
     .empty-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        transform: translateY(-1px);
+        box-shadow: 0 14px 30px rgba(27, 112, 45, 0.6);
     }
 
-    .action-btn {
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        margin-right: 0.5rem;
-        font-weight: 600;
-        font-size: 0.85rem;
-        transition: all 0.3s ease;
-    }
+    @media (max-width: 768px) {
+        .remittance-container {
+            padding: 1.6rem 1.4rem 1.8rem;
+        }
 
-    .edit-btn {
-        background: #667eea;
-        color: white;
-    }
+        .header-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
 
-    .edit-btn:hover {
-        background: #764ba2;
-    }
+        .add-btn {
+            width: 100%;
+            justify-content: center;
+        }
 
-    .delete-btn {
-        background: #ef4444;
-        color: white;
-    }
+        .remittance-table {
+            font-size: 0.88rem;
+        }
 
-    .delete-btn:hover {
-        background: #dc2626;
+        .remittance-table thead th,
+        .remittance-table tbody td {
+            padding: 0.75rem 0.6rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .action-btn {
+            width: 100%;
+        }
     }
 </style>
 
-<div class="remittance-container">
-    <div class="header-row">
-        <h2 class="header-title">Premium Remittance</h2>
-        <a href="{{ url_for('core.add_premium_remittance') }}" class="add-btn">
-            <i class="fas fa-plus"></i> Record Payment
-        </a>
-    </div>
+<div class="remittance-shell">
+    <div class="remittance-container">
+        <div class="header-row">
+            <div>
+                <h2 class="header-title">Premium Remittance</h2>
+                <p class="header-subtext">
+                    View a history of premium payments and record new incoming remittances.
+                </p>
+            </div>
+            <a href="{{ url_for('core.add_premium_remittance') }}" class="add-btn">
+                <i class="fas fa-plus"></i>
+                <span>Record Payment</span>
+            </a>
+        </div>
 
-    {% if remittances %}
-    <table class="remittance-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Policy ID</th>
-                <th>Amount</th>
-                <th>Payment Method</th>
-                <th>Reference</th>
-                <th>Date</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for remittance in remittances %}
-            <tr>
-                <td>#{{ remittance.id }}</td>
-                <td>Policy #{{ remittance.policy_id or 'N/A' }}</td>
-                <td><strong>${{ "%.2f"|format(remittance.amount or 0) }}</strong></td>
-                <td>
-                    {% if remittance.payment_method == 'Bank Transfer' %}
-                        <span class="payment-method-badge method-bank">🏦 Bank Transfer</span>
-                    {% elif remittance.payment_method == 'Cash' %}
-                        <span class="payment-method-badge method-cash">💵 Cash</span>
-                    {% elif remittance.payment_method == 'Mobile Money' %}
-                        <span class="payment-method-badge method-mobile">📱 Mobile Money</span>
-                    {% else %}
-                        {{ remittance.payment_method or 'N/A' }}
-                    {% endif %}
-                </td>
-                <td>{{ remittance.reference_number or '-' }}</td>
-                <td>{{ remittance.created_at.strftime('%Y-%m-%d') if remittance.created_at else 'N/A' }}</td>
-                <td>
-                    <button class="action-btn edit-btn" onclick="alert('Edit functionality coming soon')">Edit</button>
-                    <button class="action-btn delete-btn" onclick="alert('Delete functionality coming soon')">Delete</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <div class="empty-state">
-        <div class="empty-icon">💳</div>
-        <div class="empty-title">No Payment Records Yet</div>
-        <div class="empty-text">Record your first premium payment to track remittances.</div>
-        <a href="{{ url_for('core.add_premium_remittance') }}" class="empty-btn">
-            <i class="fas fa-plus"></i> Record First Payment
-        </a>
+        {% if remittances %}
+        <div class="remittance-table-wrapper">
+            <table class="remittance-table" aria-label="Premium remittances table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Policy</th>
+                        <th>Amount</th>
+                        <th>Payment Method</th>
+                        <th>Reference</th>
+                        <th>Date</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for remittance in remittances %}
+                    <tr>
+                        <td>#{{ remittance.id }}</td>
+                        <td>
+                            {% if remittance.policy and remittance.policy.policy_number %}
+                                Policy #{{ remittance.policy.policy_number }}
+                            {% else %}
+                                Policy #{{ remittance.policy_id or 'N/A' }}
+                            {% endif %}
+                        </td>
+                        <td class="amount-cell">
+                            <strong>${{ "%.2f"|format(remittance.amount or 0) }}</strong>
+                        </td>
+                        <td>
+                            {% if remittance.payment_method == 'Bank Transfer' %}
+                                <span class="payment-method-badge method-bank">🏦 Bank Transfer</span>
+                            {% elif remittance.payment_method == 'Cash' %}
+                                <span class="payment-method-badge method-cash">💵 Cash</span>
+                            {% elif remittance.payment_method == 'Mobile Money' %}
+                                <span class="payment-method-badge method-mobile">📱 Mobile Money</span>
+                            {% else %}
+                                {{ remittance.payment_method or 'N/A' }}
+                            {% endif %}
+                        </td>
+                        <td>{{ remittance.reference_number or remittance.reference or '-' }}</td>
+                        <td>
+                            {{ remittance.created_at.strftime('%b %d, %Y') if remittance.created_at else 'N/A' }}
+                        </td>
+                        <td style="text-align: right;">
+                            <div class="action-buttons">
+                                <button
+                                    type="button"
+                                    class="action-btn edit-btn"
+                                    onclick="alert('Edit functionality coming soon');"
+                                >
+                                    <i class="fas fa-pen"></i>
+                                    <span>Edit</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="action-btn delete-btn"
+                                    onclick="alert('Delete functionality coming soon');"
+                                >
+                                    <i class="fas fa-trash"></i>
+                                    <span>Delete</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">💳</div>
+            <div class="empty-title">No Payment Records Yet</div>
+            <div class="empty-text">
+                Record your first premium payment to begin tracking remittances in Ripple Capital.
+            </div>
+            <a href="{{ url_for('core.add_premium_remittance') }}" class="empty-btn">
+                <i class="fas fa-plus"></i>
+                <span>Record First Payment</span>
+            </a>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </div>
 {% endblock %}
-
