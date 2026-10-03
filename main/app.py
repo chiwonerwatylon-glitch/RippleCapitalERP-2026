@@ -68,6 +68,111 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+DEFAULT_COMPANIES = [
+    {
+        "name": "Ripple Capital Insurance",
+        "contact_email": "info@ripplecapitalinsurance.com",
+        "phone": "555-1000",
+        "address": "1 Ripple Plaza, Main Street",
+        "website": "https://www.ripplecapitalinsurance.com",
+        "description": "Default underwriting company.",
+    },
+    {
+        "name": "Partner Insurance Company",
+        "contact_email": "info@partnerinsurance.com",
+        "phone": "555-2000",
+        "address": "25 Partner Avenue, Central Business District",
+        "website": "https://www.partnerinsurance.com",
+        "description": "Default partner underwriting company.",
+    },
+]
+
+DEFAULT_PRODUCTS = [
+    {
+        "name": "Motor Comprehensive",
+        "coverage_type": "Motor",
+        "description": "Covers loss or damage to the insured vehicle and liability to third parties.",
+    },
+    {
+        "name": "Third Party",
+        "coverage_type": "Motor",
+        "description": "Covers legal liability for injury or damage to third parties caused by the insured vehicle.",
+    },
+    {
+        "name": "Full Third Party",
+        "coverage_type": "Motor",
+        "description": "Third party liability plus fire and theft cover for the insured vehicle.",
+    },
+    {
+        "name": "Homeowners",
+        "coverage_type": "Property",
+        "description": "Covers the home structure and permanent fixtures against insured perils.",
+    },
+    {
+        "name": "Household",
+        "coverage_type": "Property",
+        "description": "Covers household contents and personal belongings against loss or damage.",
+    },
+    {
+        "name": "Business Combined",
+        "coverage_type": "General Insurance",
+        "description": "Package cover for business property, contents, money and liability.",
+    },
+    {
+        "name": "GIT (Goods in Transit)",
+        "coverage_type": "Specialty",
+        "description": "Covers goods against loss or damage while being transported.",
+    },
+    {
+        "name": "Agriculture",
+        "coverage_type": "Specialty",
+        "description": "Covers crops, livestock and farm assets against insured risks.",
+    },
+    {
+        "name": "Asset All Risk",
+        "coverage_type": "Property",
+        "description": "Broad cover for physical loss or damage to insured assets from any non-excluded cause.",
+    },
+]
+
+
+def ensure_user_has_default_products(user):
+    """Create the default companies and products for a user if they have none.
+
+    Returns the user's list of products.
+    """
+    products = InsuranceProduct.query.filter_by(owner_id=user.id).all()
+    if products:
+        return products
+
+    for company_data in DEFAULT_COMPANIES:
+        company = Company.query.filter_by(
+            owner_id=user.id, name=company_data["name"]
+        ).first()
+        if not company:
+            company = Company(owner_id=user.id, **company_data)
+            db.session.add(company)
+            db.session.flush()
+
+        for product_data in DEFAULT_PRODUCTS:
+            exists = InsuranceProduct.query.filter_by(
+                owner_id=user.id,
+                company_id=company.id,
+                name=product_data["name"],
+            ).first()
+            if not exists:
+                db.session.add(
+                    InsuranceProduct(
+                        owner_id=user.id,
+                        company_id=company.id,
+                        **product_data,
+                    )
+                )
+
+    db.session.commit()
+    return InsuranceProduct.query.filter_by(owner_id=user.id).all()
+
+
 def create_app(config_name=None):
     app = Flask(
         __name__,
@@ -647,6 +752,9 @@ def create_app(config_name=None):
             flash("Policies feature not available in this version.", "warning")
             return redirect(url_for("core.policies"))
         
+        # Make sure the user has the default companies and products
+        ensure_user_has_default_products(current_user)
+
         # Get owned resources for dropdowns
         clients_list = Client.query.filter_by(owner_id=current_user.id).all()
         companies_list = Company.query.filter_by(owner_id=current_user.id).all()

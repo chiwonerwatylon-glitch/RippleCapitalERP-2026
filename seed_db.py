@@ -5,75 +5,8 @@ Seed script to create initial admin/owner users for testing.
 Run this after database migrations. If no migrations have been generated yet,
 the script creates any missing tables so the seed can still succeed.
 """
-from main.app import create_app, db
+from main.app import create_app, db, DEFAULT_COMPANIES, DEFAULT_PRODUCTS
 from main.models import User, Company, InsuranceProduct, ROLE_OWNER, ROLE_ADMIN
-
-DEFAULT_COMPANIES = [
-    {
-        "name": "Ripple Capital Insurance",
-        "contact_email": "info@ripplecapitalinsurance.com",
-        "phone": "555-1000",
-        "address": "1 Ripple Plaza, Main Street",
-        "website": "https://www.ripplecapitalinsurance.com",
-        "description": "Default underwriting company.",
-    },
-    {
-        "name": "Partner Insurance Company",
-        "contact_email": "info@partnerinsurance.com",
-        "phone": "555-2000",
-        "address": "25 Partner Avenue, Central Business District",
-        "website": "https://www.partnerinsurance.com",
-        "description": "Default partner underwriting company.",
-    },
-]
-
-DEFAULT_PRODUCTS = [
-    {
-        "name": "Motor Comprehensive",
-        "coverage_type": "Motor",
-        "description": "Covers loss or damage to the insured vehicle and liability to third parties.",
-    },
-    {
-        "name": "Third Party",
-        "coverage_type": "Motor",
-        "description": "Covers legal liability for injury or damage to third parties caused by the insured vehicle.",
-    },
-    {
-        "name": "Full Third Party",
-        "coverage_type": "Motor",
-        "description": "Third party liability plus fire and theft cover for the insured vehicle.",
-    },
-    {
-        "name": "Homeowners",
-        "coverage_type": "Property",
-        "description": "Covers the home structure and permanent fixtures against insured perils.",
-    },
-    {
-        "name": "Household",
-        "coverage_type": "Property",
-        "description": "Covers household contents and personal belongings against loss or damage.",
-    },
-    {
-        "name": "Business Combined",
-        "coverage_type": "General Insurance",
-        "description": "Package cover for business property, contents, money and liability.",
-    },
-    {
-        "name": "GIT (Goods in Transit)",
-        "coverage_type": "Specialty",
-        "description": "Covers goods against loss or damage while being transported.",
-    },
-    {
-        "name": "Agriculture",
-        "coverage_type": "Specialty",
-        "description": "Covers crops, livestock and farm assets against insured risks.",
-    },
-    {
-        "name": "Asset All Risk",
-        "coverage_type": "Property",
-        "description": "Broad cover for physical loss or damage to insured assets from any non-excluded cause.",
-    },
-]
 
 
 def seed_db():
