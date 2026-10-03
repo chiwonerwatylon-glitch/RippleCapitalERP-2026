@@ -1,7 +1,7 @@
 from flask import flash, redirect, url_for
 from flask_login import current_user
 from functools import wraps
-from .models import ROLE_ADMIN, ROLE_AGENT, ROLE_CLIENT
+from .models import ROLE_ADMIN, ROLE_OWNER, ROLE_CLIENT
 
 
 def role_required(*roles):
@@ -17,3 +17,4 @@ def role_required(*roles):
             return view_func(*args, **kwargs)
         return wrapped_view
     return decorator
+
