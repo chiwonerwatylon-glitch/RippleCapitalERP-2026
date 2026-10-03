@@ -669,12 +669,12 @@ def create_app(config_name=None):
                 # Validate inputs
                 if not all([client_id, company_id, product_id, policy_number, start_date_str, end_date_str]):
                     flash("All fields are required.", "warning")
-                    return render_template("policy_form.html", clients=clients_list, companies=companies_list, products=products_list)
+                    return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
                 
                 # Check if policy number already exists
                 if Policy.query.filter_by(policy_number=policy_number).first():
                     flash(f"Policy number {policy_number} already exists.", "warning")
-                    return render_template("policy_form.html", clients=clients_list, companies=companies_list, products=products_list)
+                    return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
                 
                 # Parse dates
                 from datetime import datetime as dt
@@ -683,7 +683,7 @@ def create_app(config_name=None):
                 
                 if start_date >= end_date:
                     flash("Start date must be before end date.", "warning")
-                    return render_template("policy_form.html", clients=clients_list, companies=companies_list, products=products_list)
+                    return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
                 
                 # Create new policy
                 policy = Policy(
@@ -708,9 +708,9 @@ def create_app(config_name=None):
             except Exception as e:
                 db.session.rollback()
                 flash(f"Error creating policy: {str(e)}", "danger")
-                return render_template("policy_form.html", clients=clients_list, companies=companies_list, products=products_list)
+                return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
         
-        return render_template("policy_form.html", clients=clients_list, companies=companies_list, products=products_list)
+        return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
 
     @core_bp.route("/policies/<int:policy_id>/view")
     @login_required
