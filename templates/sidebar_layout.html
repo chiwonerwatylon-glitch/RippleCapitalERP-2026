@@ -13,20 +13,43 @@
 
     <style>
         :root {
-            --rc-bg: #f5f7fa;
-            --rc-sidebar-bg: radial-gradient(circle at top left, #4f46e5 0, transparent 55%),
-                             radial-gradient(circle at bottom right, #7c3aed 0, transparent 55%),
-                             linear-gradient(145deg, #0b1020 0%, #101827 100%);
-            --rc-sidebar-glass: rgba(15, 23, 42, 0.86);
-            --rc-sidebar-accent: #a5b4fc;
-            --rc-sidebar-accent-soft: rgba(129, 140, 248, 0.15);
-            --rc-sidebar-text: #e5e7eb;
-            --rc-primary: #4f46e5;
-            --rc-danger: #ef4444;
-            --rc-danger-dark: #dc2626;
-            --rc-border-subtle: #e5e7eb;
-            --rc-text-main: #111827;
-            --rc-text-muted: #6b7280;
+            /* Brand palette (from your system) */
+            --ripple-primary: #1B702D;
+            --ripple-primary-light: #2D9F42;
+            --ripple-primary-lighter: #E8F5EA;
+            --ripple-secondary: #FBA300;
+            --ripple-secondary-light: #FDB833;
+            --ripple-secondary-lighter: #FFF3E0;
+
+            --ripple-gray-900: #111827;
+            --ripple-gray-800: #1F2937;
+            --ripple-gray-700: #374151;
+            --ripple-gray-600: #4B5563;
+            --ripple-gray-500: #6B7280;
+            --ripple-gray-400: #9CA3AF;
+            --ripple-gray-300: #D1D5DB;
+            --ripple-gray-200: #E5E7EB;
+            --ripple-gray-100: #F3F4F6;
+            --ripple-gray-50: #F9FAFB;
+
+            --ripple-success: #10B981;
+            --ripple-warning: #F59E0B;
+            --ripple-error: #EF4444;
+            --ripple-info: #3B82F6;
+
+            --ripple-shadow-soft: 0 10px 20px rgba(15, 23, 42, 0.08);
+            --ripple-shadow-strong: 0 24px 60px rgba(15, 23, 42, 0.40);
+
+            --rc-bg: var(--ripple-gray-50);
+            /* Sidebar background uses brand green + accent orange with subtle depth */
+            --rc-sidebar-bg:
+                radial-gradient(circle at top left, rgba(43, 122, 56, 0.5) 0, transparent 55%),
+                radial-gradient(circle at bottom right, rgba(251, 163, 0, 0.4) 0, transparent 55%),
+                linear-gradient(145deg, #07140b 0%, #0b1a10 35%, #07140b 100%);
+            --rc-sidebar-text: #E5E7EB;
+            --rc-border-subtle: var(--ripple-gray-200);
+            --rc-text-main: var(--ripple-gray-900);
+            --rc-text-muted: var(--ripple-gray-600);
         }
 
         * {
@@ -68,11 +91,11 @@
             height: 100%;
             border-radius: 1.25rem;
             background: linear-gradient(150deg,
-                        rgba(15, 23, 42, 0.96) 0%,
-                        rgba(15, 23, 42, 0.9) 45%,
-                        rgba(17, 24, 39, 0.96) 100%);
+                        rgba(7, 20, 11, 0.98) 0%,
+                        rgba(12, 30, 17, 0.96) 45%,
+                        rgba(7, 20, 11, 0.98) 100%);
             box-shadow:
-                0 24px 60px rgba(0, 0, 0, 0.6),
+                var(--ripple-shadow-strong),
                 0 0 0 1px rgba(148, 163, 184, 0.35);
             overflow: hidden;
             display: flex;
@@ -85,9 +108,9 @@
             position: absolute;
             inset: 0;
             background:
-                radial-gradient(circle at 0% 0%, rgba(96, 165, 250, 0.12) 0, transparent 40%),
-                radial-gradient(circle at 100% 100%, rgba(167, 139, 250, 0.16) 0, transparent 45%);
-            opacity: 0.9;
+                radial-gradient(circle at 0% 0%, rgba(232, 245, 234, 0.16) 0, transparent 45%),
+                radial-gradient(circle at 100% 100%, rgba(255, 243, 224, 0.18) 0, transparent 45%);
+            opacity: 0.85;
             pointer-events: none;
         }
 
@@ -116,9 +139,9 @@
             align-items: center;
             justify-content: center;
             background: radial-gradient(circle at 25% 25%, #f9fafb 0, transparent 45%),
-                        radial-gradient(circle at 75% 75%, #a5b4fc 0, transparent 55%),
-                        #111827;
-            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.9);
+                        radial-gradient(circle at 75% 75%, #fbbf24 0, transparent 55%),
+                        #0f172a;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.9);
             font-size: 1.4rem;
         }
 
@@ -143,7 +166,7 @@
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.12em;
-            color: rgba(148, 163, 184, 0.9);
+            color: rgba(156, 163, 175, 0.9);
             margin-bottom: 0.55rem;
             padding: 0 0.45rem;
         }
@@ -190,24 +213,27 @@
                 background 0.16s ease,
                 color 0.16s ease,
                 transform 0.12s ease,
-                box-shadow 0.16s ease;
+                box-shadow 0.16s ease,
+                border-color 0.16s ease;
+            border: 1px solid transparent;
         }
 
         .sidebar-menu-link:hover {
-            background: rgba(31, 41, 55, 0.9);
+            background: rgba(15, 23, 42, 0.85);
             color: #ffffff;
             transform: translateX(2px);
             box-shadow:
-                0 10px 24px rgba(15, 23, 42, 0.7),
-                0 0 0 1px rgba(129, 140, 248, 0.45);
+                0 10px 24px rgba(7, 20, 11, 0.85),
+                0 0 0 1px rgba(209, 250, 229, 0.5);
+            border-color: rgba(27, 112, 45, 0.5);
         }
 
         .sidebar-menu-link.active {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
             color: #ffffff;
             box-shadow:
-                0 12px 28px rgba(79, 70, 229, 0.8),
-                0 0 0 1px rgba(191, 219, 254, 0.8);
+                0 14px 30px rgba(27, 112, 45, 0.8),
+                0 0 0 1px rgba(209, 250, 229, 0.9);
         }
 
         .sidebar-menu-icon {
@@ -248,14 +274,14 @@
             height: 32px;
             border-radius: 999px;
             background: radial-gradient(circle at 30% 20%, #e5e7eb 0, transparent 50%),
-                        #111827;
+                        #0b1120;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 0.9rem;
             font-weight: 600;
             color: #e5e7eb;
-            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.9);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.95);
         }
 
         .sidebar-user-text {
@@ -295,9 +321,9 @@
         }
 
         .sidebar-footer-actions a:hover {
-            background: rgba(15, 23, 42, 0.95);
-            border-color: rgba(129, 140, 248, 0.9);
-            color: #c7d2fe;
+            background: rgba(7, 20, 11, 0.96);
+            border-color: rgba(231, 250, 238, 0.9);
+            color: #d1fae5;
             transform: translateY(-1px);
         }
 
@@ -333,6 +359,7 @@
             font-size: 1.3rem;
             font-weight: 700;
             color: var(--rc-text-main);
+            letter-spacing: -0.02em;
         }
 
         .page-subtitle {
@@ -349,7 +376,7 @@
 
         .logout-btn {
             padding: 0.45rem 1.1rem;
-            background: var(--rc-danger);
+            background: var(--ripple-error);
             color: #ffffff;
             border: none;
             border-radius: 999px;
@@ -368,7 +395,7 @@
         }
 
         .logout-btn:hover {
-            background: var(--rc-danger-dark);
+            background: #dc2626;
             transform: translateY(-1px);
             box-shadow: 0 16px 30px rgba(248, 113, 113, 0.75);
         }
@@ -703,3 +730,4 @@
 {% block extra_js %}{% endblock %}
 </body>
 </html>
+
