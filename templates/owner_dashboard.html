@@ -2,397 +2,807 @@
 
 {% block title %}Dashboard - Ripple Capital Insurance ERP{% endblock %}
 
-{% block page_title %}Dashboard{% endblock %}
-
-{% block page_subtitle %}Manage your clients, companies, and policies{% endblock %}
+{% block page_title %}Overview{% endblock %}
+{% block page_subtitle %}High-level view of your clients, companies, and policies{% endblock %}
 
 {% block content %}
 <style>
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 2rem;
-        margin-bottom: 3rem;
+    :root {
+        --rc-bg-soft: #f9fafb;
+        --rc-bg-card: #ffffff;
+        --rc-text-main: #111827;
+        --rc-text-muted: #6b7280;
+        --rc-border-subtle: #e5e7eb;
+        --rc-border-strong: #d1d5db;
+        --rc-primary: #4f46e5;
+        --rc-primary-soft: #e0e7ff;
+        --rc-primary-strong: #4338ca;
+        --rc-success: #10b981;
+        --rc-warning: #f59e0b;
+        --rc-danger: #ef4444;
+        --rc-purple: #8b5cf6;
     }
 
-    .stat-card {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-        border-top: 4px solid;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    }
-
-    .stat-card.clients {
-        border-top-color: #667eea;
-    }
-
-    .stat-card.companies {
-        border-top-color: #10b981;
-    }
-
-    .stat-card.policies {
-        border-top-color: #f59e0b;
-    }
-
-    .stat-card.premiums {
-        border-top-color: #ef4444;
-    }
-
-    .stat-card.commissions {
-        border-top-color: #8b5cf6;
-    }
-
-    .stat-icon {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-    }
-
-    .stat-value {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 0.5rem;
-    }
-
-    .stat-label {
-        font-size: 1rem;
-        color: #6b7280;
-        font-weight: 500;
-        margin-bottom: 1rem;
-    }
-
-    .stat-action {
-        display: inline-block;
-        padding: 0.5rem 1rem;
-        background: #f3f4f6;
-        color: #374151;
-        border-radius: 6px;
-        text-decoration: none;
-        font-size: 0.9rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .stat-action:hover {
-        background: #e5e7eb;
-        transform: translateX(2px);
-    }
-
-    .section-container {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        margin-bottom: 2rem;
-    }
-
-    .section-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid #e5e7eb;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .section-icon {
-        font-size: 1.5rem;
-    }
-
-    .action-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-    }
-
-    .action-card {
-        padding: 1.5rem;
-        background: linear-gradient(135deg, #f5f7fa 0%, white 100%);
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        text-decoration: none;
-        transition: all 0.3s ease;
+    .rc-dashboard-root {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
-        color: inherit;
+        gap: 1.75rem;
     }
 
-    .action-card:hover {
-        border-color: #667eea;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-        transform: translateY(-2px);
-    }
-
-    .action-card-icon {
-        font-size: 2rem;
-        width: 50px;
-        height: 50px;
-        background: #f3f4f6;
-        border-radius: 8px;
+    .rc-dashboard-header-row {
         display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .action-card-title {
-        font-weight: 700;
-        color: #1f2937;
-        font-size: 1.1rem;
-    }
-
-    .action-card-desc {
-        color: #6b7280;
-        font-size: 0.9rem;
-        margin: 0;
-    }
-
-    .action-card-arrow {
-        color: #667eea;
-        font-weight: 700;
-        margin-top: auto;
-    }
-
-    .quick-actions {
-        display: flex;
-        gap: 1rem;
         flex-wrap: wrap;
-    }
-
-    .btn {
-        display: inline-block;
-        padding: 0.75rem 1.75rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        font-size: 0.95rem;
-    }
-
-    .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    .btn-secondary {
-        background: #e5e7eb;
-        color: #374151;
-    }
-
-    .btn-secondary:hover {
-        background: #d1d5db;
-    }
-
-    .recent-policies {
-        border-top: 1px solid #e5e7eb;
-        padding-top: 1.5rem;
-    }
-
-    .policy-item {
-        padding: 1rem;
-        border-bottom: 1px solid #f3f4f6;
-        display: flex;
+        gap: 1rem;
         justify-content: space-between;
         align-items: center;
     }
 
-    .policy-item:last-child {
-        border-bottom: none;
+    .rc-dashboard-header-text {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
     }
 
-    .policy-info {
-        flex: 1;
+    .rc-dashboard-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--rc-text-main);
     }
 
-    .policy-title {
+    .rc-dashboard-subtitle {
+        font-size: 0.95rem;
+        color: var(--rc-text-muted);
+    }
+
+    .rc-dashboard-date {
+        font-size: 0.85rem;
+        color: #9ca3af;
+    }
+
+    .rc-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.3rem 0.7rem;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #4f46e5;
+        font-size: 0.8rem;
         font-weight: 600;
-        color: #1f2937;
     }
 
-    .policy-detail {
-        font-size: 0.9rem;
+    .rc-pill-dot {
+        width: 0.4rem;
+        height: 0.4rem;
+        border-radius: 999px;
+        background-color: #22c55e;
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.35);
+    }
+
+    /* STAT CARDS */
+    .rc-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .rc-stat-card {
+        position: relative;
+        background: linear-gradient(135deg, #f9fafb 0%, #ffffff 55%, #f3f4ff 100%);
+        border-radius: 1rem;
+        padding: 1.3rem 1.4rem;
+        box-shadow:
+            0 10px 28px rgba(15, 23, 42, 0.08),
+            0 0 0 1px rgba(148, 163, 184, 0.18);
+        overflow: hidden;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        border: 1px solid rgba(209, 213, 219, 0.7);
+    }
+
+    .rc-stat-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        pointer-events: none;
+        background: radial-gradient(circle at top right, rgba(79, 70, 229, 0.22) 0, transparent 55%);
+        transition: opacity 0.2s ease;
+    }
+
+    .rc-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow:
+            0 16px 40px rgba(15, 23, 42, 0.14),
+            0 0 0 1px rgba(129, 140, 248, 0.5);
+    }
+
+    .rc-stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .rc-stat-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.55rem;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #4f46e5;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .rc-stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.9rem;
+        gap: 0.5rem;
+    }
+
+    .rc-stat-icon-wrapper {
+        width: 44px;
+        height: 44px;
+        border-radius: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        background: #eef2ff;
+    }
+
+    .rc-stat-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #4b5563;
+    }
+
+    .rc-stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.15rem;
+    }
+
+    .rc-stat-subtext {
+        font-size: 0.8rem;
+        color: #9ca3af;
+    }
+
+    .rc-stat-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.9rem;
+        font-size: 0.78rem;
         color: #6b7280;
+    }
+
+    .rc-stat-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.3rem 0.7rem;
+        border-radius: 999px;
+        background: #111827;
+        color: #e5e7eb;
+        font-weight: 600;
+        font-size: 0.78rem;
+        text-decoration: none;
+        transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    .rc-stat-link:hover {
+        background: #1f2937;
+        transform: translateY(-1px);
+    }
+
+    .rc-stat-trend {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.78rem;
+    }
+
+    .rc-trend-badge {
+        padding: 0.1rem 0.4rem;
+        border-radius: 999px;
+        background: rgba(16, 185, 129, 0.09);
+        color: #059669;
+        font-weight: 600;
+    }
+
+    .rc-trend-muted {
+        color: #9ca3af;
+    }
+
+    /* QUICK ACTIONS */
+    .rc-section {
+        background: var(--rc-bg-card);
+        border-radius: 1rem;
+        border: 1px solid rgba(229, 231, 235, 0.9);
+        padding: 1.5rem 1.5rem 1.6rem;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04);
+    }
+
+    .rc-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .rc-section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--rc-text-main);
+    }
+
+    .rc-section-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eff6ff;
+        color: #4f46e5;
+        font-size: 1.1rem;
+    }
+
+    .rc-section-subtitle {
+        font-size: 0.85rem;
+        color: #9ca3af;
+    }
+
+    .rc-quick-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
         margin-top: 0.25rem;
     }
 
+    .rc-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.55rem 1.1rem;
+        border-radius: 999px;
+        border: 1px solid #e5e7eb;
+        background: #111827;
+        color: #f9fafb;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .rc-btn svg,
+    .rc-btn i {
+        font-size: 0.9rem;
+    }
+
+    .rc-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.35);
+        border-color: #9ca3af;
+    }
+
+    .rc-btn-secondary {
+        background: #f9fafb;
+        color: #111827;
+    }
+
+    .rc-btn-secondary:hover {
+        background: #e5e7eb;
+    }
+
+    /* MANAGEMENT GRID */
+    .rc-grid {
+        display: grid;
+        grid-template-columns: 2fr 1.7fr;
+        gap: 1.25rem;
+        align-items: stretch;
+    }
+
+    .rc-action-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 0.85rem;
+    }
+
+    .rc-action-card {
+        position: relative;
+        padding: 1rem 1rem 1.05rem;
+        border-radius: 0.9rem;
+        border: 1px solid rgba(229, 231, 235, 0.95);
+        background: linear-gradient(135deg, #f9fafb 0%, #ffffff 60%, #eff6ff 100%);
+        text-decoration: none;
+        color: inherit;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 0.75rem;
+        align-items: flex-start;
+        transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+    }
+
+    .rc-action-card:hover {
+        border-color: #4f46e5;
+        box-shadow: 0 14px 32px rgba(79, 70, 229, 0.16);
+        transform: translateY(-2px);
+    }
+
+    .rc-action-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 0.9rem;
+        background: #eef2ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+    }
+
+    .rc-action-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .rc-action-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .rc-action-desc {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .rc-action-arrow {
+        font-size: 1rem;
+        color: #4f46e5;
+        margin-top: 0.15rem;
+    }
+
+    /* RECENT POLICIES */
+    .rc-table-wrapper {
+        border-radius: 0.9rem;
+        border: 1px solid rgba(229, 231, 235, 0.9);
+        background: #ffffff;
+        overflow: hidden;
+    }
+
+    .rc-table-header {
+        display: grid;
+        grid-template-columns: 1.6fr 1.4fr 1.1fr 1fr;
+        padding: 0.6rem 1rem;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #9ca3af;
+        background: #f9fafb;
+    }
+
+    .rc-policy-row {
+        display: grid;
+        grid-template-columns: 1.6fr 1.4fr 1.1fr 1fr;
+        padding: 0.65rem 1rem;
+        font-size: 0.85rem;
+        border-top: 1px solid #f3f4f6;
+        align-items: center;
+    }
+
+    .rc-policy-row:nth-child(even) {
+        background: #f9fafb;
+    }
+
+    .rc-policy-title {
+        font-weight: 600;
+        color: #111827;
+        font-size: 0.88rem;
+    }
+
+    .rc-policy-meta {
+        color: #6b7280;
+        font-size: 0.8rem;
+    }
+
+    .rc-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        border-radius: 999px;
+        padding: 0.18rem 0.55rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+
+    .rc-status-active {
+        background: rgba(22, 163, 74, 0.08);
+        color: #16a34a;
+    }
+
+    .rc-status-pending {
+        background: rgba(245, 158, 11, 0.1);
+        color: #c2410c;
+    }
+
+    .rc-status-closed {
+        background: rgba(148, 163, 184, 0.16);
+        color: #4b5563;
+    }
+
+    .rc-status-dot {
+        width: 0.35rem;
+        height: 0.35rem;
+        border-radius: 999px;
+        background: currentColor;
+    }
+
+    .rc-empty-state {
+        padding: 2rem;
+        text-align: center;
+        color: #6b7280;
+        font-size: 0.9rem;
+        background: linear-gradient(135deg, #f9fafb 0%, #ffffff 50%);
+    }
+
+    .rc-empty-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-top: 0.75rem;
+        font-size: 0.85rem;
+        color: #4f46e5;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .rc-empty-link:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 992px) {
+        .rc-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
     @media (max-width: 768px) {
-        .stats-grid {
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .action-grid {
+        .rc-stats-grid {
             grid-template-columns: 1fr;
         }
 
-        .section-container {
-            padding: 1.5rem;
+        .rc-section {
+            padding: 1.25rem 1.1rem;
         }
 
-        .quick-actions {
-            flex-direction: column;
+        .rc-action-grid {
+            grid-template-columns: 1fr;
         }
 
-        .btn {
-            width: 100%;
-            text-align: center;
+        .rc-policy-row,
+        .rc-table-header {
+            grid-template-columns: 1.5fr 1.1fr 1.1fr;
         }
 
-        .policy-item {
-            flex-direction: column;
-            align-items: flex-start;
+        .rc-policy-premium-col {
+            display: none;
         }
     }
 </style>
 
-<!-- Statistics Cards -->
-<div class="stats-grid">
-    <div class="stat-card clients">
-        <div class="stat-icon">👥</div>
-        <div class="stat-value">{{ clients_count }}</div>
-        <div class="stat-label">Clients</div>
-        <a href="{{ url_for('core.clients') }}" class="stat-action">Manage Clients</a>
+<div class="rc-dashboard-root">
+    <!-- Header / Context -->
+    <div class="rc-dashboard-header-row">
+        <div class="rc-dashboard-header-text">
+            <div class="rc-dashboard-title">Welcome back, {{ current_user.full_name or 'User' }}</div>
+            <div class="rc-dashboard-subtitle">
+                Your agency overview at a glance – clients, companies, policies, and revenue performance.
+            </div>
+            <div class="rc-dashboard-date">
+                Today is {{ (datetime.utcnow() | default(datetime.now())).strftime('%A, %B %d, %Y') }}
+            </div>
+        </div>
+        <div>
+            <span class="rc-pill">
+                <span class="rc-pill-dot"></span>
+                Realtime overview
+            </span>
+        </div>
     </div>
 
-    <div class="stat-card companies">
-        <div class="stat-icon">🏢</div>
-        <div class="stat-value">{{ companies_count }}</div>
-        <div class="stat-label">Companies</div>
-        <a href="{{ url_for('core.companies') }}" class="stat-action">View Companies</a>
-    </div>
+    <!-- Stat Cards -->
+    <section aria-label="Key summary metrics">
+        <div class="rc-stats-grid">
+            <!-- Clients -->
+            <article class="rc-stat-card" aria-label="Clients summary">
+                <div class="rc-stat-header">
+                    <div>
+                        <div class="rc-stat-title">Active Clients</div>
+                    </div>
+                    <div class="rc-stat-icon-wrapper" aria-hidden="true">👥</div>
+                </div>
+                <div class="rc-stat-value">{{ clients_count }}</div>
+                <div class="rc-stat-subtext">Total clients currently attached to your agency</div>
+                <div class="rc-stat-footer">
+                    <div class="rc-stat-trend">
+                        <span class="rc-trend-muted">Client base</span>
+                    </div>
+                    <a href="{{ url_for('core.clients') }}" class="rc-stat-link">Manage clients →</a>
+                </div>
+            </article>
 
-    <div class="stat-card policies">
-        <div class="stat-icon">📋</div>
-        <div class="stat-value">{{ policies_count }}</div>
-        <div class="stat-label">Policies</div>
-        <a href="{{ url_for('core.policies') }}" class="stat-action">View Policies</a>
-    </div>
+            <!-- Companies -->
+            <article class="rc-stat-card" aria-label="Companies summary">
+                <div class="rc-stat-header">
+                    <div>
+                        <div class="rc-stat-title">Partner Companies</div>
+                    </div>
+                    <div class="rc-stat-icon-wrapper" aria-hidden="true">🏢</div>
+                </div>
+                <div class="rc-stat-value">{{ companies_count }}</div>
+                <div class="rc-stat-subtext">Insurers & underwriters linked to your book</div>
+                <div class="rc-stat-footer">
+                    <div class="rc-stat-trend">
+                        <span class="rc-trend-muted">Product network</span>
+                    </div>
+                    <a href="{{ url_for('core.companies') }}" class="rc-stat-link">View companies →</a>
+                </div>
+            </article>
 
-    <div class="stat-card premiums">
-        <div class="stat-icon">💵</div>
-        <div class="stat-value">${{ "%.2f"|format(total_premiums) }}</div>
-        <div class="stat-label">Total Premiums</div>
-        <a href="{{ url_for('core.premium_remittance') }}" class="stat-action">Premium Report</a>
-    </div>
+            <!-- Policies -->
+            <article class="rc-stat-card" aria-label="Policies summary">
+                <div class="rc-stat-header">
+                    <div>
+                        <div class="rc-stat-title">Total Policies</div>
+                    </div>
+                    <div class="rc-stat-icon-wrapper" aria-hidden="true">📋</div>
+                </div>
+                <div class="rc-stat-value">{{ policies_count }}</div>
+                <div class="rc-stat-subtext">Issued and recorded policies managed by you</div>
+                <div class="rc-stat-footer">
+                    <div class="rc-stat-trend">
+                        <span class="rc-trend-muted">Portfolio size</span>
+                    </div>
+                    <a href="{{ url_for('core.policies') }}" class="rc-stat-link">View policies →</a>
+                </div>
+            </article>
 
-    <div class="stat-card commissions">
-        <div class="stat-icon">💰</div>
-        <div class="stat-value">${{ "%.2f"|format(total_commissions) }}</div>
-        <div class="stat-label">Total Commissions</div>
-        <a href="{{ url_for('core.reports') }}" class="stat-action">Commission Report</a>
-    </div>
-</div>
+            <!-- Premiums -->
+            <article class="rc-stat-card" aria-label="Premiums summary">
+                <div class="rc-stat-header">
+                    <div>
+                        <div class="rc-stat-title">Total Premiums</div>
+                    </div>
+                    <div class="rc-stat-icon-wrapper" aria-hidden="true">💵</div>
+                </div>
+                <div class="rc-stat-value">
+                    ${{ "%.2f"|format(total_premiums or 0) }}
+                </div>
+                <div class="rc-stat-subtext">Cumulative premiums received across all policies</div>
+                <div class="rc-stat-footer">
+                    <div class="rc-stat-trend">
+                        <span class="rc-trend-muted">Cash inflow</span>
+                    </div>
+                    <a href="{{ url_for('core.premium_remittance') }}" class="rc-stat-link">Premium remittance →</a>
+                </div>
+            </article>
 
-<!-- Quick Actions -->
-<div class="section-container">
-    <h3 class="section-title">
-        <span class="section-icon">⚡</span> Quick Actions
-    </h3>
-    <div class="quick-actions">
-        <a href="{{ url_for('core.clients') }}" class="btn">
-            <i class="fas fa-plus"></i> Add Client
-        </a>
-        <a href="{{ url_for('core.clients') }}" class="btn btn-secondary">
-            <i class="fas fa-list"></i> View Clients
-        </a>
-        <a href="{{ url_for('core.companies') }}" class="btn btn-secondary">
-            <i class="fas fa-building"></i> View Companies
-        </a>
-        <a href="{{ url_for('core.policies') }}" class="btn btn-secondary">
-            <i class="fas fa-file-contract"></i> View Policies
-        </a>
-    </div>
-</div>
+            <!-- Commissions -->
+            <article class="rc-stat-card" aria-label="Commissions summary">
+                <div class="rc-stat-header">
+                    <div>
+                        <div class="rc-stat-title">Total Commissions</div>
+                    </div>
+                    <div class="rc-stat-icon-wrapper" aria-hidden="true">💰</div>
+                </div>
+                <div class="rc-stat-value">
+                    ${{ "%.2f"|format(total_commissions or 0) }}
+                </div>
+                <div class="rc-stat-subtext">Lifetime commissions earned from your portfolio</div>
+                <div class="rc-stat-footer">
+                    <div class="rc-stat-trend">
+                        <span class="rc-trend-muted">Revenue performance</span>
+                    </div>
+                    <a href="{{ url_for('core.reports') }}" class="rc-stat-link">Financial reports →</a>
+                </div>
+            </article>
+        </div>
+    </section>
 
-<!-- Management Sections -->
-<div class="section-container">
-    <h3 class="section-title">
-        <span class="section-icon">🔧</span> Management Tools
-    </h3>
-    <div class="action-grid">
-        <a href="{{ url_for('core.clients') }}" class="action-card">
-            <div class="action-card-icon">👥</div>
-            <div class="action-card-title">Client Management</div>
-            <p class="action-card-desc">Add, edit, and manage your clients</p>
-            <div class="action-card-arrow">→</div>
-        </a>
+    <!-- Grid: Management Tools + Recent Policies -->
+    <section class="rc-grid">
+        <!-- Management Tools & Quick Actions -->
+        <div class="rc-section">
+            <div class="rc-section-header">
+                <div>
+                    <div class="rc-section-title">
+                        <div class="rc-section-icon">🔧</div>
+                        Core management tools
+                    </div>
+                    <div class="rc-section-subtitle">
+                        Jump directly into the areas you manage most frequently.
+                    </div>
+                </div>
+            </div>
 
-        <a href="{{ url_for('core.companies') }}" class="action-card">
-            <div class="action-card-icon">🏢</div>
-            <div class="action-card-title">Company Management</div>
-            <p class="action-card-desc">Manage insurance companies and products</p>
-            <div class="action-card-arrow">→</div>
-        </a>
+            <div class="rc-quick-actions" aria-label="Quick actions">
+                <a href="{{ url_for('core.clients') }}" class="rc-btn">
+                    <span>+ New Client</span>
+                </a>
+                <a href="{{ url_for('core.policies') }}" class="rc-btn rc-btn-secondary">
+                    <span>+ New Policy</span>
+                </a>
+                <a href="{{ url_for('core.premium_remittance') }}" class="rc-btn rc-btn-secondary">
+                    <span>Record Premium</span>
+                </a>
+                <a href="{{ url_for('core.reports') }}" class="rc-btn rc-btn-secondary">
+                    <span>Download Reports</span>
+                </a>
+            </div>
 
-        <a href="{{ url_for('core.policies') }}" class="action-card">
-            <div class="action-card-icon">📋</div>
-            <div class="action-card-title">Policies</div>
-            <p class="action-card-desc">View and manage insurance policies</p>
-            <div class="action-card-arrow">→</div>
-        </a>
+            <div style="margin-top: 1.25rem;">
+                <div class="rc-action-grid" aria-label="Management modules">
+                    <a href="{{ url_for('core.clients') }}" class="rc-action-card">
+                        <div class="rc-action-icon">👥</div>
+                        <div class="rc-action-body">
+                            <div class="rc-action-title">Client management</div>
+                            <p class="rc-action-desc">Add, edit, segment, and maintain your client base.</p>
+                        </div>
+                        <div class="rc-action-arrow">→</div>
+                    </a>
 
-        <a href="{{ url_for('core.premium_remittance') }}" class="action-card">
-            <div class="action-card-icon">💳</div>
-            <div class="action-card-title">Premium Remittance</div>
-            <p class="action-card-desc">Record premium payments and remittances</p>
-            <div class="action-card-arrow">→</div>
-        </a>
+                    <a href="{{ url_for('core.companies') }}" class="rc-action-card">
+                        <div class="rc-action-icon">🏢</div>
+                        <div class="rc-action-body">
+                            <div class="rc-action-title">Company management</div>
+                            <p class="rc-action-desc">Configure insurers, contacts, and linked products.</p>
+                        </div>
+                        <div class="rc-action-arrow">→</div>
+                    </a>
 
-        <a href="{{ url_for('core.reports') }}" class="action-card">
-            <div class="action-card-icon">📊</div>
-            <div class="action-card-title">Reports</div>
-            <p class="action-card-desc">Generate and view financial reports</p>
-            <div class="action-card-arrow">→</div>
-        </a>
+                    <a href="{{ url_for('core.policies') }}" class="rc-action-card">
+                        <div class="rc-action-icon">📋</div>
+                        <div class="rc-action-body">
+                            <div class="rc-action-title">Policies & coverage</div>
+                            <p class="rc-action-desc">View, update, and track policy performance.</p>
+                        </div>
+                        <div class="rc-action-arrow">→</div>
+                    </a>
 
-        <a href="{{ url_for('core.profile') }}" class="action-card">
-            <div class="action-card-icon">⚙️</div>
-            <div class="action-card-title">Profile Settings</div>
-            <p class="action-card-desc">Manage your account settings</p>
-            <div class="action-card-arrow">→</div>
-        </a>
-    </div>
-</div>
+                    <a href="{{ url_for('core.premium_remittance') }}" class="rc-action-card">
+                        <div class="rc-action-icon">💳</div>
+                        <div class="rc-action-body">
+                            <div class="rc-action-title">Premium remittance</div>
+                            <p class="rc-action-desc">Record incoming premiums and reconcile payments.</p>
+                        </div>
+                        <div class="rc-action-arrow">→</div>
+                    </a>
 
-<!-- Recent Policies -->
-<div class="section-container">
-    <h3 class="section-title">
-        <span class="section-icon">📌</span> Recent Policies
-    </h3>
-    {% if recent_policies %}
-    <div class="recent-policies">
-        {% for policy in recent_policies[:5] %}
-        <div class="policy-item">
-            <div class="policy-info">
-                <div class="policy-title">Policy #{{ policy.id }}</div>
-                <div class="policy-detail">
-                    Client ID: {{ policy.client_id or 'N/A' }} | Status: Active
+                    <a href="{{ url_for('core.reports') }}" class="rc-action-card">
+                        <div class="rc-action-icon">📊</div>
+                        <div class="rc-action-body">
+                            <div class="rc-action-title">Financial reports</div>
+                            <p class="rc-action-desc">Generate premium and commission analyses.</p>
+                        </div>
+                        <div class="rc-action-arrow">→</div>
+                    </a>
+
+                    <a href="{{ url_for('core.profile') }}" class="rc-action-card">
+                        <div class="rc-action-icon">⚙️</div>
+                        <div class="rc-action-body">
+                            <div class="rc-action-title">Profile & account</div>
+                            <p class="rc-action-desc">Manage your personal details and access settings.</p>
+                        </div>
+                        <div class="rc-action-arrow">→</div>
+                    </a>
                 </div>
             </div>
         </div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div style="text-align: center; padding: 2rem; color: #6b7280;">
-        <p>No policies yet. Create your first policy to get started.</p>
-    </div>
-    {% endif %}
+
+        <!-- Recent Policies -->
+        <div class="rc-section">
+            <div class="rc-section-header">
+                <div>
+                    <div class="rc-section-title">
+                        <div class="rc-section-icon">📌</div>
+                        Recent policies
+                    </div>
+                    <div class="rc-section-subtitle">
+                        The latest policies created under your account.
+                    </div>
+                </div>
+            </div>
+
+            {% if recent_policies %}
+                <div class="rc-table-wrapper" aria-label="Recent policies table">
+                    <div class="rc-table-header">
+                        <div>Policy</div>
+                        <div>Client</div>
+                        <div>Status</div>
+                        <div class="rc-policy-premium-col">Premium</div>
+                    </div>
+
+                    {% for policy in recent_policies[:5] %}
+                        <div class="rc-policy-row">
+                            <!-- Policy column -->
+                            <div>
+                                <div class="rc-policy-title">
+                                    {% if policy.policy_number %}
+                                        Policy #{{ policy.policy_number }}
+                                    {% else %}
+                                        Policy ID {{ policy.id }}
+                                    {% endif %}
+                                </div>
+                                <div class="rc-policy-meta">
+                                    Created {{ (policy.created_at or policy.start_date or policy.issue_date)|default('') }}
+                                </div>
+                            </div>
+
+                            <!-- Client column -->
+                            <div>
+                                {% if policy.client %}
+                                    <div class="rc-policy-title">
+                                        {{ policy.client.full_name() if policy.client.full_name is defined else policy.client.first_name ~ ' ' ~ policy.client.last_name }}
+                                    </div>
+                                    <div class="rc-policy-meta">
+                                        ID: {{ policy.client_id }}
+                                    </div>
+                                {% else %}
+                                    <div class="rc-policy-meta">No client linked</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Status column -->
+                            <div>
+                                {% set status = (policy.status or 'Active') if policy.status is defined else 'Active' %}
+                                {% set status_lower = status|string|lower %}
+                                {% if 'pending' in status_lower %}
+                                    <span class="rc-status-pill rc-status-pending">
+                                        <span class="rc-status-dot"></span>{{ status }}
+                                    </span>
+                                {% elif 'closed' in status_lower or 'cancel' in status_lower or 'expired' in status_lower %}
+                                    <span class="rc-status-pill rc-status-closed">
+                                        <span class="rc-status-dot"></span>{{ status }}
+                                    </span>
+                                {% else %}
+                                    <span class="rc-status-pill rc-status-active">
+                                        <span class="rc-status-dot"></span>{{ status }}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Premium column -->
+                            <div class="rc-policy-premium-col">
+                                {% set premium = policy.premium_amount if policy.premium_amount is defined else None %}
+                                {% if premium is not none %}
+                                    ${{ "%.2f"|format(premium) }}
+                                {% else %}
+                                    <span class="rc-policy-meta">N/A</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="rc-empty-state">
+                    <div>No policies found yet.</div>
+                    <a href="{{ url_for('core.policies') }}" class="rc-empty-link">
+                        <span>Create your first policy</span> <span>→</span>
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </section>
 </div>
-
 {% endblock %}
-

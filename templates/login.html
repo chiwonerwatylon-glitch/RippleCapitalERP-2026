@@ -4,31 +4,60 @@
     <meta charset="utf-8">
     <title>Login - Ripple Capital Insurance ERP</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Optional: favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
+
+    <!-- Tailwind (or your CSS framework) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}">
+
+    <!-- Basic reset / base styles if Tailwind not fully controlling everything -->
     <style>
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+                         "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+                         "Noto Color Emoji";
+            background-color: #0f172a;
+            color: #111827;
+        }
+
         .login-container {
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 1rem;
+            padding: 1.5rem;
+            background: radial-gradient(circle at top left, #4f46e5 0, transparent 55%),
+                        radial-gradient(circle at bottom right, #7c3aed 0, transparent 55%),
+                        #020617;
         }
 
         .login-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 3rem;
+            background: rgba(15, 23, 42, 0.98);
+            border-radius: 18px;
+            box-shadow:
+                0 24px 50px rgba(15, 23, 42, 0.75),
+                0 0 0 1px rgba(148, 163, 184, 0.15);
+            padding: 2.5rem 2.25rem 2.5rem;
             width: 100%;
-            max-width: 420px;
-            animation: slideUp 0.6s ease-out;
+            max-width: 430px;
+            color: #e5e7eb;
+            backdrop-filter: blur(18px);
+            animation: slideUp 0.55s ease-out;
+        }
+
+        @media (min-width: 640px) {
+            .login-card {
+                padding: 3rem 3rem 2.75rem;
+            }
         }
 
         @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(18px);
             }
             to {
                 opacity: 1;
@@ -38,29 +67,38 @@
 
         .login-header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2.25rem;
+        }
+
+        .login-logo-wrapper {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 1rem;
+            border-radius: 9999px;
+            background: radial-gradient(circle at 30% 30%, #eff6ff 0, transparent 45%),
+                        radial-gradient(circle at 70% 70%, #a5b4fc 0, transparent 45%),
+                        #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
         }
 
         .login-logo {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1rem;
+            font-size: 1.9rem;
         }
 
         .login-title {
-            font-size: 1.75rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 0.5rem;
+            letter-spacing: 0.02em;
+            color: #f9fafb;
+            margin-bottom: 0.25rem;
         }
 
         .login-subtitle {
             font-size: 0.95rem;
-            color: #6b7280;
+            color: #9ca3af;
         }
 
         .form-group {
@@ -68,201 +106,360 @@
         }
 
         .form-label {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             font-weight: 600;
-            color: #374151;
-            margin-bottom: 0.75rem;
-            font-size: 0.95rem;
+            color: #e5e7eb;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-label span.required {
+            color: #f97316;
+            font-weight: 500;
+            font-size: 0.78rem;
         }
 
         .form-input {
             width: 100%;
-            padding: 0.875rem 1rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            font-family: inherit;
+            padding: 0.8rem 0.9rem;
+            border-radius: 0.65rem;
+            border: 1px solid #1f2937;
+            background-color: #020617;
+            color: #e5e7eb;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input::placeholder {
+            color: #6b7280;
         }
 
         .form-input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #6366f1;
+            box-shadow:
+                0 0 0 1px #4f46e5,
+                0 0 0 4px rgba(79, 70, 229, 0.2);
+            background-color: #020617;
         }
 
-        .form-input::placeholder {
-            color: #d1d5db;
+        .form-input.error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 1px #ef4444;
         }
 
         .form-error {
-            color: #ef4444;
-            font-size: 0.875rem;
-            margin-top: 0.4rem;
+            color: #fca5a5;
+            font-size: 0.8rem;
+            margin-top: 0.35rem;
             display: block;
         }
 
         .submit-btn {
             width: 100%;
-            padding: 0.875rem 1rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            padding: 0.85rem 1rem;
             border: none;
-            border-radius: 8px;
+            border-radius: 0.8rem;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.98rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 1.5rem;
+            margin-top: 0.75rem;
+            letter-spacing: 0.02em;
+            color: #f9fafb;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            box-shadow:
+                0 16px 30px rgba(79, 70, 229, 0.5),
+                0 0 0 1px rgba(129, 140, 248, 0.25);
+            transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
         }
 
         .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
+            transform: translateY(-1px);
+            filter: brightness(1.03);
+            box-shadow:
+                0 20px 38px rgba(79, 70, 229, 0.65),
+                0 0 0 1px rgba(129, 140, 248, 0.35);
         }
 
         .submit-btn:active {
             transform: translateY(0);
+            box-shadow:
+                0 10px 18px rgba(79, 70, 229, 0.5),
+                0 0 0 1px rgba(129, 140, 248, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            box-shadow: none;
         }
 
         .divider {
             text-align: center;
-            margin: 2rem 0;
+            margin: 2rem 0 1.75rem;
             position: relative;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #1f2937);
         }
 
         .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
             left: 0;
+        }
+
+        .divider::after {
             right: 0;
-            height: 1px;
-            background: #e5e7eb;
         }
 
         .divider-text {
-            background: white;
-            padding: 0 1rem;
             position: relative;
-            color: #9ca3af;
-            font-size: 0.875rem;
+            padding: 0 0.75rem;
+            background: transparent;
         }
 
         .login-footer {
             text-align: center;
-            margin-top: 2rem;
+            margin-top: 0.5rem;
         }
 
         .login-footer-text {
-            color: #6b7280;
-            font-size: 0.95rem;
+            color: #9ca3af;
+            font-size: 0.9rem;
         }
 
         .login-footer-link {
-            color: #667eea;
+            color: #a5b4fc;
             text-decoration: none;
             font-weight: 600;
-            transition: color 0.3s ease;
+            transition: color 0.18s ease, text-decoration 0.18s ease;
         }
 
         .login-footer-link:hover {
-            color: #764ba2;
+            color: #c4b5fd;
             text-decoration: underline;
         }
 
-        .alert-banner {
-            background: #fee2e2;
-            border-left: 4px solid #ef4444;
-            color: #7f1d1d;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            font-size: 0.95rem;
+        .alert {
+            padding: 0.8rem 0.9rem;
+            border-radius: 0.65rem;
+            font-size: 0.85rem;
+            margin-bottom: 0.9rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            border-width: 1px;
         }
 
-        .test-credentials {
-            background: #dbeafe;
-            border-left: 4px solid #667eea;
-            color: #0c2d6b;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-top: 2rem;
-            font-size: 0.875rem;
-            line-height: 1.6;
+        .alert-icon {
+            margin-top: 1px;
+            font-size: 1rem;
         }
 
-        .credential-row {
-            margin: 0.5rem 0;
-            font-family: 'Monaco', 'Courier New', monospace;
+        .alert-text {
+            flex: 1;
         }
 
-        .credential-label {
-            font-weight: 600;
-            color: #0c4a6e;
+        .alert-danger {
+            background: rgba(248, 113, 113, 0.1);
+            border-color: rgba(248, 113, 113, 0.8);
+            color: #fecaca;
+        }
+
+        .alert-warning {
+            background: rgba(251, 191, 36, 0.1);
+            border-color: rgba(251, 191, 36, 0.8);
+            color: #fef08a;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.12);
+            border-color: rgba(34, 197, 94, 0.75);
+            color: #bbf7d0;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.12);
+            border-color: rgba(59, 130, 246, 0.85);
+            color: #bfdbfe;
+        }
+
+        .alert-default {
+            background: rgba(148, 163, 184, 0.12);
+            border-color: rgba(148, 163, 184, 0.65);
+            color: #e5e7eb;
+        }
+
+        .flash-container {
+            margin-bottom: 1.25rem;
+        }
+
+        .remember-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: -0.5rem;
+            margin-bottom: 1.2rem;
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+
+        .remember-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .remember-checkbox input[type="checkbox"] {
+            width: 0.9rem;
+            height: 0.9rem;
+            border-radius: 0.25rem;
+            border: 1px solid #4b5563;
+            background-color: #020617;
+            accent-color: #4f46e5;
+        }
+
+        .remember-label {
+            cursor: pointer;
+        }
+
+        .forgot-link {
+            color: #a5b4fc;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-link:hover {
+            color: #c4b5fd;
+            text-decoration: underline;
+        }
+
+        /* Accessibility focus outline for clickable text links */
+        a:focus-visible {
+            outline: 2px solid #4f46e5;
+            outline-offset: 2px;
+            border-radius: 2px;
         }
     </style>
 </head>
 <body>
 <div class="login-container">
-    <div class="login-card">
-        <div class="login-header">
-            <div class="login-logo">💼</div>
-            <h1 class="login-title">Ripple Capital</h1>
-            <p class="login-subtitle">Insurance ERP System</p>
-        </div>
+    <main class="login-card" role="main" aria-labelledby="login-title">
+        <header class="login-header">
+            <div class="login-logo-wrapper" aria-hidden="true">
+                <div class="login-logo">💼</div>
+            </div>
+            <h1 id="login-title" class="login-title">Ripple Capital</h1>
+            <p class="login-subtitle">Insurance ERP – Secure Agent & Client Portal</p>
+        </header>
 
+        <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert-banner">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
+            {% if messages %}
+                <div class="flash-container" aria-live="polite">
+                    {% for category, message in messages %}
+                        {% set cat = category.lower() %}
+                        {% if cat in ['danger', 'error'] %}
+                            {% set cls = 'alert-danger' %}
+                            {% set icon = '!' %}
+                        {% elif cat == 'warning' %}
+                            {% set cls = 'alert-warning' %}
+                            {% set icon = '!' %}
+                        {% elif cat == 'success' %}
+                            {% set cls = 'alert-success' %}
+                            {% set icon = '✓' %}
+                        {% elif cat == 'info' %}
+                            {% set cls = 'alert-info' %}
+                            {% set icon = 'i' %}
+                        {% else %}
+                            {% set cls = 'alert-default' %}
+                            {% set icon = 'i' %}
+                        {% endif %}
+                        <div class="alert {{ cls }}">
+                            <div class="alert-icon" aria-hidden="true">{{ icon }}</div>
+                            <div class="alert-text">{{ message }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
         {% endwith %}
 
-        <form method="post" novalidate>
+        <form method="post" novalidate aria-describedby="login-description">
             {{ form.hidden_tag() }}
+
+            <p id="login-description" class="sr-only">
+                Sign in with your registered email address and password.
+            </p>
 
             <div class="form-group">
                 {{ form.email.label(class="form-label") }}
-                {{ form.email(class="form-input", placeholder="your@email.com", autocomplete="email") }}
+                {% set email_classes = 'form-input' + (' error' if form.email.errors else '') %}
+                {{ form.email(
+                    class=email_classes,
+                    placeholder="you@company.com",
+                    autocomplete="email",
+                    required=true,
+                    autofocus=true
+                ) }}
                 {% for error in form.email.errors %}
                     <span class="form-error">{{ error }}</span>
                 {% endfor %}
             </div>
 
             <div class="form-group">
-                {{ form.password.label(class="form-label") }}
-                {{ form.password(class="form-input", placeholder="Enter your password", autocomplete="current-password") }}
+                <label class="form-label" for="{{ form.password.id }}">
+                    <span>{{ form.password.label.text }}</span>
+                    <span class="required">Required</span>
+                </label>
+                {% set pw_classes = 'form-input' + (' error' if form.password.errors else '') %}
+                {{ form.password(
+                    class=pw_classes,
+                    placeholder="Enter your password",
+                    autocomplete="current-password",
+                    required=true
+                ) }}
                 {% for error in form.password.errors %}
                     <span class="form-error">{{ error }}</span>
                 {% endfor %}
             </div>
 
+            <div class="remember-row">
+                <div class="remember-checkbox">
+                    {% if form.remember_me is defined %}
+                        {{ form.remember_me(id="remember_me") }}
+                        <label for="remember_me" class="remember-label">Remember this device</label>
+                    {% else %}
+                        <!-- If you don't have remember_me in your form, this block stays hidden / can be removed -->
+                    {% endif %}
+                </div>
+                <!-- Optional forgot password link, implement route if needed -->
+                {# <a href="{{ url_for('auth.forgot_password') }}" class="forgot-link">Forgot password?</a> #}
+            </div>
+
             {{ form.submit(class="submit-btn", value="Sign In") }}
         </form>
 
-        <div class="divider">
-            <span class="divider-text">or</span>
+        <div class="divider" aria-hidden="true">
+            <span class="divider-text">New to Ripple Capital?</span>
         </div>
 
         <div class="login-footer">
             <p class="login-footer-text">
-                New client? <a href="{{ url_for('auth.register') }}" class="login-footer-link">Create an account</a>
+                Need access? <a href="{{ url_for('auth.register') }}" class="login-footer-link">Create an account</a>
             </p>
         </div>
 
-        <div class="test-credentials">
-            <div style="font-weight: 600; margin-bottom: 0.5rem;">Test Credentials:</div>
-            <div class="credential-row">
-                <span class="credential-label">Agent:</span> agent@insurance.com / password123
-            </div>
-            <div class="credential-row">
-                <span class="credential-label">Admin:</span> admin@insurance.com / admin123
-            </div>
-        </div>
-    </div>
+    </main>
 </div>
 </body>
 </html>
-

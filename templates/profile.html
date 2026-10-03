@@ -3,441 +3,639 @@
 {% block title %}Profile - Ripple Capital Insurance ERP{% endblock %}
 
 {% block page_title %}My Profile{% endblock %}
-
-{% block page_subtitle %}Manage your account settings and preferences{% endblock %}
+{% block page_subtitle %}Manage your account details, security, and preferences{% endblock %}
 
 {% block content %}
 <style>
-    .profile-container {
-        max-width: 900px;
+    :root {
+        --rc-bg-card: #ffffff;
+        --rc-bg-soft: #f9fafb;
+        --rc-text-main: #111827;
+        --rc-text-muted: #6b7280;
+        --rc-primary: #4f46e5;
+        --rc-primary-soft: #e0e7ff;
+        --rc-primary-strong: #4338ca;
+        --rc-border-subtle: #e5e7eb;
+        --rc-border-strong: #d1d5db;
+    }
+
+    .rc-profile-root {
+        max-width: 980px;
         margin: 0 auto;
-    }
-
-    .profile-card {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        margin-bottom: 2rem;
-    }
-
-    .profile-card-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid #e5e7eb;
-    }
-
-    .profile-header {
         display: flex;
-        align-items: center;
-        gap: 2rem;
-        margin-bottom: 2rem;
+        flex-direction: column;
+        gap: 1.5rem;
     }
 
-    .profile-avatar-wrapper {
+    .rc-card {
+        background: var(--rc-bg-card);
+        border-radius: 1rem;
+        border: 1px solid rgba(229, 231, 235, 0.9);
+        box-shadow:
+            0 14px 35px rgba(15, 23, 42, 0.06),
+            0 0 0 1px rgba(148, 163, 184, 0.16);
+        padding: 1.75rem 1.75rem 1.85rem;
+    }
+
+    @media (min-width: 768px) {
+        .rc-card {
+            padding: 2rem 2rem 2.1rem;
+        }
+    }
+
+    .rc-profile-header {
+        display: flex;
+        gap: 1.75rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .rc-avatar-wrapper {
         position: relative;
         width: 120px;
         height: 120px;
+        flex-shrink: 0;
     }
 
-    .profile-avatar {
+    .rc-avatar {
         width: 100%;
         height: 100%;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 1rem;
+        background: radial-gradient(circle at 20% 20%, #eef2ff 0, transparent 50%),
+                    radial-gradient(circle at 80% 80%, #a855f7 0, transparent 55%),
+                    linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
         display: flex;
         align-items: center;
         justify-content: center;
+        color: #f9fafb;
         font-size: 3rem;
-        color: white;
         overflow: hidden;
+        box-shadow:
+            0 18px 40px rgba(79, 70, 229, 0.55),
+            0 0 0 3px rgba(249, 250, 251, 0.9);
     }
 
-    .profile-avatar img {
+    .rc-avatar img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
 
-    .avatar-upload-label {
+    .rc-avatar-upload {
         position: absolute;
-        bottom: 0;
-        right: 0;
-        background: #667eea;
-        color: white;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
+        bottom: -4px;
+        right: -4px;
+        width: 42px;
+        height: 42px;
+        border-radius: 999px;
+        background: #111827;
+        border: 3px solid #f9fafb;
         display: flex;
         align-items: center;
         justify-content: center;
+        color: #f9fafb;
         cursor: pointer;
-        transition: all 0.3s ease;
-        border: 3px solid white;
+        font-size: 0.9rem;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.6);
+        transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
     }
 
-    .avatar-upload-label:hover {
-        background: #764ba2;
-        transform: scale(1.1);
+    .rc-avatar-upload:hover {
+        transform: translateY(-1px);
+        background: #4f46e5;
+        box-shadow: 0 14px 34px rgba(79, 70, 229, 0.8);
     }
 
-    .avatar-upload-input {
+    .rc-avatar-upload-input {
         display: none;
     }
 
-    .profile-info {
+    .rc-profile-main {
         flex: 1;
+        min-width: 0;
     }
 
-    .profile-name {
-        font-size: 1.75rem;
+    .rc-profile-name {
+        font-size: 1.6rem;
         font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 0.5rem;
+        color: var(--rc-text-main);
+        margin-bottom: 0.35rem;
     }
 
-    .profile-role {
-        font-size: 1rem;
+    .rc-profile-role {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.9rem;
         color: #6b7280;
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.8rem;
     }
 
-    .profile-meta {
-        display: flex;
-        gap: 2rem;
-        font-size: 0.95rem;
-    }
-
-    .profile-meta-item {
-        color: #6b7280;
-    }
-
-    .profile-meta-label {
+    .rc-role-pill {
+        padding: 0.25rem 0.6rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
         font-weight: 600;
-        color: #374151;
+        background: #eef2ff;
+        color: #4f46e5;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
     }
 
-    .form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    .rc-profile-meta {
+        display: flex;
+        flex-wrap: wrap;
         gap: 1.5rem;
-        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
     }
 
-    .form-group {
-        margin-bottom: 1rem;
+    .rc-profile-meta-item {
+        color: var(--rc-text-muted);
     }
 
-    .form-label {
+    .rc-profile-meta-label {
         display: block;
         font-weight: 600;
         color: #374151;
-        margin-bottom: 0.5rem;
-        font-size: 0.95rem;
+        margin-bottom: 0.1rem;
     }
 
-    .form-input {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border: 1.5px solid #e5e7eb;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-family: inherit;
-        transition: all 0.3s ease;
-        background: white;
+    /* Tabs */
+    .rc-tabs {
+        display: flex;
+        border-bottom: 1.5px solid var(--rc-border-subtle);
+        margin-bottom: 1.5rem;
+        overflow-x: auto;
     }
 
-    .form-input:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .file-input-wrapper {
+    .rc-tab-button {
         position: relative;
-        display: inline-block;
-        width: 100%;
-    }
-
-    .file-input-label {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem;
-        border: 2px dashed #e5e7eb;
-        border-radius: 8px;
-        background: #f9fafb;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-align: center;
-    }
-
-    .file-input-label:hover {
-        border-color: #667eea;
-        background: #f3f4f6;
-    }
-
-    .file-input-label input {
-        display: none;
-    }
-
-    .file-input-text {
-        font-weight: 600;
-        color: #667eea;
-        margin-left: 0.5rem;
-    }
-
-    .btn {
-        display: inline-block;
-        padding: 0.75rem 1.75rem;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        font-size: 1rem;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    .tab-container {
-        display: flex;
-        border-bottom: 2px solid #e5e7eb;
-        margin-bottom: 2rem;
-    }
-
-    .tab-button {
-        padding: 1rem 1.5rem;
+        appearance: none;
         background: none;
         border: none;
+        padding: 0.9rem 1.3rem;
         cursor: pointer;
+        font-size: 0.9rem;
         font-weight: 600;
         color: #6b7280;
-        transition: all 0.3s ease;
         border-bottom: 2px solid transparent;
-        margin-bottom: -2px;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        transition: color 0.16s ease, border-color 0.16s ease, background 0.16s ease;
     }
 
-    .tab-button.active {
-        color: #667eea;
-        border-bottom-color: #667eea;
+    .rc-tab-button:hover {
+        color: var(--rc-primary);
+        background: #f9fafb;
     }
 
-    .tab-button:hover {
-        color: #667eea;
+    .rc-tab-button.active {
+        color: var(--rc-primary);
+        border-bottom-color: var(--rc-primary);
+        background: #f9fafb;
     }
 
-    .tab-content {
+    .rc-tab-button i {
+        font-size: 0.9rem;
+    }
+
+    .rc-tab-panel {
+        display: none;
+        padding-top: 0.5rem;
+    }
+
+    .rc-tab-panel.active {
+        display: block;
+    }
+
+    /* Forms */
+    .rc-form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.25rem 1.5rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .rc-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .rc-form-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .rc-form-hint {
+        font-size: 0.8rem;
+        color: #9ca3af;
+    }
+
+    .rc-input,
+    .rc-input[disabled] {
+        width: 100%;
+        padding: 0.7rem 0.9rem;
+        border-radius: 0.65rem;
+        border: 1.5px solid var(--rc-border-subtle);
+        font-size: 0.95rem;
+        font-family: inherit;
+        background: #ffffff;
+        color: var(--rc-text-main);
+        transition: border 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    .rc-input:focus {
+        outline: none;
+        border-color: var(--rc-primary);
+        box-shadow:
+            0 0 0 1px var(--rc-primary),
+            0 0 0 4px rgba(79, 70, 229, 0.2);
+    }
+
+    .rc-input[disabled] {
+        background: #f9fafb;
+        color: #6b7280;
+        cursor: not-allowed;
+    }
+
+    /* File Drop */
+    .rc-file-drop-wrapper {
+        margin-bottom: 1.25rem;
+    }
+
+    .rc-file-drop {
+        border-radius: 0.75rem;
+        border: 2px dashed #e5e7eb;
+        padding: 1.3rem;
+        background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .rc-file-drop:hover {
+        border-color: var(--rc-primary);
+        background: #f3f4ff;
+        box-shadow: 0 8px 22px rgba(79, 70, 229, 0.18);
+    }
+
+    .rc-file-drop-icon {
+        font-size: 1.3rem;
+        color: var(--rc-primary);
+        margin-bottom: 0.35rem;
+    }
+
+    .rc-file-drop-line {
+        font-size: 0.9rem;
+        color: var(--rc-text-main);
+        font-weight: 600;
+    }
+
+    .rc-file-drop-subline {
+        font-size: 0.8rem;
+        color: var(--rc-text-muted);
+        margin-top: 0.15rem;
+    }
+
+    .rc-file-drop input[type="file"] {
         display: none;
     }
 
-    .tab-content.active {
-        display: block;
+    .rc-file-note {
+        font-size: 0.78rem;
+        color: #9ca3af;
+        margin-top: 0.4rem;
+    }
+
+    /* Buttons */
+    .rc-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.5rem;
+        border-radius: 999px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
+    }
+
+    .rc-btn-primary {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        color: #f9fafb;
+        box-shadow: 0 12px 30px rgba(79, 70, 229, 0.55);
+    }
+
+    .rc-btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 18px 40px rgba(79, 70, 229, 0.7);
+    }
+
+    .rc-btn span.emoji {
+        font-size: 1rem;
     }
 
     @media (max-width: 768px) {
-        .profile-header {
+        .rc-profile-header {
             flex-direction: column;
-            text-align: center;
+            align-items: flex-start;
         }
 
-        .profile-meta {
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .form-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .tab-container {
-            flex-wrap: wrap;
-        }
-
-        .tab-button {
-            flex: 1;
+        .rc-profile-root {
+            padding-bottom: 1rem;
         }
     }
 </style>
 
-<div class="profile-container">
+<div class="rc-profile-root">
     <!-- Profile Header -->
-    <div class="profile-card">
-        <div class="profile-header">
-            <div class="profile-avatar-wrapper">
-                <div class="profile-avatar" id="profileAvatarDisplay">
+    <section class="rc-card" aria-label="Profile overview">
+        <div class="rc-profile-header">
+            <div class="rc-avatar-wrapper">
+                <div class="rc-avatar" id="profileAvatarDisplay">
                     {% if profile_picture_url %}
-                        <img src="{{ profile_picture_url }}" alt="Profile Picture">
+                        <img src="{{ profile_picture_url }}" alt="Profile picture">
                     {% else %}
                         <i class="fas fa-user"></i>
                     {% endif %}
                 </div>
-                <label for="profilePictureInput" class="avatar-upload-label" title="Click to change profile picture">
+                <label for="profilePictureInput" class="rc-avatar-upload" title="Update profile picture">
                     <i class="fas fa-camera"></i>
+                    <input
+                        type="file"
+                        id="profilePictureInput"
+                        name="profile_picture"
+                        class="rc-avatar-upload-input"
+                        accept="image/*"
+                        form="profile-info-form"
+                    >
                 </label>
             </div>
-            <div class="profile-info">
-                <h2 class="profile-name">{{ current_user.full_name }}</h2>
-                <p class="profile-role"><strong>{{ current_user.role|upper }}</strong></p>
-                <div class="profile-meta">
-                    <div class="profile-meta-item">
-                        <span class="profile-meta-label">Email:</span> {{ current_user.email }}
+
+            <div class="rc-profile-main">
+                <h2 class="rc-profile-name">{{ current_user.full_name }}</h2>
+                <div class="rc-profile-role">
+                    <span class="rc-role-pill">{{ current_user.role|upper }}</span>
+                    <span>Ripple Capital Insurance ERP</span>
+                </div>
+                <div class="rc-profile-meta">
+                    <div class="rc-profile-meta-item">
+                        <span class="rc-profile-meta-label">Email</span>
+                        <span>{{ current_user.email }}</span>
                     </div>
-                    <div class="profile-meta-item">
-                        <span class="profile-meta-label">Phone:</span> {{ current_user.phone or 'Not provided' }}
+                    <div class="rc-profile-meta-item">
+                        <span class="rc-profile-meta-label">Phone</span>
+                        <span>{{ current_user.phone or 'Not provided' }}</span>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Tabs -->
-    <div class="profile-card">
-        <div class="tab-container">
-            <button class="tab-button active" onclick="switchTab('profile-info')">
+    <!-- Settings & Security -->
+    <section class="rc-card" aria-label="Profile settings">
+        <div class="rc-tabs" role="tablist">
+            <button
+                class="rc-tab-button active"
+                id="tab-profile-info"
+                type="button"
+                role="tab"
+                aria-controls="panel-profile-info"
+                aria-selected="true"
+                data-target="panel-profile-info"
+            >
                 <i class="fas fa-user-edit"></i> Personal Info
             </button>
-            <button class="tab-button" onclick="switchTab('password-change')">
-                <i class="fas fa-lock"></i> Change Password
+            <button
+                class="rc-tab-button"
+                id="tab-password-change"
+                type="button"
+                role="tab"
+                aria-controls="panel-password-change"
+                aria-selected="false"
+                data-target="panel-password-change"
+            >
+                <i class="fas fa-lock"></i> Security & Password
             </button>
         </div>
 
-        <!-- Profile Info Tab -->
-        <div id="profile-info" class="tab-content active">
-            <form method="post" enctype="multipart/form-data" novalidate>
-                <!-- Profile Picture Upload -->
-                <div class="form-group">
-                    <label class="form-label">Profile Picture</label>
-                    <div class="file-input-wrapper">
-                        <label class="file-input-label">
-                            <input 
-                                type="file" 
-                                id="profilePictureInput"
-                                name="profile_picture" 
-                                accept="image/*"
-                                onchange="handleFileSelect(event)"
-                            >
+        <!-- Personal Info -->
+        <div
+            id="panel-profile-info"
+            class="rc-tab-panel active"
+            role="tabpanel"
+            aria-labelledby="tab-profile-info"
+        >
+            <form id="profile-info-form" method="post" enctype="multipart/form-data" novalidate>
+                <!-- Profile Picture Dropzone -->
+                <div class="rc-file-drop-wrapper">
+                    <label class="rc-file-drop" for="profilePictureInput">
+                        <div class="rc-file-drop-icon">
                             <i class="fas fa-image"></i>
-                            <span class="file-input-text">Click or drag image to upload</span>
-                        </label>
-                    </div>
-                    <p style="font-size: 0.85rem; color: #6b7280; margin-top: 0.5rem;">PNG, JPG, GIF up to 5MB</p>
+                        </div>
+                        <div class="rc-file-drop-line">Click to upload or drag &amp; drop an image</div>
+                        <div class="rc-file-drop-subline">
+                            Recommended: Square image. Supported: PNG, JPG, GIF up to 5&nbsp;MB.
+                        </div>
+                    </label>
+                    <p class="rc-file-note">
+                        Your avatar appears in the sidebar and across the application.
+                    </p>
                 </div>
 
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Full Name</label>
-                        <input type="text" name="full_name" class="form-input" value="{{ current_user.full_name }}" required>
+                <div class="rc-form-grid">
+                    <div class="rc-form-group">
+                        <label class="rc-form-label" for="full_name">Full Name</label>
+                        <input
+                            id="full_name"
+                            type="text"
+                            name="full_name"
+                            class="rc-input"
+                            value="{{ current_user.full_name }}"
+                            required
+                        >
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Email Address</label>
-                        <input type="email" class="form-input" value="{{ current_user.email }}" disabled>
-                        <p style="font-size: 0.85rem; color: #6b7280; margin-top: 0.25rem;">Email cannot be changed</p>
+                    <div class="rc-form-group">
+                        <label class="rc-form-label" for="email_display">Email Address</label>
+                        <input
+                            id="email_display"
+                            type="email"
+                            class="rc-input"
+                            value="{{ current_user.email }}"
+                            disabled
+                        >
+                        <div class="rc-form-hint">Email is used as your login and cannot be changed.</div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Phone Number</label>
-                        <input type="tel" name="phone" class="form-input" value="{{ current_user.phone or '' }}">
+                    <div class="rc-form-group">
+                        <label class="rc-form-label" for="phone">Phone Number</label>
+                        <input
+                            id="phone"
+                            type="tel"
+                            name="phone"
+                            class="rc-input"
+                            value="{{ current_user.phone or '' }}"
+                        >
                     </div>
                 </div>
 
-                <div>
-                    <button type="submit" class="btn btn-primary">💾 Save Changes</button>
-                </div>
+                <button type="submit" class="rc-btn rc-btn-primary">
+                    <span class="emoji">💾</span>
+                    <span>Save changes</span>
+                </button>
             </form>
         </div>
 
-        <!-- Password Change Tab -->
-        <div id="password-change" class="tab-content">
+        <!-- Password Change -->
+        <div
+            id="panel-password-change"
+            class="rc-tab-panel"
+            role="tabpanel"
+            aria-labelledby="tab-password-change"
+        >
             <form method="post" action="{{ url_for('core.change_password') }}" novalidate>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Current Password</label>
-                        <input type="password" name="current_password" class="form-input" required>
+                <div class="rc-form-grid">
+                    <div class="rc-form-group">
+                        <label class="rc-form-label" for="current_password">Current Password</label>
+                        <input
+                            id="current_password"
+                            type="password"
+                            name="current_password"
+                            class="rc-input"
+                            required
+                        >
+                        <div class="rc-form-hint">
+                            For your security, please confirm your current password before making changes.
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">New Password</label>
-                        <input type="password" name="new_password" class="form-input" required>
+                    <div class="rc-form-group">
+                        <label class="rc-form-label" for="new_password">New Password</label>
+                        <input
+                            id="new_password"
+                            type="password"
+                            name="new_password"
+                            class="rc-input"
+                            required
+                        >
+                        <div class="rc-form-hint">
+                            Use at least 8 characters. A mix of letters, numbers and symbols is recommended.
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Confirm New Password</label>
-                        <input type="password" name="confirm_password" class="form-input" required>
+                    <div class="rc-form-group">
+                        <label class="rc-form-label" for="confirm_password">Confirm New Password</label>
+                        <input
+                            id="confirm_password"
+                            type="password"
+                            name="confirm_password"
+                            class="rc-input"
+                            required
+                        >
                     </div>
                 </div>
 
-                <div>
-                    <button type="submit" class="btn btn-primary">🔒 Change Password</button>
-                </div>
+                <button type="submit" class="rc-btn rc-btn-primary">
+                    <span class="emoji">🔒</span>
+                    <span>Update password</span>
+                </button>
             </form>
         </div>
-    </div>
+    </section>
 </div>
 
 <script>
-    function switchTab(tabName) {
-        const tabs = document.querySelectorAll('.tab-content');
-        tabs.forEach(tab => tab.classList.remove('active'));
+    // Tab switching
+    (function () {
+        const tabButtons = document.querySelectorAll('.rc-tab-button');
+        const panels = document.querySelectorAll('.rc-tab-panel');
 
-        const buttons = document.querySelectorAll('.tab-button');
-        buttons.forEach(btn => btn.classList.remove('active'));
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.getAttribute('data-target');
+                if (!targetId) return;
 
-        document.getElementById(tabName).classList.add('active');
-        event.target.closest('.tab-button').classList.add('active');
+                // Toggle active button
+                tabButtons.forEach(b => {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-selected', 'false');
+                });
+                btn.classList.add('active');
+                btn.setAttribute('aria-selected', 'true');
+
+                // Toggle panels
+                panels.forEach(panel => {
+                    if (panel.id === targetId) {
+                        panel.classList.add('active');
+                    } else {
+                        panel.classList.remove('active');
+                    }
+                });
+            });
+        });
+    })();
+
+    // Avatar preview for both click-upload and drag-drop
+    function updateAvatarPreview(file) {
+        if (!file || !file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const avatar = document.getElementById('profileAvatarDisplay');
+            if (!avatar) return;
+            avatar.innerHTML =
+                '<img src="' + e.target.result + '" alt="Profile preview">';
+        };
+        reader.readAsDataURL(file);
     }
 
-    function handleFileSelect(event) {
-        const file = event.target.files[0];
-        if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const avatar = document.getElementById('profileAvatarDisplay');
-                avatar.innerHTML = '<img src="' + e.target.result + '" alt="Profile Preview" style="width:100%; height:100%; object-fit:cover;">';
-            };
-            reader.readAsDataURL(file);
+    (function () {
+        const input = document.getElementById('profilePictureInput');
+        const dropLabel = document.querySelector('.rc-file-drop');
+        if (!dropLabel) return;
+
+        // Standard file selection
+        if (input) {
+            input.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                updateAvatarPreview(file);
+            });
         }
-    }
 
-    const fileInputLabel = document.querySelector('.file-input-label');
-    if (fileInputLabel) {
-        fileInputLabel.addEventListener('dragover', (e) => {
+        // Drag & drop on the label
+        dropLabel.addEventListener('dragover', function (e) {
             e.preventDefault();
-            fileInputLabel.style.borderColor = '#667eea';
-            fileInputLabel.style.background = '#f3f4f6';
+            dropLabel.style.borderColor = '#4f46e5';
+            dropLabel.style.background = '#f3f4ff';
         });
 
-        fileInputLabel.addEventListener('dragleave', (e) => {
+        dropLabel.addEventListener('dragleave', function (e) {
             e.preventDefault();
-            fileInputLabel.style.borderColor = '#e5e7eb';
-            fileInputLabel.style.background = '#f9fafb';
+            dropLabel.style.borderColor = '#e5e7eb';
+            dropLabel.style.background = 'linear-gradient(135deg, #f9fafb 0%, #ffffff 100%)';
         });
 
-        fileInputLabel.addEventListener('drop', (e) => {
+        dropLabel.addEventListener('drop', function (e) {
             e.preventDefault();
-            fileInputLabel.style.borderColor = '#e5e7eb';
-            fileInputLabel.style.background = '#f9fafb';
+            dropLabel.style.borderColor = '#e5e7eb';
+            dropLabel.style.background = 'linear-gradient(135deg, #f9fafb 0%, #ffffff 100%)';
+
             const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                document.getElementById('profilePictureInput').files = files;
-                handleFileSelect({ target: { files: files } });
+            if (files && files.length > 0) {
+                const file = files[0];
+                if (input) {
+                    input.files = files;
+                }
+                updateAvatarPreview(file);
             }
         });
-    }
+    })();
 </script>
 {% endblock %}
-
