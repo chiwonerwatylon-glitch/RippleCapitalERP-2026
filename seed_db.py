@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 """
-Seed script to create initial admin/agent users for testing.
+Seed script to create initial admin/owner users for testing.
 
 Run this after database migrations. If no migrations have been generated yet,
 the script creates any missing tables so the seed can still succeed.
 """
 from main.app import create_app, db
-from main.models import User, ROLE_AGENT, ROLE_ADMIN
+from main.models import User, ROLE_OWNER, ROLE_ADMIN
 
 
 def seed_db():
@@ -15,19 +15,19 @@ def seed_db():
         # Create any missing tables (no-op for tables created by migrations)
         db.create_all()
 
-        # Check if agent user already exists
-        agent = User.query.filter_by(email="agent@insurance.com").first()
-        if not agent:
-            agent = User(
-                full_name="Agent User",
-                email="agent@insurance.com",
+        # Check if owner user already exists
+        owner = User.query.filter_by(email="owner@insurance.com").first()
+        if not owner:
+            owner = User(
+                full_name="Owner User",
+                email="owner@insurance.com",
                 phone="555-0001",
-                role=ROLE_AGENT,
+                role=ROLE_OWNER,
                 is_active=True,
             )
-            agent.set_password("password123")
-            db.session.add(agent)
-            print("Created agent user: agent@insurance.com / password123")
+            owner.set_password("password123")
+            db.session.add(owner)
+            print("Created owner user: owner@insurance.com / password123")
 
         # Check if admin user already exists
         admin = User.query.filter_by(email="admin@insurance.com").first()
@@ -49,3 +49,4 @@ def seed_db():
 
 if __name__ == "__main__":
     seed_db()
+

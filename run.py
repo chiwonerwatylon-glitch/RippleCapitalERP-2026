@@ -1,5 +1,5 @@
 from main.app import create_app, db
-from main.models import User, ROLE_AGENT, ROLE_ADMIN
+from main.models import User, ROLE_OWNER, ROLE_ADMIN
 
 app = create_app()
 
@@ -7,18 +7,18 @@ app = create_app()
 with app.app_context():
     db.create_all()
     
-    # Create test agent account if it doesn't exist
-    if not User.query.filter_by(email="agent@insurance.com").first():
-        agent = User(
-            full_name="Agent User",
-            email="agent@insurance.com",
+    # Create test owner account if it doesn't exist
+    if not User.query.filter_by(email="owner@insurance.com").first():
+        owner = User(
+            full_name="Owner User",
+            email="owner@insurance.com",
             phone="555-0001",
-            role=ROLE_AGENT,
+            role=ROLE_OWNER,
             is_active=True,
         )
-        agent.set_password("password123")
-        db.session.add(agent)
-        print("Created agent user: agent@insurance.com / password123")
+        owner.set_password("password123")
+        db.session.add(owner)
+        print("Created owner user: owner@insurance.com / password123")
     
     # Create test admin account if it doesn't exist
     if not User.query.filter_by(email="admin@insurance.com").first():
