@@ -439,11 +439,78 @@ def create_app(config_name=None):
                     flash(f"Error adding company: {str(e)}", "danger")
         return render_template("add_company.html")
 
+    def _rule_form_options():
+        """Return (companies, products) available to the current user for rule forms."""
+        if not HAS_NEW_MODELS:
+            return [], []
+        products_list = ensure_user_has_default_products(current_user)
+        companies_list = Company.query.filter_by(owner_id=current_user.id).order_by(Company.name).all()
+        return companies_list, products_list
+
+    def _validate_rule_form(form, rule_id=None):
+        """Validate commission rule form data.
+
+        Returns (data, error). ``data`` is a dict of cleaned values when valid.
+        """
+        company_raw = (form.get("company_id") or "").strip()
+        product_raw = (form.get("product_id") or "").strip()
+        percent_raw = (form.get("commission_percent") or "").strip()
+        description = (form.get("description") or "").strip()
+        is_active = (form.get("is_active", "1") == "1")
+
+        if not product_raw:
+            return None, "Please select a product."
+        if not company_raw:
+            return None, "Please select a company."
+        if not percent_raw:
+            return None, "Please enter a commission percentage."
+
+        try:
+            product_id = int(product_raw)
+            company_id = int(company_raw)
+        except ValueError:
+            return None, "Invalid company or product selected."
+
+        try:
+            percent = float(percent_raw)
+        except ValueError:
+            return None, "Commission percentage must be a number."
+        if percent != percent or percent < 0 or percent > 100:
+            return None, "Commission percentage must be between 0 and 100."
+
+        if len(description) > 255:
+            return None, "Description must be 255 characters or fewer."
+
+        product = InsuranceProduct.query.filter_by(id=product_id, owner_id=current_user.id).first()
+        if not product:
+            return None, "Selected product was not found."
+        company = Company.query.filter_by(id=company_id, owner_id=current_user.id).first()
+        if not company:
+            return None, "Selected company was not found."
+
+        duplicate = CommissionRule.query.filter_by(company_id=company_id, product_id=product_id)
+        if rule_id is not None:
+            duplicate = duplicate.filter(CommissionRule.id != rule_id)
+        if duplicate.first():
+            return None, "A commission rule already exists for this product and company."
+
+        return {
+            "company_id": company_id,
+            "product_id": product_id,
+            "commission_percent": round(percent, 2),
+            "description": description or None,
+            "is_active": is_active,
+        }, None
+
     @core_bp.route("/commission-rules")
     @login_required
     def commission_rules():
         if HAS_NEW_MODELS:
-            rules = CommissionRule.query.filter_by(owner_id=current_user.id).all()
+            rules = (
+                CommissionRule.query.filter_by(owner_id=current_user.id)
+                .order_by(CommissionRule.created_at.desc())
+                .all()
+            )
         else:
             rules = []
         return render_template("commission_rules.html", rules=rules)
@@ -451,31 +518,91 @@ def create_app(config_name=None):
     @core_bp.route("/commission-rules/add", methods=["GET", "POST"])
     @login_required
     def add_commission_rule():
-        if HAS_NEW_MODELS:
-            companies_list = Company.query.filter_by(owner_id=current_user.id).all()
-            products_list = InsuranceProduct.query.filter_by(owner_id=current_user.id).all()
-        else:
-            companies_list = []
-            products_list = []
+        if not HAS_NEW_MODELS:
+            flash("Commission rules are not available.", "danger")
+            return redirect(url_for("core.commission_rules"))
+
+        companies_list, products_list = _rule_form_options()
 
         if request.method == "POST":
-            if HAS_NEW_MODELS:
+            data, error = _validate_rule_form(request.form)
+            if error:
+                flash(error, "danger")
+            else:
                 try:
-                    rule = CommissionRule(
-                        company_id=request.form.get("company_id"),
-                        product_id=request.form.get("product_id"),
-                        commission_percent=float(request.form.get("commission_percent", 0)),
-                        owner_id=current_user.id
-                    )
+                    rule = CommissionRule(owner_id=current_user.id, **data)
                     db.session.add(rule)
                     db.session.commit()
-                    flash("Commission rule added successfully.", "success")
+                    flash("Commission rule created successfully.", "success")
                     return redirect(url_for("core.commission_rules"))
                 except Exception as e:
                     db.session.rollback()
                     flash(f"Error adding commission rule: {str(e)}", "danger")
-        
-        return render_template("add_commission_rule.html", companies=companies_list, products=products_list)
+
+        return render_template(
+            "add_commission_rule.html",
+            companies=companies_list,
+            products=products_list,
+            rule=None,
+            form_data=request.form if request.method == "POST" else None,
+        )
+
+    @core_bp.route("/commission-rules/<int:rule_id>/edit", methods=["GET", "POST"])
+    @login_required
+    def edit_commission_rule(rule_id):
+        if not HAS_NEW_MODELS:
+            flash("Commission rules are not available.", "danger")
+            return redirect(url_for("core.commission_rules"))
+
+        rule = CommissionRule.query.get_or_404(rule_id)
+        if rule.owner_id != current_user.id:
+            flash("You don't have permission to edit this commission rule.", "danger")
+            return redirect(url_for("core.commission_rules"))
+
+        companies_list, products_list = _rule_form_options()
+
+        if request.method == "POST":
+            data, error = _validate_rule_form(request.form, rule_id=rule.id)
+            if error:
+                flash(error, "danger")
+            else:
+                try:
+                    for key, value in data.items():
+                        setattr(rule, key, value)
+                    db.session.commit()
+                    flash("Commission rule updated successfully.", "success")
+                    return redirect(url_for("core.commission_rules"))
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f"Error updating commission rule: {str(e)}", "danger")
+
+        return render_template(
+            "add_commission_rule.html",
+            companies=companies_list,
+            products=products_list,
+            rule=rule,
+            form_data=request.form if request.method == "POST" else None,
+        )
+
+    @core_bp.route("/commission-rules/<int:rule_id>/delete", methods=["POST"])
+    @login_required
+    def delete_commission_rule(rule_id):
+        if not HAS_NEW_MODELS:
+            return redirect(url_for("core.commission_rules"))
+
+        rule = CommissionRule.query.get_or_404(rule_id)
+        if rule.owner_id != current_user.id:
+            flash("You don't have permission to delete this commission rule.", "danger")
+            return redirect(url_for("core.commission_rules"))
+
+        try:
+            db.session.delete(rule)
+            db.session.commit()
+            flash("Commission rule deleted successfully.", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error deleting commission rule: {str(e)}", "danger")
+        return redirect(url_for("core.commission_rules"))
 
     @core_bp.route("/policies")
     @login_required
