@@ -9,6 +9,7 @@ db = SQLAlchemy()
 ROLE_CLIENT = "client"
 ROLE_OWNER = "owner"
 ROLE_ADMIN = "admin"
+ROLE_AGENT = "agent"
 
 
 class User(UserMixin, db.Model):

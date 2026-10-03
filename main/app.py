@@ -17,7 +17,7 @@ except ImportError:
     HAS_OPENPYXL = False
 
 from .config import config_by_name
-from .models import db, User, ROLE_ADMIN, ROLE_CLIENT
+from .models import db, User, ROLE_ADMIN, ROLE_AGENT, ROLE_CLIENT
 from .utils import role_required, get_account_owner_id
 
 # Safely import the models
@@ -1007,24 +1007,41 @@ def create_app(config_name=None):
         # Make sure the user has the default products
         ensure_user_has_default_products(current_user)
 
-        # Get owned resources for dropdowns
-        clients_list = Client.query.filter_by(owner_id=get_account_owner_id()).all()
-        companies_list = Company.query.filter_by(owner_id=get_account_owner_id()).all()
-        products_list = InsuranceProduct.query.filter_by(owner_id=get_account_owner_id()).all()
+        # Get account resources for dropdowns (shared across owner/admin/agent)
+        account_id = get_account_owner_id()
+        clients_list = Client.query.filter_by(owner_id=account_id).all()
+        companies_list = Company.query.filter_by(owner_id=account_id).all()
+        products_list = InsuranceProduct.query.filter_by(owner_id=account_id).all()
+
+        if request.method == "GET":
+            if not companies_list:
+                flash("No companies found. Add a company before creating a policy.", "info")
+            if not clients_list:
+                flash("No clients found. Add a client before creating a policy.", "info")
         
         if request.method == "POST":
             try:
                 # Get form data
-                client_id = request.form.get("client_id")
-                company_id = request.form.get("company_id")
-                product_id = request.form.get("product_id")
-                policy_number = request.form.get("policy_number", "").strip()
-                coverage_amount = float(request.form.get("coverage_amount", 0))
-                premium_amount = float(request.form.get("premium_amount", 0))
-                premium_frequency = request.form.get("premium_frequency", "annual")
-                start_date_str = request.form.get("start_date")
-                end_date_str = request.form.get("end_date")
-                status = request.form.get("status", "active")
+                client_id = (request.form.get("client_id") or "").strip()
+                company_id = (request.form.get("company_id") or "").strip()
+                product_id = (request.form.get("product_id") or "").strip()
+                policy_number = (request.form.get("policy_number") or "").strip()
+                premium_frequency = request.form.get("premium_frequency") or "annual"
+                start_date_str = (request.form.get("start_date") or "").strip()
+                end_date_str = (request.form.get("end_date") or "").strip()
+                status = request.form.get("status") or "active"
+
+                # Coverage and premium amounts are optional and default to 0
+                try:
+                    coverage_amount = float((request.form.get("coverage_amount") or "0").strip() or 0)
+                    premium_amount = float((request.form.get("premium_amount") or "0").strip() or 0)
+                except ValueError:
+                    flash("Coverage and premium amounts must be valid numbers.", "warning")
+                    return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
+
+                if coverage_amount < 0 or premium_amount < 0:
+                    flash("Coverage and premium amounts cannot be negative.", "warning")
+                    return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
                 
                 # Validate inputs
                 if not all([client_id, company_id, product_id, policy_number, start_date_str, end_date_str]):
@@ -1047,7 +1064,7 @@ def create_app(config_name=None):
                 
                 # Create new policy
                 policy = Policy(
-                    owner_id=get_account_owner_id(),
+                    owner_id=account_id,
                     client_id=int(client_id),
                     company_id=int(company_id),
                     product_id=int(product_id),

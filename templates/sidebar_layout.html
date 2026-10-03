@@ -527,7 +527,7 @@
                         </li>
                     </ul>
 
-                    {% if current_user.role == 'owner' or current_user.role == 'ROLE_OWNER' %}
+                    {% if current_user.role in ['owner', 'ROLE_OWNER', 'admin'] %}
                         <div class="sidebar-section-label">Operations</div>
                         <ul class="sidebar-menu">
                             <li class="sidebar-menu-item">
@@ -592,6 +592,20 @@
                             </li>
                         </ul>
 
+                        {% if current_user.role == 'admin' %}
+                            <div class="sidebar-section-label">Administration</div>
+                            <ul class="sidebar-menu">
+                                <li class="sidebar-menu-item">
+                                    <a href="{{ url_for('admin.dashboard') }}"
+                                       class="sidebar-menu-link">
+                                        <i class="sidebar-menu-icon fas fa-cog"></i>
+                                        <span class="sidebar-menu-label">Admin Panel</span>
+                                        <span class="sidebar-menu-chevron"><i class="fas fa-chevron-right"></i></span>
+                                    </a>
+                                </li>
+                            </ul>
+                        {% endif %}
+
                     {% elif current_user.role == 'client' or current_user.role == 'ROLE_CLIENT' %}
                         <div class="sidebar-section-label">My Account</div>
                         <ul class="sidebar-menu">
@@ -605,7 +619,7 @@
                             </li>
                         </ul>
 
-                    {% elif current_user.role == 'agent' or current_user.role == 'admin' %}
+                    {% elif current_user.role == 'agent' %}
                         <div class="sidebar-section-label">Agent Tools</div>
                         <ul class="sidebar-menu">
                             <li class="sidebar-menu-item">
@@ -632,17 +646,6 @@
                                     <span class="sidebar-menu-chevron"><i class="fas fa-chevron-right"></i></span>
                                 </a>
                             </li>
-                            {% if current_user.role == 'admin' %}
-                                <div class="sidebar-section-label">Administration</div>
-                                <li class="sidebar-menu-item">
-                                    <a href="{{ url_for('admin.dashboard') }}"
-                                       class="sidebar-menu-link">
-                                        <i class="sidebar-menu-icon fas fa-cog"></i>
-                                        <span class="sidebar-menu-label">Admin Panel</span>
-                                        <span class="sidebar-menu-chevron"><i class="fas fa-chevron-right"></i></span>
-                                    </a>
-                                </li>
-                            {% endif %}
                         </ul>
                     {% endif %}
 

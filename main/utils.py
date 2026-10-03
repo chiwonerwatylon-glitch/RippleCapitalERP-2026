@@ -1,7 +1,7 @@
 from flask import flash, redirect, url_for
 from flask_login import current_user
 from functools import wraps
-from .models import User, ROLE_ADMIN, ROLE_OWNER, ROLE_CLIENT
+from .models import User, ROLE_ADMIN, ROLE_OWNER, ROLE_AGENT, ROLE_CLIENT
 
 
 def get_account_owner_id(user=None):
@@ -10,8 +10,12 @@ def get_account_owner_id(user=None):
     Owners are the account owner of their own data. Admin and agent users
     belong to the primary (earliest registered, active) owner's account, so
     every staff member reads and writes the same shared data set via owner_id.
+    Returns None when there is no authenticated user.
     """
     user = user or current_user
+    if not user or not getattr(user, "is_authenticated", False):
+        return None
+
     if user.role == ROLE_OWNER:
         return user.id
 
