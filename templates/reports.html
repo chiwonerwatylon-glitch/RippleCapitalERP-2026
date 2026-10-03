@@ -1,0 +1,219 @@
+{% extends "sidebar_layout.html" %}
+
+{% block title %}Reports - Ripple Capital Insurance ERP{% endblock %}
+
+{% block page_title %}Reports{% endblock %}
+
+{% block page_subtitle %}Generate and view financial reports{% endblock %}
+
+{% block content %}
+<style>
+    .reports-container {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .report-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .report-card {
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f5f7fa 0%, white 100%);
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        color: inherit;
+    }
+
+    .report-card:hover {
+        border-color: #667eea;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .report-icon {
+        font-size: 2rem;
+        width: 50px;
+        height: 50px;
+        background: #f3f4f6;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .report-title {
+        font-weight: 700;
+        color: #1f2937;
+        font-size: 1.1rem;
+    }
+
+    .report-desc {
+        color: #6b7280;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .report-arrow {
+        color: #667eea;
+        font-weight: 700;
+        margin-top: auto;
+    }
+
+    .report-section {
+        margin-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-icon {
+        font-size: 1.5rem;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 0.75rem 1.75rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .report-card button {
+        width: 100%;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .report-card button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+</style>
+
+<div class="reports-container">
+    <!-- Financial Reports Section -->
+    <div class="report-section">
+        <h3 class="section-title">
+            <span class="section-icon">📊</span> Financial Reports
+        </h3>
+        <div class="report-grid">
+            <div class="report-card">
+                <div class="report-icon">💰</div>
+                <div class="report-title">Commission Report</div>
+                <p class="report-desc">View detailed commission earnings by company and product</p>
+                <button onclick="alert('Commission report functionality coming soon')">Generate Report</button>
+            </div>
+
+            <div class="report-card">
+                <div class="report-icon">💵</div>
+                <div class="report-title">Premium Report</div>
+                <p class="report-desc">Track all premium payments and remittances</p>
+                <button onclick="alert('Premium report functionality coming soon')">Generate Report</button>
+            </div>
+
+            <div class="report-card">
+                <div class="report-icon">📈</div>
+                <div class="report-title">Sales Report</div>
+                <p class="report-desc">Analyze policy sales trends and performance</p>
+                <button onclick="alert('Sales report functionality coming soon')">Generate Report</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client Reports Section -->
+    <div class="report-section">
+        <h3 class="section-title">
+            <span class="section-icon">👥</span> Client Reports
+        </h3>
+        <div class="report-grid">
+            <div class="report-card">
+                <div class="report-icon">👥</div>
+                <div class="report-title">Client Summary</div>
+                <p class="report-desc">List of all clients with contact information</p>
+                <button onclick="alert('Client summary functionality coming soon')">Generate Report</button>
+            </div>
+
+            <div class="report-card">
+                <div class="report-icon">📋</div>
+                <div class="report-title">Client Policy Report</div>
+                <p class="report-desc">Policies grouped by client with premium details</p>
+                <button onclick="alert('Client policy report functionality coming soon')">Generate Report</button>
+            </div>
+
+            <div class="report-card">
+                <div class="report-icon">🎯</div>
+                <div class="report-title">Client Activity</div>
+                <p class="report-desc">Track client activity and engagement metrics</p>
+                <button onclick="alert('Client activity report functionality coming soon')">Generate Report</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Company Reports Section -->
+    <div class="report-section">
+        <h3 class="section-title">
+            <span class="section-icon">🏢</span> Company Reports
+        </h3>
+        <div class="report-grid">
+            <div class="report-card">
+                <div class="report-icon">🏢</div>
+                <div class="report-title">Company Overview</div>
+                <p class="report-desc">Summary of all insurance companies and products</p>
+                <button onclick="alert('Company overview functionality coming soon')">Generate Report</button>
+            </div>
+
+            <div class="report-card">
+                <div class="report-icon">📦</div>
+                <div class="report-title">Product Report</div>
+                <p class="report-desc">Detailed product information with commission rates</p>
+                <button onclick="alert('Product report functionality coming soon')">Generate Report</button>
+            </div>
+
+            <div class="report-card">
+                <div class="report-icon">📊</div>
+                <div class="report-title">Company Performance</div>
+                <p class="report-desc">Performance metrics by company</p>
+                <button onclick="alert('Company performance functionality coming soon')">Generate Report</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

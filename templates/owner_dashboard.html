@@ -1,8 +1,8 @@
 {% extends "sidebar_layout.html" %}
 
-{% block title %}Owner Dashboard - Ripple Capital Insurance ERP{% endblock %}
+{% block title %}Dashboard - Ripple Capital Insurance ERP{% endblock %}
 
-{% block page_title %}Owner Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
 
 {% block page_subtitle %}Manage your clients, companies, and policies{% endblock %}
 
@@ -266,35 +266,35 @@
         <div class="stat-icon">👥</div>
         <div class="stat-value">{{ clients_count }}</div>
         <div class="stat-label">Clients</div>
-        <a href="#" class="stat-action">Manage Clients</a>
+        <a href="{{ url_for('core.clients') }}" class="stat-action">Manage Clients</a>
     </div>
 
     <div class="stat-card companies">
         <div class="stat-icon">🏢</div>
         <div class="stat-value">{{ companies_count }}</div>
         <div class="stat-label">Companies</div>
-        <a href="#" class="stat-action">View Companies</a>
+        <a href="{{ url_for('core.companies') }}" class="stat-action">View Companies</a>
     </div>
 
     <div class="stat-card policies">
         <div class="stat-icon">📋</div>
         <div class="stat-value">{{ policies_count }}</div>
         <div class="stat-label">Policies</div>
-        <a href="#" class="stat-action">View Policies</a>
+        <a href="{{ url_for('core.policies') }}" class="stat-action">View Policies</a>
     </div>
 
     <div class="stat-card premiums">
         <div class="stat-icon">💵</div>
         <div class="stat-value">${{ "%.2f"|format(total_premiums) }}</div>
         <div class="stat-label">Total Premiums</div>
-        <a href="#" class="stat-action">Premium Report</a>
+        <a href="{{ url_for('core.premium_remittance') }}" class="stat-action">Premium Report</a>
     </div>
 
     <div class="stat-card commissions">
         <div class="stat-icon">💰</div>
         <div class="stat-value">${{ "%.2f"|format(total_commissions) }}</div>
         <div class="stat-label">Total Commissions</div>
-        <a href="#" class="stat-action">Commission Report</a>
+        <a href="{{ url_for('core.reports') }}" class="stat-action">Commission Report</a>
     </div>
 </div>
 
@@ -304,17 +304,17 @@
         <span class="section-icon">⚡</span> Quick Actions
     </h3>
     <div class="quick-actions">
-        <a href="#" class="btn">
+        <a href="{{ url_for('core.clients') }}" class="btn">
             <i class="fas fa-plus"></i> Add Client
         </a>
-        <a href="#" class="btn btn-secondary">
+        <a href="{{ url_for('core.clients') }}" class="btn btn-secondary">
             <i class="fas fa-list"></i> View Clients
         </a>
-        <a href="#" class="btn btn-secondary">
-            <i class="fas fa-file-upload"></i> Import Data
+        <a href="{{ url_for('core.companies') }}" class="btn btn-secondary">
+            <i class="fas fa-building"></i> View Companies
         </a>
-        <a href="#" class="btn btn-secondary">
-            <i class="fas fa-file-export"></i> Export Data
+        <a href="{{ url_for('core.policies') }}" class="btn btn-secondary">
+            <i class="fas fa-file-contract"></i> View Policies
         </a>
     </div>
 </div>
@@ -325,45 +325,45 @@
         <span class="section-icon">🔧</span> Management Tools
     </h3>
     <div class="action-grid">
-        <a href="#" class="action-card">
+        <a href="{{ url_for('core.clients') }}" class="action-card">
             <div class="action-card-icon">👥</div>
             <div class="action-card-title">Client Management</div>
             <p class="action-card-desc">Add, edit, and manage your clients</p>
             <div class="action-card-arrow">→</div>
         </a>
 
-        <a href="#" class="action-card">
+        <a href="{{ url_for('core.companies') }}" class="action-card">
             <div class="action-card-icon">🏢</div>
             <div class="action-card-title">Company Management</div>
             <p class="action-card-desc">Manage insurance companies and products</p>
             <div class="action-card-arrow">→</div>
         </a>
 
-        <a href="#" class="action-card">
+        <a href="{{ url_for('core.policies') }}" class="action-card">
             <div class="action-card-icon">📋</div>
             <div class="action-card-title">Policies</div>
             <p class="action-card-desc">View and manage insurance policies</p>
             <div class="action-card-arrow">→</div>
         </a>
 
-        <a href="#" class="action-card">
+        <a href="{{ url_for('core.premium_remittance') }}" class="action-card">
             <div class="action-card-icon">💳</div>
             <div class="action-card-title">Premium Remittance</div>
             <p class="action-card-desc">Record premium payments and remittances</p>
             <div class="action-card-arrow">→</div>
         </a>
 
-        <a href="#" class="action-card">
+        <a href="{{ url_for('core.reports') }}" class="action-card">
             <div class="action-card-icon">📊</div>
             <div class="action-card-title">Reports</div>
             <p class="action-card-desc">Generate and view financial reports</p>
             <div class="action-card-arrow">→</div>
         </a>
 
-        <a href="#" class="action-card">
+        <a href="{{ url_for('core.profile') }}" class="action-card">
             <div class="action-card-icon">⚙️</div>
-            <div class="action-card-title">Settings</div>
-            <p class="action-card-desc">Configure commission rules and system settings</p>
+            <div class="action-card-title">Profile Settings</div>
+            <p class="action-card-desc">Manage your account settings</p>
             <div class="action-card-arrow">→</div>
         </a>
     </div>

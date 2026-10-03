@@ -197,6 +197,50 @@ def create_app(config_name=None):
             else:
                 return render_template("owner_dashboard.html", clients_count=0, policies_count=0, companies_count=0, products_count=0, total_premiums=0, total_commissions=0, recent_policies=[])
 
+    @core_bp.route("/clients")
+    @login_required
+    def clients():
+        if HAS_NEW_MODELS:
+            clients_list = Client.query.filter_by(owner_id=current_user.id).all()
+        else:
+            clients_list = []
+        return render_template("clients.html", clients=clients_list)
+
+    @core_bp.route("/companies")
+    @login_required
+    def companies():
+        if HAS_NEW_MODELS:
+            companies_list = Company.query.filter_by(owner_id=current_user.id).all()
+        else:
+            companies_list = []
+        return render_template("companies.html", companies=companies_list)
+
+    @core_bp.route("/policies")
+    @login_required
+    def policies():
+        if HAS_NEW_MODELS:
+            if current_user.role == ROLE_CLIENT:
+                policies_list = Policy.query.filter_by(client_id=current_user.id).all()
+            else:
+                policies_list = Policy.query.filter_by(owner_id=current_user.id).all()
+        else:
+            policies_list = []
+        return render_template("policies.html", policies=policies_list)
+
+    @core_bp.route("/premium-remittance")
+    @login_required
+    def premium_remittance():
+        if HAS_NEW_MODELS:
+            remittances = PremiumRemittance.query.filter_by(owner_id=current_user.id).all()
+        else:
+            remittances = []
+        return render_template("premium_remittance.html", remittances=remittances)
+
+    @core_bp.route("/reports")
+    @login_required
+    def reports():
+        return render_template("reports.html")
+
     @core_bp.route("/profile", methods=["GET", "POST"])
     @login_required
     def profile():

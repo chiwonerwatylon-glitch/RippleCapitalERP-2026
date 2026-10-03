@@ -1,0 +1,165 @@
+{% extends "sidebar_layout.html" %}
+
+{% block title %}Clients - Ripple Capital Insurance ERP{% endblock %}
+
+{% block page_title %}Clients{% endblock %}
+
+{% block page_subtitle %}Manage your clients{% endblock %}
+
+{% block content %}
+<style>
+    .clients-container {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .header-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .add-btn {
+        display: inline-block;
+        padding: 0.75rem 1.75rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+    .add-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .clients-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .clients-table thead th {
+        background: #f9fafb;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 2px solid #e5e7eb;
+        font-size: 0.9rem;
+    }
+
+    .clients-table tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+        color: #6b7280;
+    }
+
+    .clients-table tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6b7280;
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .empty-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-text {
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-btn {
+        display: inline-block;
+        padding: 0.75rem 1.75rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+    .empty-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+</style>
+
+<div class="clients-container">
+    <div class="header-row">
+        <h2 class="header-title">Clients</h2>
+        <button class="add-btn" onclick="alert('Add client functionality coming soon')">
+            <i class="fas fa-plus"></i> Add New Client
+        </button>
+    </div>
+
+    {% if clients %}
+    <table class="clients-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for client in clients %}
+            <tr>
+                <td>#{{ client.id }}</td>
+                <td>{{ client.name or 'N/A' }}</td>
+                <td>{{ client.email or 'N/A' }}</td>
+                <td>{{ client.phone or 'N/A' }}</td>
+                <td>
+                    <button onclick="alert('Edit functionality coming soon')" style="background: #667eea; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; margin-right: 0.5rem;">Edit</button>
+                    <button onclick="alert('Delete functionality coming soon')" style="background: #ef4444; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer;">Delete</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">No Clients Yet</div>
+        <div class="empty-text">Start managing your clients by adding your first client.</div>
+        <button class="empty-btn" onclick="alert('Add client functionality coming soon')">
+            <i class="fas fa-plus"></i> Add Your First Client
+        </button>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

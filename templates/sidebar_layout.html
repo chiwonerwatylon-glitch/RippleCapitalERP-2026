@@ -314,38 +314,38 @@
         
         {% if current_user.role == 'owner' or current_user.role == 'ROLE_OWNER' %}
             <li class="sidebar-menu-item">
-                <a href="#" class="sidebar-menu-link">
+                <a href="{{ url_for('core.clients') }}" class="sidebar-menu-link {% if request.endpoint == 'core.clients' %}active{% endif %}">
                     <i class="sidebar-menu-icon fas fa-users"></i>
                     <span>Clients</span>
                 </a>
             </li>
             <li class="sidebar-menu-item">
-                <a href="#" class="sidebar-menu-link">
+                <a href="{{ url_for('core.companies') }}" class="sidebar-menu-link {% if request.endpoint == 'core.companies' %}active{% endif %}">
                     <i class="sidebar-menu-icon fas fa-building"></i>
                     <span>Companies</span>
                 </a>
             </li>
             <li class="sidebar-menu-item">
-                <a href="#" class="sidebar-menu-link">
+                <a href="{{ url_for('core.policies') }}" class="sidebar-menu-link {% if request.endpoint == 'core.policies' %}active{% endif %}">
                     <i class="sidebar-menu-icon fas fa-file-contract"></i>
                     <span>Policies</span>
                 </a>
             </li>
             <li class="sidebar-menu-item">
-                <a href="#" class="sidebar-menu-link">
+                <a href="{{ url_for('core.premium_remittance') }}" class="sidebar-menu-link {% if request.endpoint == 'core.premium_remittance' %}active{% endif %}">
                     <i class="sidebar-menu-icon fas fa-credit-card"></i>
                     <span>Premium Remittance</span>
                 </a>
             </li>
             <li class="sidebar-menu-item">
-                <a href="#" class="sidebar-menu-link">
+                <a href="{{ url_for('core.reports') }}" class="sidebar-menu-link {% if request.endpoint == 'core.reports' %}active{% endif %}">
                     <i class="sidebar-menu-icon fas fa-chart-bar"></i>
                     <span>Reports</span>
                 </a>
             </li>
         {% elif current_user.role == 'client' or current_user.role == 'ROLE_CLIENT' %}
             <li class="sidebar-menu-item">
-                <a href="{{ url_for('core.dashboard') }}" class="sidebar-menu-link">
+                <a href="{{ url_for('core.policies') }}" class="sidebar-menu-link {% if request.endpoint == 'core.policies' %}active{% endif %}">
                     <i class="sidebar-menu-icon fas fa-file-contract"></i>
                     <span>My Policies</span>
                 </a>
