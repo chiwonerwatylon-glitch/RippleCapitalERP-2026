@@ -563,6 +563,14 @@
                                 </a>
                             </li>
                             <li class="sidebar-menu-item">
+                                <a href="{{ url_for('core.commission_rules') }}"
+                                   class="sidebar-menu-link {% if request.endpoint == 'core.commission_rules' %}active{% endif %}">
+                                    <i class="sidebar-menu-icon fas fa-percent"></i>
+                                    <span class="sidebar-menu-label">Commission Rules</span>
+                                    <span class="sidebar-menu-chevron"><i class="fas fa-chevron-right"></i></span>
+                                </a>
+                            </li>
+                            <li class="sidebar-menu-item">
                                 <a href="{{ url_for('core.premium_remittance') }}"
                                    class="sidebar-menu-link {% if request.endpoint == 'core.premium_remittance' %}active{% endif %}">
                                     <i class="sidebar-menu-icon fas fa-credit-card"></i>
@@ -613,6 +621,14 @@
                                    class="sidebar-menu-link {% if request.endpoint == 'core.policies' %}active{% endif %}">
                                     <i class="sidebar-menu-icon fas fa-file-contract"></i>
                                     <span class="sidebar-menu-label">Policies</span>
+                                    <span class="sidebar-menu-chevron"><i class="fas fa-chevron-right"></i></span>
+                                </a>
+                            </li>
+                            <li class="sidebar-menu-item">
+                                <a href="{{ url_for('core.commission_rules') }}"
+                                   class="sidebar-menu-link {% if request.endpoint == 'core.commission_rules' %}active{% endif %}">
+                                    <i class="sidebar-menu-icon fas fa-percent"></i>
+                                    <span class="sidebar-menu-label">Commission Rules</span>
                                     <span class="sidebar-menu-chevron"><i class="fas fa-chevron-right"></i></span>
                                 </a>
                             </li>
