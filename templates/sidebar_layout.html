@@ -611,7 +611,7 @@
                             {% if current_user.role == 'admin' %}
                                 <div class="sidebar-section-label">Administration</div>
                                 <li class="sidebar-menu-item">
-                                    <a href="#"
+                                    <a href="{{ url_for('admin.dashboard') }}"
                                        class="sidebar-menu-link">
                                         <i class="sidebar-menu-icon fas fa-cog"></i>
                                         <span class="sidebar-menu-label">Admin Panel</span>
