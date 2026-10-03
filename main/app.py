@@ -532,6 +532,141 @@ def create_app(config_name=None):
         
         return redirect(url_for("core.profile"))
 
+    @core_bp.route("/policies/add", methods=["GET", "POST"])
+    @login_required
+    def add_policy():
+        """Add a new insurance policy (owners only)."""
+        if current_user.role == ROLE_CLIENT:
+            flash("Clients cannot create policies.", "warning")
+            return redirect(url_for("core.policies"))
+        
+        if not HAS_NEW_MODELS:
+            flash("Policies feature not available in this version.", "warning")
+            return redirect(url_for("core.policies"))
+        
+        # Get owned resources for dropdowns
+        clients_list = Client.query.filter_by(owner_id=current_user.id).all()
+        companies_list = Company.query.filter_by(owner_id=current_user.id).all()
+        products_list = InsuranceProduct.query.filter_by(owner_id=current_user.id).all()
+        
+        if request.method == "POST":
+            try:
+                # Get form data
+                client_id = request.form.get("client_id")
+                company_id = request.form.get("company_id")
+                product_id = request.form.get("product_id")
+                policy_number = request.form.get("policy_number", "").strip()
+                coverage_amount = float(request.form.get("coverage_amount", 0))
+                premium_amount = float(request.form.get("premium_amount", 0))
+                premium_frequency = request.form.get("premium_frequency", "annual")
+                start_date_str = request.form.get("start_date")
+                end_date_str = request.form.get("end_date")
+                status = request.form.get("status", "active")
+                
+                # Validate inputs
+                if not all([client_id, company_id, product_id, policy_number, start_date_str, end_date_str]):
+                    flash("All fields are required.", "warning")
+                    return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
+                
+                # Check if policy number already exists
+                if Policy.query.filter_by(policy_number=policy_number).first():
+                    flash(f"Policy number {policy_number} already exists.", "warning")
+                    return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
+                
+                # Parse dates
+                from datetime import datetime as dt
+                start_date = dt.strptime(start_date_str, "%Y-%m-%d").date()
+                end_date = dt.strptime(end_date_str, "%Y-%m-%d").date()
+                
+                if start_date >= end_date:
+                    flash("Start date must be before end date.", "warning")
+                    return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
+                
+                # Create new policy
+                policy = Policy(
+                    owner_id=current_user.id,
+                    client_id=int(client_id),
+                    company_id=int(company_id),
+                    product_id=int(product_id),
+                    policy_number=policy_number,
+                    coverage_amount=coverage_amount,
+                    premium_amount=premium_amount,
+                    premium_frequency=premium_frequency,
+                    start_date=start_date,
+                    end_date=end_date,
+                    status=status
+                )
+                
+                db.session.add(policy)
+                db.session.commit()
+                flash(f"Policy {policy_number} created successfully.", "success")
+                return redirect(url_for("core.policies"))
+            
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Error creating policy: {str(e)}", "danger")
+                return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
+        
+        return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
+
+    @core_bp.route("/policies/<int:policy_id>/view")
+    @login_required
+    def view_policy(policy_id):
+        """View policy details."""
+        if not HAS_NEW_MODELS:
+            flash("Policies feature not available in this version.", "warning")
+            return redirect(url_for("core.policies"))
+        
+        policy = Policy.query.get_or_404(policy_id)
+        
+        # Check ownership
+        if policy.owner_id != current_user.id and policy.client_id != current_user.id:
+            flash("You don't have permission to view this policy.", "danger")
+            return redirect(url_for("core.policies"))
+        
+        remittances = PremiumRemittance.query.filter_by(policy_id=policy_id).all()
+        total_paid = sum(r.amount for r in remittances) if remittances else 0.0
+        total_commission = policy.total_commission_earned() if policy else 0.0
+        
+        return render_template("policy_detail.html", policy=policy, remittances=remittances, total_paid=total_paid, total_commission=total_commission)
+
+    @core_bp.route("/policies/<int:policy_id>/delete", methods=["POST"])
+    @login_required
+    def delete_policy(policy_id):
+        """Delete a policy (owner only)."""
+        if current_user.role == ROLE_CLIENT:
+            flash("Clients cannot delete policies.", "warning")
+            return redirect(url_for("core.policies"))
+        
+        if not HAS_NEW_MODELS:
+            flash("Policies feature not available in this version.", "warning")
+            return redirect(url_for("core.policies"))
+        
+        policy = Policy.query.get_or_404(policy_id)
+        
+        # Check ownership
+        if policy.owner_id != current_user.id:
+            flash("You don't have permission to delete this policy.", "danger")
+            return redirect(url_for("core.policies"))
+        
+        try:
+            policy_number = policy.policy_number
+            db.session.delete(policy)
+            db.session.commit()
+            flash(f"Policy {policy_number} has been deleted.", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error deleting policy: {str(e)}", "danger")
+        
+        return redirect(url_for("core.policies"))
+
+    @core_bp.route("/agent-dashboard")
+    @login_required
+    def agent_dashboard():
+        """Alias for owner dashboard (backward compatibility)."""
+        return redirect(url_for("core.dashboard"))
+
+
     # ====================== ERROR HANDLERS ======================
 
     @core_bp.app_errorhandler(404)
