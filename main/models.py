@@ -32,6 +32,11 @@ class User(UserMixin, db.Model):
     remittances = db.relationship("PremiumRemittance", backref="owner", lazy="dynamic")
     journal_entries = db.relationship("ManualJournalEntry", backref="created_by")
 
+    @property
+    def username(self):
+        # Display name used by admin templates; stored in full_name.
+        return self.full_name
+
     def set_password(self, password: str):
         self.password_hash = generate_password_hash(password)
 
