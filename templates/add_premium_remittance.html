@@ -3,129 +3,278 @@
 {% block title %}Record Premium Remittance - Ripple Capital Insurance ERP{% endblock %}
 
 {% block page_title %}Record Premium Remittance{% endblock %}
-
-{% block page_subtitle %}Record a premium payment or remittance{% endblock %}
+{% block page_subtitle %}Capture a premium payment or remittance against a policy{% endblock %}
 
 {% block content %}
 <style>
-    .form-container {
-        max-width: 600px;
+    :root {
+        /* Ripple brand tokens (if not already global) */
+        --ripple-primary: #1B702D;
+        --ripple-primary-light: #2D9F42;
+        --ripple-primary-lighter: #E8F5EA;
+        --ripple-secondary: #FBA300;
+        --ripple-secondary-lighter: #FFF3E0;
+
+        --ripple-gray-900: #111827;
+        --ripple-gray-800: #1F2937;
+        --ripple-gray-700: #374151;
+        --ripple-gray-600: #4B5563;
+        --ripple-gray-500: #6B7280;
+        --ripple-gray-400: #9CA3AF;
+        --ripple-gray-300: #D1D5DB;
+        --ripple-gray-200: #E5E7EB;
+        --ripple-gray-100: #F3F4F6;
+        --ripple-gray-50: #F9FAFB;
+
+        --ripple-shadow-md: 0 10px 25px rgba(15, 23, 42, 0.08);
+        --ripple-shadow-strong: 0 22px 45px rgba(15, 23, 42, 0.18);
+    }
+
+    .form-shell {
+        max-width: 720px;
         margin: 0 auto;
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .form-card {
+        background: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid var(--ripple-gray-200);
+        box-shadow: var(--ripple-shadow-md), 0 0 0 1px rgba(148, 163, 184, 0.18);
+        padding: 2rem 2rem 2.1rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .form-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 10%;
+        right: 10%;
+        height: 4px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--ripple-primary), var(--ripple-secondary));
+    }
+
+    .form-header {
+        margin-bottom: 1.75rem;
+    }
+
+    .form-header-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--ripple-gray-900);
+        margin-bottom: 0.25rem;
+        letter-spacing: -0.02em;
+    }
+
+    .form-header-subtitle {
+        font-size: 0.9rem;
+        color: var(--ripple-gray-600);
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.25rem 1.5rem;
     }
 
     .form-group {
-        margin-bottom: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
     }
 
     .form-label {
-        display: block;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
         font-weight: 600;
-        color: #374151;
-        margin-bottom: 0.5rem;
+        color: var(--ripple-gray-800);
+        font-size: 0.9rem;
     }
 
-    .form-input, .form-select {
+    .form-label span.required {
+        color: #b91c1c;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .form-input,
+    .form-select {
         width: 100%;
-        padding: 0.75rem 1rem;
-        border: 1.5px solid #e5e7eb;
-        border-radius: 8px;
-        font-size: 1rem;
+        padding: 0.75rem 0.95rem;
+        border: 1.6px solid var(--ripple-gray-200);
+        border-radius: 0.65rem;
+        font-size: 0.95rem;
         font-family: inherit;
-        transition: all 0.3s ease;
+        transition: border 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        background: #ffffff;
+        color: var(--ripple-gray-900);
     }
 
-    .form-input:focus, .form-select:focus {
+    .form-input::placeholder {
+        color: var(--ripple-gray-400);
+    }
+
+    .form-input:focus,
+    .form-select:focus {
         outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: var(--ripple-primary);
+        box-shadow:
+            0 0 0 1px var(--ripple-primary),
+            0 0 0 4px rgba(27, 112, 45, 0.15);
+        background: #ffffff;
+    }
+
+    .form-hint {
+        font-size: 0.8rem;
+        color: var(--ripple-gray-400);
+        margin-top: 0.25rem;
     }
 
     .button-group {
         display: flex;
         gap: 1rem;
         margin-top: 2rem;
+        flex-wrap: wrap;
     }
 
     .btn {
         flex: 1;
         padding: 0.75rem 1.5rem;
         border: none;
-        border-radius: 8px;
+        border-radius: 999px;
         font-weight: 600;
         cursor: pointer;
-        font-size: 1rem;
-        transition: all 0.3s ease;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease;
+        text-decoration: none;
+        white-space: nowrap;
     }
 
     .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
+        color: #ffffff;
+        box-shadow: 0 12px 28px rgba(27, 112, 45, 0.45);
     }
 
     .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        transform: translateY(-1px);
+        box-shadow: 0 16px 34px rgba(27, 112, 45, 0.65);
     }
 
     .btn-secondary {
-        background: #e5e7eb;
-        color: #374151;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        background: #ffffff;
+        color: var(--ripple-gray-800);
+        border: 1px solid var(--ripple-gray-300);
     }
 
     .btn-secondary:hover {
-        background: #d1d5db;
+        background: var(--ripple-gray-100);
+        border-color: var(--ripple-primary);
+        color: var(--ripple-primary);
+    }
+
+    @media (max-width: 640px) {
+        .form-card {
+            padding: 1.7rem 1.4rem 1.9rem;
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
     }
 </style>
 
-<div class="form-container">
-    <form method="post">
-        <div class="form-group">
-            <label class="form-label">Policy *</label>
-            <select name="policy_id" class="form-select" required>
-                <option value="">Select a policy...</option>
-                {% for policy in policies %}
-                <option value="{{ policy.id }}">Policy #{{ policy.id }}</option>
-                {% endfor %}
-            </select>
-        </div>
+<div class="form-shell">
+    <div class="form-card">
+        <header class="form-header">
+            <h2 class="form-header-title">Premium remittance details</h2>
+            <p class="form-header-subtitle">
+                Link the incoming payment to a policy and capture the method and reference.
+            </p>
+        </header>
 
-        <div class="form-group">
-            <label class="form-label">Amount ($) *</label>
-            <input type="number" name="amount" class="form-input" step="0.01" min="0" required>
-        </div>
+        <form method="post" novalidate>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label" for="policy_id">
+                        Policy <span class="required">Required</span>
+                    </label>
+                    <select id="policy_id" name="policy_id" class="form-select" required>
+                        <option value="">Select a policy...</option>
+                        {% for policy in policies %}
+                        <option value="{{ policy.id }}">Policy #{{ policy.id }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-hint">Choose the policy this remittance should be applied to.</div>
+                </div>
 
-        <div class="form-group">
-            <label class="form-label">Payment Method *</label>
-            <select name="payment_method" class="form-select" required>
-                <option value="">Select payment method...</option>
-                <option value="Bank Transfer">Bank Transfer</option>
-                <option value="Cash">Cash</option>
-                <option value="Mobile Money">Mobile Money</option>
-            </select>
-        </div>
+                <div class="form-group">
+                    <label class="form-label" for="amount">
+                        Amount ($) <span class="required">Required</span>
+                    </label>
+                    <input
+                        id="amount"
+                        type="number"
+                        name="amount"
+                        class="form-input"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        required
+                    >
+                    <div class="form-hint">Enter the exact amount received (gross premium).</div>
+                </div>
 
-        <div class="form-group">
-            <label class="form-label">Reference Number</label>
-            <input type="text" name="reference_number" class="form-input" placeholder="e.g., Check #, Transaction ID">
-        </div>
+                <div class="form-group">
+                    <label class="form-label" for="payment_method">
+                        Payment Method <span class="required">Required</span>
+                    </label>
+                    <select id="payment_method" name="payment_method" class="form-select" required>
+                        <option value="">Select payment method...</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Cash">Cash</option>
+                        <option value="Mobile Money">Mobile Money</option>
+                    </select>
+                    <div class="form-hint">How was this premium collected or remitted?</div>
+                </div>
 
-        <div class="button-group">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Record Payment
-            </button>
-            <a href="{{ url_for('core.premium_remittance') }}" class="btn btn-secondary">
-                <i class="fas fa-times"></i> Cancel
-            </a>
-        </div>
-    </form>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label" for="reference_number">Reference Number</label>
+                    <input
+                        id="reference_number"
+                        type="text"
+                        name="reference_number"
+                        class="form-input"
+                        placeholder="e.g., Check #, Bank Txn ID, Mobile Money reference"
+                    >
+                    <div class="form-hint">Optional: helps reconcile with bank or mobile statements.</div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    <span>Record Payment</span>
+                </button>
+                <a href="{{ url_for('core.premium_remittance') }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                    <span>Cancel</span>
+                </a>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}
-

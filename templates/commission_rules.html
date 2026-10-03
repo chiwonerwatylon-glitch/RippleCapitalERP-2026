@@ -3,202 +3,323 @@
 {% block title %}Commission Rules - Ripple Capital Insurance ERP{% endblock %}
 
 {% block page_title %}Commission Rules{% endblock %}
-
-{% block page_subtitle %}Manage commission percentages{% endblock %}
+{% block page_subtitle %}Define and manage commission rates for your companies and products{% endblock %}
 
 {% block content %}
 <style>
+    :root {
+        /* Ripple brand tokens (if not already global) */
+        --ripple-primary: #1B702D;
+        --ripple-primary-light: #2D9F42;
+        --ripple-primary-lighter: #E8F5EA;
+        --ripple-secondary: #FBA300;
+        --ripple-secondary-lighter: #FFF3E0;
+
+        --ripple-gray-900: #111827;
+        --ripple-gray-800: #1F2937;
+        --ripple-gray-700: #374151;
+        --ripple-gray-600: #4B5563;
+        --ripple-gray-500: #6B7280;
+        --ripple-gray-400: #9CA3AF;
+        --ripple-gray-300: #D1D5DB;
+        --ripple-gray-200: #E5E7EB;
+        --ripple-gray-100: #F3F4F6;
+        --ripple-gray-50: #F9FAFB;
+
+        --ripple-shadow-md: 0 10px 25px rgba(15, 23, 42, 0.08);
+        --ripple-shadow-strong: 0 22px 45px rgba(15, 23, 42, 0.18);
+    }
+
+    .rules-shell {
+        max-width: 1080px;
+        margin: 0 auto;
+    }
+
     .rules-container {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        background: #ffffff;
+        border-radius: 1rem;
+        padding: 1.8rem 1.8rem 2rem;
+        box-shadow: var(--ripple-shadow-md), 0 0 0 1px rgba(148, 163, 184, 0.14);
+        border: 1px solid var(--ripple-gray-200);
     }
 
     .header-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 2rem;
-        padding-bottom: 1.5rem;
-        border-bottom: 2px solid #e5e7eb;
+        margin-bottom: 1.75rem;
+        padding-bottom: 1.3rem;
+        border-bottom: 1px solid var(--ripple-gray-200);
     }
 
     .header-title {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
         font-weight: 700;
-        color: #1f2937;
+        color: var(--ripple-gray-900);
+        letter-spacing: -0.02em;
+    }
+
+    .header-subtext {
+        font-size: 0.85rem;
+        color: var(--ripple-gray-500);
+        margin-top: 0.15rem;
     }
 
     .add-btn {
-        display: inline-block;
-        padding: 0.75rem 1.75rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.5rem;
+        background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
+        color: #ffffff;
         border: none;
-        border-radius: 8px;
+        border-radius: 999px;
         font-weight: 600;
         cursor: pointer;
         text-decoration: none;
-        transition: all 0.3s ease;
-        font-size: 0.95rem;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        font-size: 0.9rem;
+        box-shadow: 0 10px 24px rgba(27, 112, 45, 0.45);
+        white-space: nowrap;
     }
 
     .add-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        transform: translateY(-1px);
+        box-shadow: 0 14px 30px rgba(27, 112, 45, 0.6);
+    }
+
+    /* Table */
+    .rules-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 0.75rem;
+        border: 1px solid var(--ripple-gray-200);
+        background: #ffffff;
     }
 
     .rules-table {
         width: 100%;
         border-collapse: collapse;
-    }
-
-    .rules-table thead th {
-        background: #f9fafb;
-        padding: 1rem;
-        text-align: left;
-        font-weight: 600;
-        color: #374151;
-        border-bottom: 2px solid #e5e7eb;
         font-size: 0.9rem;
     }
 
+    .rules-table thead th {
+        background: var(--ripple-gray-50);
+        padding: 0.85rem 0.9rem;
+        text-align: left;
+        font-weight: 700;
+        color: var(--ripple-gray-700);
+        border-bottom: 1px solid var(--ripple-gray-200);
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+    }
+
     .rules-table tbody td {
-        padding: 1rem;
-        border-bottom: 1px solid #e5e7eb;
-        color: #6b7280;
+        padding: 0.85rem 0.9rem;
+        border-bottom: 1px solid var(--ripple-gray-100);
+        color: var(--ripple-gray-600);
+        vertical-align: middle;
+    }
+
+    .rules-table tbody tr:last-child td {
+        border-bottom: none;
     }
 
     .rules-table tbody tr:hover {
-        background: #f9fafb;
+        background: var(--ripple-primary-lighter);
     }
 
     .commission-badge {
         display: inline-block;
-        padding: 0.25rem 0.75rem;
-        background: #dbeafe;
-        color: #0c2d6b;
-        border-radius: 4px;
-        font-size: 0.85rem;
+        padding: 0.25rem 0.7rem;
+        background: var(--ripple-secondary-lighter);
+        color: #92400e;
+        border-radius: 999px;
+        font-size: 0.8rem;
         font-weight: 600;
+        border: 1px solid rgba(251, 163, 0, 0.65);
     }
 
+    .actions-cell {
+        white-space: nowrap;
+    }
+
+    .action-btn {
+        padding: 0.45rem 0.9rem;
+        border: none;
+        border-radius: 999px;
+        cursor: pointer;
+        margin-right: 0.35rem;
+        font-weight: 600;
+        font-size: 0.78rem;
+        transition: all 0.18s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .edit-btn {
+        background: #ffffff;
+        color: var(--ripple-primary);
+        border: 1px solid rgba(27, 112, 45, 0.35);
+    }
+
+    .edit-btn:hover {
+        background: var(--ripple-primary-lighter);
+        border-color: var(--ripple-primary);
+    }
+
+    .delete-btn {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid rgba(239, 68, 68, 0.65);
+    }
+
+    .delete-btn:hover {
+        background: #fee2e2;
+        border-color: #ef4444;
+    }
+
+    /* Empty state */
     .empty-state {
         text-align: center;
-        padding: 3rem 2rem;
-        color: #6b7280;
+        padding: 2.5rem 2rem;
+        color: var(--ripple-gray-600);
     }
 
     .empty-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
     }
 
     .empty-title {
-        font-size: 1.25rem;
+        font-size: 1.1rem;
         font-weight: 600;
-        color: #1f2937;
+        color: var(--ripple-gray-800);
         margin-bottom: 0.5rem;
     }
 
     .empty-text {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.2rem;
+        font-size: 0.92rem;
     }
 
     .empty-btn {
-        display: inline-block;
-        padding: 0.75rem 1.75rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.6rem;
+        background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
+        color: #ffffff;
+        border-radius: 999px;
         font-weight: 600;
         cursor: pointer;
         text-decoration: none;
-        transition: all 0.3s ease;
-        font-size: 0.95rem;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        font-size: 0.9rem;
+        box-shadow: 0 10px 24px rgba(27, 112, 45, 0.45);
     }
 
     .empty-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        transform: translateY(-1px);
+        box-shadow: 0 14px 30px rgba(27, 112, 45, 0.6);
     }
 
-    .action-btn {
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        margin-right: 0.5rem;
-        font-weight: 600;
-        font-size: 0.85rem;
-        transition: all 0.3s ease;
-    }
+    @media (max-width: 640px) {
+        .rules-container {
+            padding: 1.5rem 1.3rem 1.8rem;
+        }
 
-    .edit-btn {
-        background: #667eea;
-        color: white;
-    }
+        .header-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
 
-    .edit-btn:hover {
-        background: #764ba2;
-    }
-
-    .delete-btn {
-        background: #ef4444;
-        color: white;
-    }
-
-    .delete-btn:hover {
-        background: #dc2626;
+        .add-btn {
+            width: 100%;
+            justify-content: center;
+        }
     }
 </style>
 
-<div class="rules-container">
-    <div class="header-row">
-        <h2 class="header-title">Commission Rules</h2>
-        <a href="{{ url_for('core.add_commission_rule') }}" class="add-btn">
-            <i class="fas fa-plus"></i> Add New Rule
-        </a>
-    </div>
+<div class="rules-shell">
+    <div class="rules-container">
+        <div class="header-row">
+            <div>
+                <h2 class="header-title">Commission Rules</h2>
+                <p class="header-subtext">
+                    Define the commission rates your agency earns for each company and product combination.
+                </p>
+            </div>
+            <a href="{{ url_for('core.add_commission_rule') }}" class="add-btn">
+                <i class="fas fa-plus"></i>
+                <span>Add New Rule</span>
+            </a>
+        </div>
 
-    {% if rules %}
-    <table class="rules-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Company</th>
-                <th>Product</th>
-                <th>Commission %</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for rule in rules %}
-            <tr>
-                <td>#{{ rule.id }}</td>
-                <td>{{ rule.company.name if rule.company else 'N/A' }}</td>
-                <td>{{ rule.product.name if rule.product else 'N/A' }}</td>
-                <td><span class="commission-badge">{{ rule.commission_percentage }}%</span></td>
-                <td>
-                    <button class="action-btn edit-btn" onclick="alert('Edit functionality coming soon')">Edit</button>
-                    <button class="action-btn delete-btn" onclick="alert('Delete functionality coming soon')">Delete</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <div class="empty-state">
-        <div class="empty-icon">📊</div>
-        <div class="empty-title">No Commission Rules Yet</div>
-        <div class="empty-text">Set up commission rules for your companies and products.</div>
-        <a href="{{ url_for('core.add_commission_rule') }}" class="empty-btn">
-            <i class="fas fa-plus"></i> Add Your First Rule
-        </a>
+        {% if rules %}
+        <div class="rules-table-wrapper">
+            <table class="rules-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Company</th>
+                        <th>Product</th>
+                        <th>Commission %</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rule in rules %}
+                    <tr>
+                        <td>#{{ rule.id }}</td>
+                        <td>{{ rule.company.name if rule.company else 'N/A' }}</td>
+                        <td>{{ rule.product.name if rule.product else 'N/A' }}</td>
+                        <td>
+                            <span class="commission-badge">
+                                {{ "%.2f"|format(rule.commission_percentage or 0) }}%
+                            </span>
+                        </td>
+                        <td class="actions-cell" style="text-align: right;">
+                            <!-- Placeholder actions; connect real editing/deletion later -->
+                            <button
+                                type="button"
+                                class="action-btn edit-btn"
+                                onclick="alert('Edit commission rule functionality coming soon');"
+                            >
+                                <i class="fas fa-pen"></i>
+                                <span>Edit</span>
+                            </button>
+                            <button
+                                type="button"
+                                class="action-btn delete-btn"
+                                onclick="alert('Delete commission rule functionality coming soon');"
+                            >
+                                <i class="fas fa-trash"></i>
+                                <span>Delete</span>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📊</div>
+            <div class="empty-title">No Commission Rules Yet</div>
+            <div class="empty-text">
+                Set up commission rules to automatically calculate what your agency earns on each policy.
+            </div>
+            <a href="{{ url_for('core.add_commission_rule') }}" class="empty-btn">
+                <i class="fas fa-plus"></i>
+                <span>Add Your First Rule</span>
+            </a>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </div>
 {% endblock %}
-

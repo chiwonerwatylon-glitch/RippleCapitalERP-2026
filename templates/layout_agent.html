@@ -1,26 +1,146 @@
 {% extends "base.html" %}
+
 {% block title %}Agent - {% block agent_title %}{% endblock %}{% endblock %}
+
 {% block content %}
-<div class="row">
+<style>
+    :root {
+        /* Ripple brand tokens (if not already global from brand.css) */
+        --ripple-primary: #1B702D;
+        --ripple-primary-light: #2D9F42;
+        --ripple-primary-lighter: #E8F5EA;
+        --ripple-secondary: #FBA300;
+        --ripple-secondary-lighter: #FFF3E0;
+
+        --ripple-gray-900: #111827;
+        --ripple-gray-800: #1F2937;
+        --ripple-gray-700: #374151;
+        --ripple-gray-600: #4B5563;
+        --ripple-gray-500: #6B7280;
+        --ripple-gray-400: #9CA3AF;
+        --ripple-gray-300: #D1D5DB;
+        --ripple-gray-200: #E5E7EB;
+        --ripple-gray-100: #F3F4F6;
+        --ripple-gray-50: #F9FAFB;
+    }
+
+    .agent-layout-row {
+        margin-top: 0.5rem;
+    }
+
+    .agent-sidebar-card {
+        background: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid var(--ripple-gray-200);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+    }
+
+    .agent-sidebar-header {
+        padding: 1rem 1.1rem;
+        background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
+        color: #f9fafb;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .agent-sidebar-header i {
+        font-size: 0.95rem;
+    }
+
+    .agent-sidebar-list {
+        padding: 0.6rem 0.4rem 0.8rem;
+    }
+
+    .agent-link {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.55rem 0.9rem;
+        border-radius: 0.65rem;
+        margin: 0.1rem 0.3rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--ripple-gray-700);
+        text-decoration: none;
+        transition: background 0.16s ease, color 0.16s ease, transform 0.12s ease, box-shadow 0.16s ease;
+    }
+
+    .agent-link i {
+        width: 18px;
+        text-align: center;
+        font-size: 0.85rem;
+        color: var(--ripple-gray-500);
+    }
+
+    .agent-link:hover {
+        background: var(--ripple-primary-lighter);
+        color: var(--ripple-primary);
+        box-shadow: 0 4px 12px rgba(27, 112, 45, 0.18);
+        transform: translateY(-1px);
+    }
+
+    .agent-link-active {
+        background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
+        color: #ffffff;
+        box-shadow: 0 10px 22px rgba(27, 112, 45, 0.4);
+    }
+
+    .agent-link-active i {
+        color: #fef9c3;
+    }
+
+    .agent-main-col {
+        margin-top: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .agent-layout-row {
+            margin-top: 0;
+        }
+        .agent-sidebar-card {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+
+<div class="row agent-layout-row">
     <div class="col-12 col-md-3 mb-3">
-        <div class="list-group">
-            <a href="{{ url_for('core.agent_dashboard') }}" class="list-group-item list-group-item-action">
-                Dashboard
-            </a>
-            <a href="{{ url_for('core.policy_create') }}" class="list-group-item list-group-item-action">
-                New Policy
-            </a>
-            {% if current_user.role == 'admin' %}
-            <a href="{{ url_for('admin.dashboard') }}" class="list-group-item list-group-item-action">
-                Admin Panel
-            </a>
-            {% endif %}
-            <a href="{{ url_for('auth.logout') }}" class="list-group-item list-group-item-action">
-                Logout
-            </a>
+        <div class="agent-sidebar-card">
+            <div class="agent-sidebar-header">
+                <i class="fas fa-user-tie"></i>
+                <span>Agent Workspace</span>
+            </div>
+            <div class="agent-sidebar-list">
+                <a href="{{ url_for('core.agent_dashboard') }}"
+                   class="agent-link{% if request.endpoint == 'core.agent_dashboard' %} agent-link-active{% endif %}">
+                    <i class="fas fa-gauge-high"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('core.policy_create') }}"
+                   class="agent-link{% if request.endpoint == 'core.policy_create' %} agent-link-active{% endif %}">
+                    <i class="fas fa-file-circle-plus"></i>
+                    <span>New Policy</span>
+                </a>
+                {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('admin.dashboard') }}"
+                   class="agent-link{% if request.endpoint == 'admin.dashboard' %} agent-link-active{% endif %}">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Admin Panel</span>
+                </a>
+                {% endif %}
+                <a href="{{ url_for('auth.logout') }}" class="agent-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
         </div>
     </div>
-    <div class="col-12 col-md-9">
+
+    <div class="col-12 col-md-9 agent-main-col">
         {% block agent_content %}{% endblock %}
     </div>
 </div>

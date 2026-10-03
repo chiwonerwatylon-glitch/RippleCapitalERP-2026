@@ -8,15 +8,32 @@
 {% block content %}
 <style>
     :root {
+        /* Use global Ripple palette */
+        --ripple-primary: #1B702D;
+        --ripple-primary-light: #2D9F42;
+        --ripple-primary-lighter: #E8F5EA;
+        --ripple-secondary: #FBA300;
+        --ripple-secondary-lighter: #FFF3E0;
+
+        --ripple-gray-900: #111827;
+        --ripple-gray-800: #1F2937;
+        --ripple-gray-700: #374151;
+        --ripple-gray-600: #4B5563;
+        --ripple-gray-500: #6B7280;
+        --ripple-gray-400: #9CA3AF;
+        --ripple-gray-300: #D1D5DB;
+        --ripple-gray-200: #E5E7EB;
+        --ripple-gray-100: #F3F4F6;
+        --ripple-gray-50: #F9FAFB;
+
+        --ripple-shadow-md: 0 14px 35px rgba(15, 23, 42, 0.06);
+        --ripple-shadow-strong: 0 22px 45px rgba(15, 23, 42, 0.18);
+
         --rc-bg-card: #ffffff;
-        --rc-bg-soft: #f9fafb;
-        --rc-text-main: #111827;
-        --rc-text-muted: #6b7280;
-        --rc-primary: #4f46e5;
-        --rc-primary-soft: #e0e7ff;
-        --rc-primary-strong: #4338ca;
-        --rc-border-subtle: #e5e7eb;
-        --rc-border-strong: #d1d5db;
+        --rc-bg-soft: var(--ripple-gray-50);
+        --rc-text-main: var(--ripple-gray-900);
+        --rc-text-muted: var(--ripple-gray-600);
+        --rc-border-subtle: var(--ripple-gray-200);
     }
 
     .rc-profile-root {
@@ -32,7 +49,7 @@
         border-radius: 1rem;
         border: 1px solid rgba(229, 231, 235, 0.9);
         box-shadow:
-            0 14px 35px rgba(15, 23, 42, 0.06),
+            var(--ripple-shadow-md),
             0 0 0 1px rgba(148, 163, 184, 0.16);
         padding: 1.75rem 1.75rem 1.85rem;
     }
@@ -61,9 +78,9 @@
         width: 100%;
         height: 100%;
         border-radius: 1rem;
-        background: radial-gradient(circle at 20% 20%, #eef2ff 0, transparent 50%),
-                    radial-gradient(circle at 80% 80%, #a855f7 0, transparent 55%),
-                    linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        background: radial-gradient(circle at 20% 20%, #ffffff 0, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(251, 163, 0, 0.55) 0, transparent 55%),
+                    linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -71,7 +88,7 @@
         font-size: 3rem;
         overflow: hidden;
         box-shadow:
-            0 18px 40px rgba(79, 70, 229, 0.55),
+            0 18px 40px rgba(7, 20, 11, 0.65),
             0 0 0 3px rgba(249, 250, 251, 0.9);
     }
 
@@ -88,7 +105,7 @@
         width: 42px;
         height: 42px;
         border-radius: 999px;
-        background: #111827;
+        background: #0b1120;
         border: 3px solid #f9fafb;
         display: flex;
         align-items: center;
@@ -102,8 +119,8 @@
 
     .rc-avatar-upload:hover {
         transform: translateY(-1px);
-        background: #4f46e5;
-        box-shadow: 0 14px 34px rgba(79, 70, 229, 0.8);
+        background: var(--ripple-primary);
+        box-shadow: 0 14px 34px rgba(7, 20, 11, 0.85);
     }
 
     .rc-avatar-upload-input {
@@ -120,6 +137,7 @@
         font-weight: 700;
         color: var(--rc-text-main);
         margin-bottom: 0.35rem;
+        letter-spacing: -0.02em;
     }
 
     .rc-profile-role {
@@ -127,7 +145,7 @@
         align-items: center;
         gap: 0.4rem;
         font-size: 0.9rem;
-        color: #6b7280;
+        color: var(--ripple-gray-600);
         margin-bottom: 0.8rem;
     }
 
@@ -136,8 +154,8 @@
         border-radius: 999px;
         font-size: 0.78rem;
         font-weight: 600;
-        background: #eef2ff;
-        color: #4f46e5;
+        background: var(--ripple-primary-lighter);
+        color: var(--ripple-primary);
         text-transform: uppercase;
         letter-spacing: 0.04em;
     }
@@ -157,7 +175,7 @@
     .rc-profile-meta-label {
         display: block;
         font-weight: 600;
-        color: #374151;
+        color: var(--ripple-gray-800);
         margin-bottom: 0.1rem;
     }
 
@@ -178,7 +196,7 @@
         cursor: pointer;
         font-size: 0.9rem;
         font-weight: 600;
-        color: #6b7280;
+        color: var(--ripple-gray-500);
         border-bottom: 2px solid transparent;
         flex-shrink: 0;
         display: inline-flex;
@@ -188,14 +206,14 @@
     }
 
     .rc-tab-button:hover {
-        color: var(--rc-primary);
-        background: #f9fafb;
+        color: var(--ripple-primary);
+        background: var(--ripple-gray-50);
     }
 
     .rc-tab-button.active {
-        color: var(--rc-primary);
-        border-bottom-color: var(--rc-primary);
-        background: #f9fafb;
+        color: var(--ripple-primary);
+        border-bottom-color: var(--ripple-primary);
+        background: var(--ripple-gray-50);
     }
 
     .rc-tab-button i {
@@ -228,12 +246,12 @@
     .rc-form-label {
         font-size: 0.9rem;
         font-weight: 600;
-        color: #374151;
+        color: var(--ripple-gray-800);
     }
 
     .rc-form-hint {
         font-size: 0.8rem;
-        color: #9ca3af;
+        color: var(--ripple-gray-400);
     }
 
     .rc-input,
@@ -251,15 +269,15 @@
 
     .rc-input:focus {
         outline: none;
-        border-color: var(--rc-primary);
+        border-color: var(--ripple-primary);
         box-shadow:
-            0 0 0 1px var(--rc-primary),
-            0 0 0 4px rgba(79, 70, 229, 0.2);
+            0 0 0 1px var(--ripple-primary),
+            0 0 0 4px rgba(27, 112, 45, 0.18);
     }
 
     .rc-input[disabled] {
-        background: #f9fafb;
-        color: #6b7280;
+        background: var(--ripple-gray-50);
+        color: var(--ripple-gray-600);
         cursor: not-allowed;
     }
 
@@ -270,23 +288,23 @@
 
     .rc-file-drop {
         border-radius: 0.75rem;
-        border: 2px dashed #e5e7eb;
+        border: 2px dashed var(--ripple-gray-200);
         padding: 1.3rem;
-        background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+        background: linear-gradient(135deg, var(--ripple-gray-50) 0%, #ffffff 100%);
         text-align: center;
         cursor: pointer;
         transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
     }
 
     .rc-file-drop:hover {
-        border-color: var(--rc-primary);
-        background: #f3f4ff;
-        box-shadow: 0 8px 22px rgba(79, 70, 229, 0.18);
+        border-color: var(--ripple-primary);
+        background: var(--ripple-primary-lighter);
+        box-shadow: 0 8px 22px rgba(27, 112, 45, 0.18);
     }
 
     .rc-file-drop-icon {
         font-size: 1.3rem;
-        color: var(--rc-primary);
+        color: var(--ripple-primary);
         margin-bottom: 0.35rem;
     }
 
@@ -308,7 +326,7 @@
 
     .rc-file-note {
         font-size: 0.78rem;
-        color: #9ca3af;
+        color: var(--ripple-gray-400);
         margin-top: 0.4rem;
     }
 
@@ -328,14 +346,14 @@
     }
 
     .rc-btn-primary {
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
         color: #f9fafb;
-        box-shadow: 0 12px 30px rgba(79, 70, 229, 0.55);
+        box-shadow: 0 12px 30px rgba(27, 112, 45, 0.5);
     }
 
     .rc-btn-primary:hover {
         transform: translateY(-1px);
-        box-shadow: 0 18px 40px rgba(79, 70, 229, 0.7);
+        box-shadow: 0 18px 40px rgba(27, 112, 45, 0.65);
     }
 
     .rc-btn span.emoji {
@@ -563,7 +581,6 @@
                 const targetId = btn.getAttribute('data-target');
                 if (!targetId) return;
 
-                // Toggle active button
                 tabButtons.forEach(b => {
                     b.classList.remove('active');
                     b.setAttribute('aria-selected', 'false');
@@ -571,13 +588,10 @@
                 btn.classList.add('active');
                 btn.setAttribute('aria-selected', 'true');
 
-                // Toggle panels
                 panels.forEach(panel => {
-                    if (panel.id === targetId) {
-                        panel.classList.add('active');
-                    } else {
-                        panel.classList.remove('active');
-                    }
+                    panel.id === targetId
+                        ? panel.classList.add('active')
+                        : panel.classList.remove('active');
                 });
             });
         });
@@ -601,7 +615,6 @@
         const dropLabel = document.querySelector('.rc-file-drop');
         if (!dropLabel) return;
 
-        // Standard file selection
         if (input) {
             input.addEventListener('change', function (e) {
                 const file = e.target.files[0];
@@ -609,22 +622,21 @@
             });
         }
 
-        // Drag & drop on the label
         dropLabel.addEventListener('dragover', function (e) {
             e.preventDefault();
-            dropLabel.style.borderColor = '#4f46e5';
-            dropLabel.style.background = '#f3f4ff';
+            dropLabel.style.borderColor = '#1B702D';
+            dropLabel.style.background = '#E8F5EA';
         });
 
         dropLabel.addEventListener('dragleave', function (e) {
             e.preventDefault();
-            dropLabel.style.borderColor = '#e5e7eb';
+            dropLabel.style.borderColor = '#E5E7EB';
             dropLabel.style.background = 'linear-gradient(135deg, #f9fafb 0%, #ffffff 100%)';
         });
 
         dropLabel.addEventListener('drop', function (e) {
             e.preventDefault();
-            dropLabel.style.borderColor = '#e5e7eb';
+            dropLabel.style.borderColor = '#E5E7EB';
             dropLabel.style.background = 'linear-gradient(135deg, #f9fafb 0%, #ffffff 100%)';
 
             const files = e.dataTransfer.files;
