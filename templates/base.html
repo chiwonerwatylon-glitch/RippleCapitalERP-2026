@@ -21,7 +21,7 @@
 <body class="bg-light">
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
     <div class="container-fluid">
-        <a class="navbar-brand" href="{{ url_for('core.index') }}">Insurance System</a>
+        <a class="navbar-brand" href="{{ url_for('core.dashboard') }}">Insurance System</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup"
                 aria-expanded="false" aria-label="Toggle navigation">
@@ -33,7 +33,7 @@
                 <span class="navbar-text me-3">
                     {{ current_user.full_name }} ({{ current_user.role }})
                 </span>
-                <a class="nav-link" href="{{ url_for('core.index') }}">Dashboard</a>
+                <a class="nav-link" href="{{ url_for('core.dashboard') }}">Dashboard</a>
                 {% if current_user.role == 'admin' %}
                 <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin</a>
                 {% endif %}
@@ -74,5 +74,4 @@
 {% block extra_js %}{% endblock %}
 </body>
 </html>
-
 
