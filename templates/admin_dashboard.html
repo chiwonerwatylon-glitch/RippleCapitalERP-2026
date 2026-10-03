@@ -8,6 +8,12 @@
 
 {% block content %}
 <style>
+    /* Uses global Ripple brand tokens:
+       --ripple-primary, --ripple-primary-light, --ripple-primary-lighter
+       --ripple-secondary, --ripple-secondary-light, --ripple-secondary-lighter
+       --ripple-gray-*, --ripple-success, --ripple-warning, --ripple-error, --ripple-info
+    */
+
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -16,33 +22,35 @@
     }
 
     .stat-card {
-        background: white;
+        background: #ffffff;
         border-radius: 12px;
         padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        box-shadow: var(--ripple-shadow-md);
         transition: all 0.3s ease;
         border-top: 4px solid;
+        border-inline: 1px solid var(--ripple-gray-200);
+        border-bottom: 1px solid var(--ripple-gray-200);
     }
 
     .stat-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        box-shadow: var(--ripple-shadow-brand);
     }
 
     .stat-card.users {
-        border-top-color: #667eea;
+        border-top-color: var(--ripple-primary);
     }
 
     .stat-card.companies {
-        border-top-color: #10b981;
+        border-top-color: var(--ripple-secondary);
     }
 
     .stat-card.policies {
-        border-top-color: #f59e0b;
+        border-top-color: var(--ripple-warning);
     }
 
     .stat-card.commissions {
-        border-top-color: #ef4444;
+        border-top-color: var(--ripple-success);
     }
 
     .stat-icon {
@@ -53,49 +61,53 @@
     .stat-value {
         font-size: 2.5rem;
         font-weight: 700;
-        color: #1f2937;
+        color: var(--ripple-gray-900);
         margin-bottom: 0.5rem;
     }
 
     .stat-label {
         font-size: 1rem;
-        color: #6b7280;
+        color: var(--ripple-gray-600);
         font-weight: 500;
         margin-bottom: 1rem;
     }
 
     .stat-action {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
         padding: 0.5rem 1rem;
-        background: #f3f4f6;
-        color: #374151;
-        border-radius: 6px;
+        background: var(--ripple-gray-100);
+        color: var(--ripple-gray-800);
+        border-radius: 999px;
         text-decoration: none;
         font-size: 0.9rem;
         font-weight: 600;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
     }
 
     .stat-action:hover {
-        background: #e5e7eb;
+        background: var(--ripple-primary-lighter);
+        color: var(--ripple-primary);
         transform: translateX(2px);
     }
 
     .section-container {
-        background: white;
+        background: #ffffff;
         border-radius: 12px;
         padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        box-shadow: var(--ripple-shadow-md);
+        border: 1px solid var(--ripple-gray-200);
         margin-bottom: 2rem;
     }
 
     .section-title {
         font-size: 1.25rem;
         font-weight: 700;
-        color: #1f2937;
+        color: var(--ripple-gray-900);
         margin-bottom: 1.5rem;
         padding-bottom: 1rem;
-        border-bottom: 2px solid #e5e7eb;
+        border-bottom: 2px solid var(--ripple-gray-200);
         display: flex;
         align-items: center;
         gap: 0.75rem;
@@ -113,9 +125,9 @@
 
     .action-card {
         padding: 1.5rem;
-        background: linear-gradient(135deg, #f5f7fa 0%, white 100%);
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
+        background: linear-gradient(135deg, var(--ripple-gray-50) 0%, #ffffff 100%);
+        border: 1px solid var(--ripple-gray-200);
+        border-radius: 12px;
         text-decoration: none;
         transition: all 0.3s ease;
         display: flex;
@@ -124,8 +136,8 @@
     }
 
     .action-card:hover {
-        border-color: #667eea;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        border-color: var(--ripple-secondary);
+        box-shadow: 0 8px 22px rgba(251, 163, 0, 0.18);
         transform: translateY(-2px);
     }
 
@@ -133,8 +145,9 @@
         font-size: 2rem;
         width: 50px;
         height: 50px;
-        background: #f3f4f6;
-        border-radius: 8px;
+        background: var(--ripple-secondary-lighter);
+        color: var(--ripple-secondary);
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -142,18 +155,18 @@
 
     .action-card-title {
         font-weight: 700;
-        color: #1f2937;
+        color: var(--ripple-gray-900);
         font-size: 1.1rem;
     }
 
     .action-card-desc {
-        color: #6b7280;
+        color: var(--ripple-gray-600);
         font-size: 0.9rem;
         margin: 0;
     }
 
     .action-card-arrow {
-        color: #667eea;
+        color: var(--ripple-secondary);
         font-weight: 700;
         margin-top: auto;
     }
@@ -165,31 +178,38 @@
     }
 
     .btn {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
         padding: 0.75rem 1.75rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: var(--ripple-gradient-primary);
+        color: #ffffff;
         border: none;
-        border-radius: 8px;
+        border-radius: 999px;
         font-weight: 600;
         cursor: pointer;
         text-decoration: none;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
         font-size: 0.95rem;
+        box-shadow: 0 8px 20px rgba(27, 112, 45, 0.35);
     }
 
     .btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 12px 28px rgba(27, 112, 45, 0.45);
     }
 
     .btn-secondary {
-        background: #e5e7eb;
-        color: #374151;
+        background: #ffffff;
+        color: var(--ripple-gray-900);
+        border: 1px solid var(--ripple-gray-300);
+        box-shadow: none;
     }
 
     .btn-secondary:hover {
-        background: #d1d5db;
+        background: var(--ripple-primary-lighter);
+        border-color: var(--ripple-primary);
+        color: var(--ripple-primary);
     }
 
     @media (max-width: 768px) {
@@ -224,28 +244,28 @@
         <div class="stat-icon">👥</div>
         <div class="stat-value">{{ users_count }}</div>
         <div class="stat-label">Total Users</div>
-        <a href="#" class="stat-action">View Users</a>
+        <a href="#" class="stat-action">View Users →</a>
     </div>
 
     <div class="stat-card companies">
         <div class="stat-icon">🏢</div>
         <div class="stat-value">{{ companies_count }}</div>
         <div class="stat-label">Insurance Companies</div>
-        <a href="{{ url_for('admin.companies') }}" class="stat-action">Manage Companies</a>
+        <a href="{{ url_for('admin.companies') }}" class="stat-action">Manage Companies →</a>
     </div>
 
     <div class="stat-card policies">
         <div class="stat-icon">📋</div>
         <div class="stat-value">0</div>
         <div class="stat-label">Total Policies</div>
-        <a href="#" class="stat-action">View Policies</a>
+        <a href="#" class="stat-action">View Policies →</a>
     </div>
 
     <div class="stat-card commissions">
         <div class="stat-icon">💰</div>
         <div class="stat-value">$0.00</div>
         <div class="stat-label">Total Commission</div>
-        <a href="#" class="stat-action">View Reports</a>
+        <a href="#" class="stat-action">View Reports →</a>
     </div>
 </div>
 
@@ -276,28 +296,28 @@
         <a href="{{ url_for('admin.companies') }}" class="action-card">
             <div class="action-card-icon">🏢</div>
             <div class="action-card-title">Companies</div>
-            <p class="action-card-desc">Manage insurance companies and their details</p>
+            <p class="action-card-desc">Manage insurance companies and their details.</p>
             <div class="action-card-arrow">→</div>
         </a>
 
         <a href="{{ url_for('admin.manual_journal') }}" class="action-card">
             <div class="action-card-icon">📖</div>
             <div class="action-card-title">Journal Entries</div>
-            <p class="action-card-desc">Post manual journal entries and adjustments</p>
+            <p class="action-card-desc">Post manual journal entries and adjustments.</p>
             <div class="action-card-arrow">→</div>
         </a>
 
         <a href="{{ url_for('core.agent_dashboard') }}" class="action-card">
             <div class="action-card-icon">👨‍💼</div>
             <div class="action-card-title">Agent Dashboard</div>
-            <p class="action-card-desc">View agent policies and commissions</p>
+            <p class="action-card-desc">View agent policies and commissions.</p>
             <div class="action-card-arrow">→</div>
         </a>
 
         <a href="{{ url_for('core.profile') }}" class="action-card">
             <div class="action-card-icon">⚙️</div>
             <div class="action-card-title">My Settings</div>
-            <p class="action-card-desc">Manage your admin account settings</p>
+            <p class="action-card-desc">Manage your admin account settings.</p>
             <div class="action-card-arrow">→</div>
         </a>
     </div>
@@ -310,18 +330,29 @@
     </h3>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
         <div>
-            <div style="font-size: 0.9rem; color: #6b7280; font-weight: 600; margin-bottom: 0.5rem;">Application</div>
-            <div style="font-size: 1.1rem; color: #1f2937; font-weight: 700;">Ripple Capital Insurance ERP</div>
+            <div style="font-size: 0.9rem; color: var(--ripple-gray-600); font-weight: 600; margin-bottom: 0.5rem;">
+                Application
+            </div>
+            <div style="font-size: 1.1rem; color: var(--ripple-gray-900); font-weight: 700;">
+                Ripple Capital Insurance ERP
+            </div>
         </div>
         <div>
-            <div style="font-size: 0.9rem; color: #6b7280; font-weight: 600; margin-bottom: 0.5rem;">Version</div>
-            <div style="font-size: 1.1rem; color: #1f2937; font-weight: 700;">1.0.0</div>
+            <div style="font-size: 0.9rem; color: var(--ripple-gray-600); font-weight: 600; margin-bottom: 0.5rem;">
+                Version
+            </div>
+            <div style="font-size: 1.1rem; color: var(--ripple-gray-900); font-weight: 700;">
+                1.0.0
+            </div>
         </div>
         <div>
-            <div style="font-size: 0.9rem; color: #6b7280; font-weight: 600; margin-bottom: 0.5rem;">Environment</div>
-            <div style="font-size: 1.1rem; color: #1f2937; font-weight: 700;">Production</div>
+            <div style="font-size: 0.9rem; color: var(--ripple-gray-600); font-weight: 600; margin-bottom: 0.5rem;">
+                Environment
+            </div>
+            <div style="font-size: 1.1rem; color: var(--ripple-gray-900); font-weight: 700;">
+                Production
+            </div>
         </div>
     </div>
 </div>
 {% endblock %}
-
