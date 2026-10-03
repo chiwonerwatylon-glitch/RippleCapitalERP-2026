@@ -1,3 +1,5 @@
+import re
+
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from .models import db, User, ROLE_ADMIN
@@ -104,9 +106,29 @@ def edit_user(user_id):
                 flash("Email and role are required.", "danger")
                 return render_template("admin_edit_user.html", user=user)
 
+            if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+                flash("Please enter a valid email address.", "danger")
+                return render_template("admin_edit_user.html", user=user)
+
+            email_changed = email.lower() != (user.email or "").lower()
+            if email_changed:
+                existing = User.query.filter(
+                    db.func.lower(User.email) == email.lower(),
+                    User.id != user.id,
+                ).first()
+                if existing:
+                    flash("That email address is already in use by another user.", "danger")
+                    return render_template("admin_edit_user.html", user=user)
+
+            old_email = user.email
             user.email = email
             user.role = role
             db.session.commit()
+            if email_changed:
+                flash(
+                    f"Email for '{user.username}' changed by admin from {old_email} to {email}.",
+                    "info",
+                )
             flash(f"User '{user.username}' updated successfully.", "success")
             return redirect(url_for("admin.users"))
         except Exception as e:
