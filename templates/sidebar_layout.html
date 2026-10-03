@@ -132,16 +132,21 @@
         }
 
         .sidebar-logo-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 999px;
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: radial-gradient(circle at 25% 25%, #f9fafb 0, transparent 45%),
-                        radial-gradient(circle at 75% 75%, #fbbf24 0, transparent 55%),
-                        #0f172a;
-            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.9);
+            overflow: hidden;
+            filter: drop-shadow(0 4px 12px rgba(27, 112, 45, 0.3));
+        }
+        
+        .sidebar-logo-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
             font-size: 1.4rem;
         }
 
@@ -499,8 +504,8 @@
             <div class="sidebar-content">
                 <!-- Brand -->
                 <header class="sidebar-header">
-                    <div class="sidebar-logo-icon" aria-hidden="true">
-                        💼
+                    <div class="sidebar-logo-icon">
+                        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Ripple Capital Logo">
                     </div>
                     <div class="sidebar-logo-text-block">
                         <div class="sidebar-logo-title">Ripple Capital</div>
