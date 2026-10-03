@@ -99,6 +99,9 @@
         cursor: pointer;
         transition: all 0.3s ease;
         margin-top: auto;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
     }
 
     .report-btn:hover {
@@ -166,21 +169,21 @@
                 <div class="report-icon">💵</div>
                 <div class="report-title">Premium Report</div>
                 <p class="report-desc">Total premiums collected: ${{ "%.2f"|format(total_premiums) }}</p>
-                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download PDF</button>
+                <a href="{{ url_for('core.download_report', report_type='premium-pdf') }}" class="report-btn">📥 Download PDF</a>
             </div>
 
             <div class="report-card">
                 <div class="report-icon">💰</div>
                 <div class="report-title">Commission Report</div>
                 <p class="report-desc">Total commissions earned: ${{ "%.2f"|format(total_commissions) }}</p>
-                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download PDF</button>
+                <a href="{{ url_for('core.download_report', report_type='commission-pdf') }}" class="report-btn">📥 Download PDF</a>
             </div>
 
             <div class="report-card">
                 <div class="report-icon">📊</div>
                 <div class="report-title">Sales Report</div>
                 <p class="report-desc">{{ policies_count }} policies in portfolio</p>
-                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download PDF</button>
+                <a href="{{ url_for('core.download_report', report_type='sales-pdf') }}" class="report-btn">📥 Download PDF</a>
             </div>
         </div>
     </div>
@@ -195,21 +198,21 @@
                 <div class="report-icon">👥</div>
                 <div class="report-title">Client Summary</div>
                 <p class="report-desc">{{ clients_count }} clients in your portfolio</p>
-                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download Excel</button>
+                <a href="{{ url_for('core.download_report', report_type='clients-excel') }}" class="report-btn">📥 Download CSV</a>
             </div>
 
             <div class="report-card">
                 <div class="report-icon">📋</div>
                 <div class="report-title">Client Policy Report</div>
                 <p class="report-desc">Policies grouped by client</p>
-                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download Excel</button>
+                <a href="{{ url_for('core.download_report', report_type='client-policies-excel') }}" class="report-btn">📥 Download Excel</a>
             </div>
 
             <div class="report-card">
                 <div class="report-icon">🎯</div>
                 <div class="report-title">Client Activity</div>
                 <p class="report-desc">Track client engagement metrics</p>
-                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download Excel</button>
+                <a href="{{ url_for('core.download_report', report_type='client-activity-excel') }}" class="report-btn">📥 Download Excel</a>
             </div>
         </div>
     </div>
@@ -224,21 +227,21 @@
                 <div class="report-icon">🏢</div>
                 <div class="report-title">Company Overview</div>
                 <p class="report-desc">{{ companies_count }} companies in system</p>
-                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download PDF</button>
+                <a href="{{ url_for('core.download_report', report_type='companies-pdf') }}" class="report-btn">📥 Download PDF</a>
             </div>
 
             <div class="report-card">
                 <div class="report-icon">📦</div>
                 <div class="report-title">Product Report</div>
                 <p class="report-desc">Insurance products and commission rates</p>
-                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download PDF</button>
+                <a href="{{ url_for('core.download_report', report_type='products-pdf') }}" class="report-btn">📥 Download PDF</a>
             </div>
 
             <div class="report-card">
                 <div class="report-icon">📊</div>
                 <div class="report-title">Company Performance</div>
                 <p class="report-desc">Performance metrics by company</p>
-                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download PDF</button>
+                <a href="{{ url_for('core.download_report', report_type='company-performance-pdf') }}" class="report-btn">📥 Download PDF</a>
             </div>
         </div>
     </div>

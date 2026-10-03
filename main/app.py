@@ -213,7 +213,8 @@ def create_app(config_name=None):
             if HAS_NEW_MODELS:
                 try:
                     client = Client(
-                        name=request.form.get("name"),
+                        first_name=request.form.get("first_name"),
+                        last_name=request.form.get("last_name"),
                         email=request.form.get("email"),
                         phone=request.form.get("phone"),
                         address=request.form.get("address"),
@@ -245,7 +246,7 @@ def create_app(config_name=None):
                 try:
                     company = Company(
                         name=request.form.get("name"),
-                        email=request.form.get("email"),
+                        contact_email=request.form.get("email"),
                         phone=request.form.get("phone"),
                         address=request.form.get("address"),
                         owner_id=current_user.id
@@ -284,7 +285,7 @@ def create_app(config_name=None):
                     rule = CommissionRule(
                         company_id=request.form.get("company_id"),
                         product_id=request.form.get("product_id"),
-                        commission_percentage=float(request.form.get("commission_percentage", 0)),
+                        commission_percent=float(request.form.get("commission_percent", 0)),
                         owner_id=current_user.id
                     )
                     db.session.add(rule)
@@ -333,7 +334,7 @@ def create_app(config_name=None):
                         policy_id=request.form.get("policy_id"),
                         amount=float(request.form.get("amount", 0)),
                         payment_method=request.form.get("payment_method"),
-                        reference_number=request.form.get("reference_number"),
+                        reference=request.form.get("reference"),
                         owner_id=current_user.id
                     )
                     db.session.add(remittance)
@@ -375,6 +376,93 @@ def create_app(config_name=None):
             remittances_count=len(remittances)
         )
 
+    @core_bp.route("/reports/download/<report_type>")
+    @login_required
+    def download_report(report_type):
+        """Generate and download reports in various formats."""
+        if not HAS_NEW_MODELS:
+            flash("Reports not available in this version.", "warning")
+            return redirect(url_for("core.reports"))
+        
+        try:
+            if report_type == "premium-pdf":
+                # Generate Premium Report as PDF
+                policies = Policy.query.filter_by(owner_id=current_user.id).all()
+                total_premiums = sum(p.total_premiums_paid() for p in policies) if policies else 0
+                
+                filename = f"Premium_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+                content = f"PREMIUM REPORT\n"
+                content += f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+                content += f"{'='*50}\n\n"
+                content += f"Total Premiums Collected: ${total_premiums:.2f}\n\n"
+                content += f"Policy Details:\n"
+                content += f"{'-'*50}\n"
+                
+                for policy in policies:
+                    content += f"Policy #{policy.policy_number}\n"
+                    content += f"  Client: {policy.client.full_name() if policy.client else 'N/A'}\n"
+                    content += f"  Amount: ${policy.total_premiums_paid():.2f}\n"
+                    content += f"  Premium: ${policy.premium_amount:.2f}\n\n"
+                
+                return send_file(
+                    io.BytesIO(content.encode()),
+                    mimetype="text/plain",
+                    as_attachment=True,
+                    download_name=filename
+                )
+            
+            elif report_type == "commission-pdf":
+                # Generate Commission Report
+                policies = Policy.query.filter_by(owner_id=current_user.id).all()
+                total_commissions = sum(p.total_commission_earned() for p in policies) if policies else 0
+                
+                filename = f"Commission_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+                content = f"COMMISSION REPORT\n"
+                content += f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+                content += f"{'='*50}\n\n"
+                content += f"Total Commissions Earned: ${total_commissions:.2f}\n\n"
+                content += f"Commission Details:\n"
+                content += f"{'-'*50}\n"
+                
+                for policy in policies:
+                    comm = policy.total_commission_earned()
+                    if comm > 0:
+                        content += f"Policy #{policy.policy_number}\n"
+                        content += f"  Client: {policy.client.full_name() if policy.client else 'N/A'}\n"
+                        content += f"  Commission: ${comm:.2f}\n\n"
+                
+                return send_file(
+                    io.BytesIO(content.encode()),
+                    mimetype="text/plain",
+                    as_attachment=True,
+                    download_name=filename
+                )
+            
+            elif report_type == "clients-excel":
+                # Generate Clients Report as CSV
+                clients = Client.query.filter_by(owner_id=current_user.id).all()
+                
+                filename = f"Clients_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+                content = "First Name,Last Name,Email,Phone,City,Address\n"
+                
+                for client in clients:
+                    content += f"\"{client.first_name}\",\"{client.last_name}\",\"{client.email or ''}\",\"{client.phone or ''}\",\"{client.city or ''}\",\"{client.address or ''}\"\n"
+                
+                return send_file(
+                    io.BytesIO(content.encode()),
+                    mimetype="text/csv",
+                    as_attachment=True,
+                    download_name=filename
+                )
+            
+            else:
+                flash("Invalid report type.", "warning")
+                return redirect(url_for("core.reports"))
+        
+        except Exception as e:
+            flash(f"Error generating report: {str(e)}", "danger")
+            return redirect(url_for("core.reports"))
+
     @core_bp.route("/profile", methods=["GET", "POST"])
     @login_required
     def profile():
@@ -386,11 +474,19 @@ def create_app(config_name=None):
                 file = request.files['profile_picture']
                 if file and file.filename:
                     try:
-                        filename = secure_filename(f"{current_user.id}_profile_{datetime.now().timestamp()}.{file.filename.split('.')[-1]}")
-                        filepath = UPLOAD_FOLDER / filename
-                        file.save(str(filepath))
-                        if HAS_NEW_MODELS and hasattr(current_user, 'profile_picture'):
-                            current_user.profile_picture = f"/uploads/{filename}"
+                        # Validate file extension
+                        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+                        file_ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+                        
+                        if file_ext not in allowed_extensions:
+                            flash("Invalid file type. Please upload an image.", "warning")
+                        else:
+                            filename = secure_filename(f"{current_user.id}_profile_{int(datetime.now().timestamp())}.{file_ext}")
+                            filepath = UPLOAD_FOLDER / filename
+                            file.save(str(filepath))
+                            if HAS_NEW_MODELS and hasattr(current_user, 'profile_picture'):
+                                current_user.profile_picture = f"/uploads/{filename}"
+                            flash("Profile picture updated successfully.", "success")
                     except Exception as e:
                         flash(f"Error uploading picture: {str(e)}", "warning")
             
