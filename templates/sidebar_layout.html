@@ -547,6 +547,14 @@
                                 </a>
                             </li>
                             <li class="sidebar-menu-item">
+                                <a href="{{ url_for('core.add_policy') }}"
+                                   class="sidebar-menu-link {% if request.endpoint == 'core.add_policy' %}active{% endif %}">
+                                    <i class="sidebar-menu-icon fas fa-plus-circle"></i>
+                                    <span class="sidebar-menu-label">New Policy</span>
+                                    <span class="sidebar-menu-chevron"><i class="fas fa-chevron-right"></i></span>
+                                </a>
+                            </li>
+                            <li class="sidebar-menu-item">
                                 <a href="{{ url_for('core.policies') }}"
                                    class="sidebar-menu-link {% if request.endpoint == 'core.policies' %}active{% endif %}">
                                     <i class="sidebar-menu-icon fas fa-file-contract"></i>
