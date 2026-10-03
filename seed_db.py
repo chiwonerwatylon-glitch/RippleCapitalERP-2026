@@ -5,8 +5,8 @@ Seed script to create initial admin/owner users for testing.
 Run this after database migrations. If no migrations have been generated yet,
 the script creates any missing tables so the seed can still succeed.
 """
-from main.app import create_app, db
-from main.models import User, ROLE_OWNER, ROLE_ADMIN
+from main.app import create_app, db, DEFAULT_PRODUCTS
+from main.models import User, InsuranceProduct, ROLE_OWNER, ROLE_ADMIN
 
 
 def seed_db():
@@ -42,6 +42,26 @@ def seed_db():
             admin.set_password("admin123")
             db.session.add(admin)
             print("Created admin user: admin@insurance.com / admin123")
+
+        # Ensure the owner has an id before linking products
+        db.session.flush()
+
+        # Create the default products once, without tying them to a company
+        for product_data in DEFAULT_PRODUCTS:
+            exists = InsuranceProduct.query.filter_by(
+                owner_id=owner.id,
+                company_id=None,
+                name=product_data["name"],
+            ).first()
+            if not exists:
+                db.session.add(
+                    InsuranceProduct(
+                        owner_id=owner.id,
+                        company_id=None,
+                        **product_data,
+                    )
+                )
+                print(f"Created product: {product_data['name']}")
 
         db.session.commit()
         print("Database seeding complete!")

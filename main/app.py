@@ -68,6 +68,85 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+DEFAULT_PRODUCTS = [
+    {
+        "name": "Motor Comprehensive",
+        "coverage_type": "Motor",
+        "description": "Covers loss or damage to the insured vehicle and liability to third parties.",
+    },
+    {
+        "name": "Third Party",
+        "coverage_type": "Motor",
+        "description": "Covers legal liability for injury or damage to third parties caused by the insured vehicle.",
+    },
+    {
+        "name": "Full Third Party",
+        "coverage_type": "Motor",
+        "description": "Third party liability plus fire and theft cover for the insured vehicle.",
+    },
+    {
+        "name": "Homeowners",
+        "coverage_type": "Property",
+        "description": "Covers the home structure and permanent fixtures against insured perils.",
+    },
+    {
+        "name": "Household",
+        "coverage_type": "Property",
+        "description": "Covers household contents and personal belongings against loss or damage.",
+    },
+    {
+        "name": "Business Combined",
+        "coverage_type": "General Insurance",
+        "description": "Package cover for business property, contents, money and liability.",
+    },
+    {
+        "name": "GIT (Goods in Transit)",
+        "coverage_type": "Specialty",
+        "description": "Covers goods against loss or damage while being transported.",
+    },
+    {
+        "name": "Agriculture",
+        "coverage_type": "Specialty",
+        "description": "Covers crops, livestock and farm assets against insured risks.",
+    },
+    {
+        "name": "Asset All Risk",
+        "coverage_type": "Property",
+        "description": "Broad cover for physical loss or damage to insured assets from any non-excluded cause.",
+    },
+]
+
+
+def ensure_user_has_default_products(user):
+    """Create the default insurance products for a user if they have none.
+
+    Products are generic (company_id is NULL) so each product type exists
+    exactly once per user. Returns the user's list of products.
+    """
+    products = InsuranceProduct.query.filter_by(owner_id=user.id).all()
+    if products:
+        return products
+
+    for product_data in DEFAULT_PRODUCTS:
+        exists = InsuranceProduct.query.filter_by(
+            owner_id=user.id,
+            company_id=None,
+            name=product_data["name"],
+        ).first()
+        if not exists:
+            db.session.add(
+                InsuranceProduct(
+                    owner_id=user.id,
+                    company_id=None,
+                    **product_data,
+                )
+            )
+
+    db.session.commit()
+    return InsuranceProduct.query.filter_by(owner_id=user.id).all()
+
+
+
 def create_app(config_name=None):
     app = Flask(
         __name__,
@@ -243,6 +322,91 @@ def create_app(config_name=None):
                     db.session.rollback()
                     flash(f"Error adding client: {str(e)}", "danger")
         return render_template("add_client.html")
+
+    def _validate_client_form(form):
+        """Validate and normalize client form data. Returns (data, errors)."""
+        data = {
+            "first_name": (form.get("first_name") or "").strip(),
+            "last_name": (form.get("last_name") or "").strip(),
+            "email": (form.get("email") or "").strip(),
+            "phone": (form.get("phone") or "").strip(),
+            "address": (form.get("address") or "").strip(),
+        }
+        errors = []
+        if not data["first_name"]:
+            errors.append("First name is required.")
+        if not data["last_name"]:
+            errors.append("Last name is required.")
+        if data["email"] and not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", data["email"]):
+            errors.append("Please enter a valid email address.")
+        if data["phone"] and not re.match(r"^\+?[0-9\s\-().]{6,30}$", data["phone"]):
+            errors.append("Please enter a valid phone number.")
+        return data, errors
+
+    @core_bp.route("/clients/<int:client_id>/edit", methods=["GET", "POST"])
+    @login_required
+    def edit_client(client_id):
+        if not HAS_NEW_MODELS:
+            flash("Client management is not available.", "danger")
+            return redirect(url_for("core.clients"))
+
+        client = Client.query.get_or_404(client_id)
+        if client.owner_id != current_user.id:
+            flash("You don't have permission to edit this client.", "danger")
+            return redirect(url_for("core.clients"))
+
+        if request.method == "POST":
+            data, errors = _validate_client_form(request.form)
+            if errors:
+                for error in errors:
+                    flash(error, "warning")
+                return render_template("add_client.html", client=client, form_data=data, editing=True)
+            try:
+                client.first_name = data["first_name"]
+                client.last_name = data["last_name"]
+                client.email = data["email"] or None
+                client.phone = data["phone"] or None
+                client.address = data["address"] or None
+                db.session.commit()
+                flash("Client updated successfully", "success")
+                return redirect(url_for("core.clients"))
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Error updating client: {str(e)}", "danger")
+                return render_template("add_client.html", client=client, form_data=data, editing=True)
+
+        form_data = {
+            "first_name": client.first_name or "",
+            "last_name": client.last_name or "",
+            "email": client.email or "",
+            "phone": client.phone or "",
+            "address": client.address or "",
+        }
+        return render_template("add_client.html", client=client, form_data=form_data, editing=True)
+
+    @core_bp.route("/clients/<int:client_id>/delete", methods=["POST"])
+    @login_required
+    def delete_client(client_id):
+        if not HAS_NEW_MODELS:
+            flash("Client management is not available.", "danger")
+            return redirect(url_for("core.clients"))
+
+        client = Client.query.get_or_404(client_id)
+        if client.owner_id != current_user.id:
+            flash("You don't have permission to delete this client.", "danger")
+            return redirect(url_for("core.clients"))
+
+        try:
+            # Remove related policies (and their remittances via ORM cascade)
+            for policy in client.policies.all():
+                db.session.delete(policy)
+            db.session.delete(client)
+            db.session.commit()
+            flash("Client deleted successfully", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error deleting client: {str(e)}", "danger")
+        return redirect(url_for("core.clients"))
 
     @core_bp.route("/companies")
     @login_required
@@ -562,6 +726,9 @@ def create_app(config_name=None):
             flash("Policies feature not available in this version.", "warning")
             return redirect(url_for("core.policies"))
         
+        # Make sure the user has the default products
+        ensure_user_has_default_products(current_user)
+
         # Get owned resources for dropdowns
         clients_list = Client.query.filter_by(owner_id=current_user.id).all()
         companies_list = Company.query.filter_by(owner_id=current_user.id).all()

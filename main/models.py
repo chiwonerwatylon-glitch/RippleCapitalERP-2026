@@ -96,7 +96,7 @@ class InsuranceProduct(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     owner_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    company_id = db.Column(db.Integer, db.ForeignKey("companies.id"), nullable=False)
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.id"), nullable=True)
     name = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text)
     coverage_type = db.Column(db.String(100))  # e.g., Life, Health, Auto
@@ -107,6 +107,8 @@ class InsuranceProduct(db.Model):
     commission_rules = db.relationship("CommissionRule", backref="product", lazy="dynamic")
     policies = db.relationship("Policy", backref="product", lazy="dynamic")
 
+    # company_id is nullable, so uniqueness of generic (company-less) products is
+    # enforced in application code (see ensure_user_has_default_products).
     __table_args__ = (db.UniqueConstraint('owner_id', 'company_id', 'name', name='uq_product_per_company_owner'),)
 
 
