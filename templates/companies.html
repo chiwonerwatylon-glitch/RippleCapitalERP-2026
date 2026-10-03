@@ -284,19 +284,18 @@
                                 {{ company.name or 'N/A' }}
                             </div>
                         </td>
-                        <td>{{ company.email or 'N/A' }}</td>
+                        <td>{{ company.contact_email or 'N/A' }}</td>
                         <td>{{ company.phone or 'N/A' }}</td>
                         <td>{{ company.address or 'N/A' }}</td>
                         <td class="actions-cell" style="text-align: right;">
-                            <!-- Placeholder actions; wire real routes when implemented -->
-                            <button
-                                type="button"
+                            <a
+                                href="{{ url_for('core.edit_company', company_id=company.id) }}"
                                 class="action-btn edit-btn"
-                                onclick="alert('Edit company functionality coming soon');"
+                                style="text-decoration: none;"
                             >
                                 <i class="fas fa-pen"></i>
                                 <span>Edit</span>
-                            </button>
+                            </a>
                             <button
                                 type="button"
                                 class="action-btn delete-btn"

@@ -420,24 +420,174 @@ def create_app(config_name=None):
     @core_bp.route("/companies/add", methods=["GET", "POST"])
     @login_required
     def add_company():
+        if not HAS_NEW_MODELS:
+            flash("Company management not available.", "warning")
+            return redirect(url_for("core.companies"))
+
+        products_list = ensure_user_has_default_products(current_user)
+
         if request.method == "POST":
-            if HAS_NEW_MODELS:
-                try:
-                    company = Company(
-                        name=request.form.get("name"),
-                        contact_email=request.form.get("email"),
-                        phone=request.form.get("phone"),
-                        address=request.form.get("address"),
-                        owner_id=current_user.id
+            try:
+                name = (request.form.get("name") or "").strip()
+                contact_email = (request.form.get("contact_email") or "").strip()
+                phone = (request.form.get("phone") or "").strip()
+                address = (request.form.get("address") or "").strip()
+                website = (request.form.get("website") or "").strip() or None
+                description = (request.form.get("description") or "").strip() or None
+
+                if not all([name, contact_email, phone, address]):
+                    flash("All required fields must be filled.", "danger")
+                    return render_template(
+                        "add_company_enhanced.html",
+                        products=products_list,
+                        company=None,
+                        existing_commissions=[],
                     )
-                    db.session.add(company)
-                    db.session.commit()
-                    flash("Company added successfully.", "success")
-                    return redirect(url_for("core.companies"))
-                except Exception as e:
-                    db.session.rollback()
-                    flash(f"Error adding company: {str(e)}", "danger")
-        return render_template("add_company.html")
+
+                company = Company(
+                    name=name,
+                    contact_email=contact_email,
+                    phone=phone,
+                    address=address,
+                    website=website,
+                    description=description,
+                    owner_id=current_user.id,
+                )
+                db.session.add(company)
+                db.session.flush()
+
+                rules_created = 0
+                for product in products_list:
+                    commission_str = (request.form.get(f"commission_{product.id}") or "").strip()
+                    if commission_str:
+                        try:
+                            percent = float(commission_str)
+                        except ValueError:
+                            continue
+                        if 0 <= percent <= 100:
+                            db.session.add(
+                                CommissionRule(
+                                    owner_id=current_user.id,
+                                    company_id=company.id,
+                                    product_id=product.id,
+                                    commission_percent=round(percent, 2),
+                                    is_active=True,
+                                )
+                            )
+                            rules_created += 1
+
+                db.session.commit()
+                msg = f"Company '{name}' created successfully"
+                if rules_created > 0:
+                    msg += f". Commission rules set for {rules_created} products."
+                flash(msg, "success")
+                return redirect(url_for("core.companies"))
+
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Error: {str(e)}", "danger")
+                return render_template(
+                    "add_company_enhanced.html",
+                    products=products_list,
+                    company=None,
+                    existing_commissions=[],
+                )
+
+        return render_template(
+            "add_company_enhanced.html",
+            products=products_list,
+            company=None,
+            existing_commissions=[],
+        )
+
+    @core_bp.route("/companies/<int:company_id>/edit", methods=["GET", "POST"])
+    @login_required
+    def edit_company(company_id):
+        if not HAS_NEW_MODELS:
+            flash("Company management not available.", "warning")
+            return redirect(url_for("core.companies"))
+
+        company = Company.query.get_or_404(company_id)
+        if company.owner_id != current_user.id:
+            flash("You don't have permission to edit this company.", "danger")
+            return redirect(url_for("core.companies"))
+
+        products_list = ensure_user_has_default_products(current_user)
+        existing_commissions = CommissionRule.query.filter_by(
+            company_id=company_id, owner_id=current_user.id
+        ).all()
+
+        if request.method == "POST":
+            try:
+                name = (request.form.get("name") or "").strip()
+                contact_email = (request.form.get("contact_email") or "").strip()
+                phone = (request.form.get("phone") or "").strip()
+                address = (request.form.get("address") or "").strip()
+
+                if not all([name, contact_email, phone, address]):
+                    flash("All required fields must be filled.", "danger")
+                    return render_template(
+                        "add_company_enhanced.html",
+                        products=products_list,
+                        company=company,
+                        existing_commissions=existing_commissions,
+                    )
+
+                company.name = name
+                company.contact_email = contact_email
+                company.phone = phone
+                company.address = address
+                company.website = (request.form.get("website") or "").strip() or None
+                company.description = (request.form.get("description") or "").strip() or None
+
+                for product in products_list:
+                    commission_str = (request.form.get(f"commission_{product.id}") or "").strip()
+                    rule = CommissionRule.query.filter_by(
+                        company_id=company_id, product_id=product.id, owner_id=current_user.id
+                    ).first()
+
+                    if commission_str:
+                        try:
+                            percent = float(commission_str)
+                        except ValueError:
+                            continue
+                        if 0 <= percent <= 100:
+                            if rule:
+                                rule.commission_percent = round(percent, 2)
+                            else:
+                                db.session.add(
+                                    CommissionRule(
+                                        owner_id=current_user.id,
+                                        company_id=company_id,
+                                        product_id=product.id,
+                                        commission_percent=round(percent, 2),
+                                        is_active=True,
+                                    )
+                                )
+                    elif rule:
+                        db.session.delete(rule)
+
+                db.session.commit()
+                flash("Company updated successfully.", "success")
+                return redirect(url_for("core.companies"))
+
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Error updating company: {str(e)}", "danger")
+                return render_template(
+                    "add_company_enhanced.html",
+                    products=products_list,
+                    company=company,
+                    existing_commissions=existing_commissions,
+                )
+
+        return render_template(
+            "add_company_enhanced.html",
+            products=products_list,
+            company=company,
+            existing_commissions=existing_commissions,
+        )
+
 
     def _rule_form_options():
         """Return (companies, products) available to the current user for rule forms."""
