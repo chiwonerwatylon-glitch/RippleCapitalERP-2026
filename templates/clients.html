@@ -292,23 +292,25 @@
                         <td>{{ client.phone or 'N/A' }}</td>
                         <td>{{ client.address or 'N/A' }}</td>
                         <td class="actions-cell" style="text-align: right;">
-                            <!-- Placeholder actions; wire up real routes when available -->
-                            <button
-                                type="button"
+                            <a
+                                href="{{ url_for('core.edit_client', client_id=client.id) }}"
                                 class="action-btn edit-btn"
-                                onclick="alert('Edit client functionality coming soon');"
+                                style="text-decoration: none;"
                             >
                                 <i class="fas fa-pen"></i>
                                 <span>Edit</span>
-                            </button>
-                            <button
-                                type="button"
-                                class="action-btn delete-btn"
-                                onclick="alert('Delete client functionality coming soon');"
+                            </a>
+                            <form
+                                method="post"
+                                action="{{ url_for('core.delete_client', client_id=client.id) }}"
+                                style="display: inline;"
+                                onsubmit="return confirm('Are you sure you want to delete this client? This action cannot be undone.');"
                             >
-                                <i class="fas fa-trash"></i>
-                                <span>Delete</span>
-                            </button>
+                                <button type="submit" class="action-btn delete-btn">
+                                    <i class="fas fa-trash"></i>
+                                    <span>Delete</span>
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}
