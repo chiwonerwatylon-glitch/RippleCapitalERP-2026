@@ -137,14 +137,43 @@
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
     }
+
+    .action-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-right: 0.5rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+
+    .edit-btn {
+        background: #667eea;
+        color: white;
+    }
+
+    .edit-btn:hover {
+        background: #764ba2;
+    }
+
+    .delete-btn {
+        background: #ef4444;
+        color: white;
+    }
+
+    .delete-btn:hover {
+        background: #dc2626;
+    }
 </style>
 
 <div class="remittance-container">
     <div class="header-row">
         <h2 class="header-title">Premium Remittance</h2>
-        <button class="add-btn" onclick="alert('Record remittance functionality coming soon')">
+        <a href="{{ url_for('core.add_premium_remittance') }}" class="add-btn">
             <i class="fas fa-plus"></i> Record Payment
-        </button>
+        </a>
     </div>
 
     {% if remittances %}
@@ -155,6 +184,7 @@
                 <th>Policy ID</th>
                 <th>Amount</th>
                 <th>Payment Method</th>
+                <th>Reference</th>
                 <th>Date</th>
                 <th>Actions</th>
             </tr>
@@ -163,25 +193,24 @@
             {% for remittance in remittances %}
             <tr>
                 <td>#{{ remittance.id }}</td>
-                <td>{{ remittance.policy_id or 'N/A' }}</td>
-                <td>${{ "%.2f"|format(remittance.amount or 0) }}</td>
+                <td>Policy #{{ remittance.policy_id or 'N/A' }}</td>
+                <td><strong>${{ "%.2f"|format(remittance.amount or 0) }}</strong></td>
                 <td>
-                    <span class="payment-method-badge method-bank">
-                        {% if remittance.payment_method == 'Bank Transfer' %}
-                            🏦 Bank Transfer
-                        {% elif remittance.payment_method == 'Cash' %}
-                            💵 Cash
-                        {% elif remittance.payment_method == 'Mobile Money' %}
-                            📱 Mobile Money
-                        {% else %}
-                            {{ remittance.payment_method or 'N/A' }}
-                        {% endif %}
-                    </span>
+                    {% if remittance.payment_method == 'Bank Transfer' %}
+                        <span class="payment-method-badge method-bank">🏦 Bank Transfer</span>
+                    {% elif remittance.payment_method == 'Cash' %}
+                        <span class="payment-method-badge method-cash">💵 Cash</span>
+                    {% elif remittance.payment_method == 'Mobile Money' %}
+                        <span class="payment-method-badge method-mobile">📱 Mobile Money</span>
+                    {% else %}
+                        {{ remittance.payment_method or 'N/A' }}
+                    {% endif %}
                 </td>
+                <td>{{ remittance.reference_number or '-' }}</td>
                 <td>{{ remittance.created_at.strftime('%Y-%m-%d') if remittance.created_at else 'N/A' }}</td>
                 <td>
-                    <button onclick="alert('View functionality coming soon')" style="background: #667eea; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; margin-right: 0.5rem;">View</button>
-                    <button onclick="alert('Delete functionality coming soon')" style="background: #ef4444; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer;">Delete</button>
+                    <button class="action-btn edit-btn" onclick="alert('Edit functionality coming soon')">Edit</button>
+                    <button class="action-btn delete-btn" onclick="alert('Delete functionality coming soon')">Delete</button>
                 </td>
             </tr>
             {% endfor %}
@@ -192,9 +221,9 @@
         <div class="empty-icon">💳</div>
         <div class="empty-title">No Payment Records Yet</div>
         <div class="empty-text">Record your first premium payment to track remittances.</div>
-        <button class="empty-btn" onclick="alert('Record remittance functionality coming soon')">
+        <a href="{{ url_for('core.add_premium_remittance') }}" class="empty-btn">
             <i class="fas fa-plus"></i> Record First Payment
-        </button>
+        </a>
     </div>
     {% endif %}
 </div>

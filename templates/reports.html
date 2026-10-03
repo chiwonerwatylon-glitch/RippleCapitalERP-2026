@@ -15,6 +15,31 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
     .report-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -64,10 +89,21 @@
         margin: 0;
     }
 
-    .report-arrow {
-        color: #667eea;
-        font-weight: 700;
+    .report-btn {
+        padding: 0.75rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
         margin-top: auto;
+    }
+
+    .report-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     }
 
     .report-section {
@@ -89,70 +125,62 @@
     .section-icon {
         font-size: 1.5rem;
     }
-
-    .btn {
-        display: inline-block;
-        padding: 0.75rem 1.75rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        font-size: 0.95rem;
-    }
-
-    .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    .report-card button {
-        width: 100%;
-        padding: 0.75rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .report-card button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-    }
 </style>
 
 <div class="reports-container">
+    <!-- Summary Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ clients_count }}</div>
+            <div class="stat-label">Total Clients</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ companies_count }}</div>
+            <div class="stat-label">Companies</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ policies_count }}</div>
+            <div class="stat-label">Policies</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">${{ "%.2f"|format(total_premiums) }}</div>
+            <div class="stat-label">Total Premiums</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">${{ "%.2f"|format(total_commissions) }}</div>
+            <div class="stat-label">Total Commissions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ remittances_count }}</div>
+            <div class="stat-label">Payments Recorded</div>
+        </div>
+    </div>
+
     <!-- Financial Reports Section -->
     <div class="report-section">
         <h3 class="section-title">
-            <span class="section-icon">📊</span> Financial Reports
+            <span class="section-icon">💰</span> Financial Reports
         </h3>
         <div class="report-grid">
             <div class="report-card">
-                <div class="report-icon">💰</div>
-                <div class="report-title">Commission Report</div>
-                <p class="report-desc">View detailed commission earnings by company and product</p>
-                <button onclick="alert('Commission report functionality coming soon')">Generate Report</button>
-            </div>
-
-            <div class="report-card">
                 <div class="report-icon">💵</div>
                 <div class="report-title">Premium Report</div>
-                <p class="report-desc">Track all premium payments and remittances</p>
-                <button onclick="alert('Premium report functionality coming soon')">Generate Report</button>
+                <p class="report-desc">Total premiums collected: ${{ "%.2f"|format(total_premiums) }}</p>
+                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download PDF</button>
             </div>
 
             <div class="report-card">
-                <div class="report-icon">📈</div>
+                <div class="report-icon">💰</div>
+                <div class="report-title">Commission Report</div>
+                <p class="report-desc">Total commissions earned: ${{ "%.2f"|format(total_commissions) }}</p>
+                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download PDF</button>
+            </div>
+
+            <div class="report-card">
+                <div class="report-icon">📊</div>
                 <div class="report-title">Sales Report</div>
-                <p class="report-desc">Analyze policy sales trends and performance</p>
-                <button onclick="alert('Sales report functionality coming soon')">Generate Report</button>
+                <p class="report-desc">{{ policies_count }} policies in portfolio</p>
+                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download PDF</button>
             </div>
         </div>
     </div>
@@ -166,22 +194,22 @@
             <div class="report-card">
                 <div class="report-icon">👥</div>
                 <div class="report-title">Client Summary</div>
-                <p class="report-desc">List of all clients with contact information</p>
-                <button onclick="alert('Client summary functionality coming soon')">Generate Report</button>
+                <p class="report-desc">{{ clients_count }} clients in your portfolio</p>
+                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download Excel</button>
             </div>
 
             <div class="report-card">
                 <div class="report-icon">📋</div>
                 <div class="report-title">Client Policy Report</div>
-                <p class="report-desc">Policies grouped by client with premium details</p>
-                <button onclick="alert('Client policy report functionality coming soon')">Generate Report</button>
+                <p class="report-desc">Policies grouped by client</p>
+                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download Excel</button>
             </div>
 
             <div class="report-card">
                 <div class="report-icon">🎯</div>
                 <div class="report-title">Client Activity</div>
-                <p class="report-desc">Track client activity and engagement metrics</p>
-                <button onclick="alert('Client activity report functionality coming soon')">Generate Report</button>
+                <p class="report-desc">Track client engagement metrics</p>
+                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download Excel</button>
             </div>
         </div>
     </div>
@@ -195,22 +223,22 @@
             <div class="report-card">
                 <div class="report-icon">🏢</div>
                 <div class="report-title">Company Overview</div>
-                <p class="report-desc">Summary of all insurance companies and products</p>
-                <button onclick="alert('Company overview functionality coming soon')">Generate Report</button>
+                <p class="report-desc">{{ companies_count }} companies in system</p>
+                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download PDF</button>
             </div>
 
             <div class="report-card">
                 <div class="report-icon">📦</div>
                 <div class="report-title">Product Report</div>
-                <p class="report-desc">Detailed product information with commission rates</p>
-                <button onclick="alert('Product report functionality coming soon')">Generate Report</button>
+                <p class="report-desc">Insurance products and commission rates</p>
+                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download PDF</button>
             </div>
 
             <div class="report-card">
                 <div class="report-icon">📊</div>
                 <div class="report-title">Company Performance</div>
                 <p class="report-desc">Performance metrics by company</p>
-                <button onclick="alert('Company performance functionality coming soon')">Generate Report</button>
+                <button class="report-btn" onclick="alert('Download functionality coming soon')">Download PDF</button>
             </div>
         </div>
     </div>

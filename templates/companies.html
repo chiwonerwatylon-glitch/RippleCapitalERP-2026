@@ -114,14 +114,43 @@
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
     }
+
+    .action-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-right: 0.5rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+
+    .edit-btn {
+        background: #667eea;
+        color: white;
+    }
+
+    .edit-btn:hover {
+        background: #764ba2;
+    }
+
+    .delete-btn {
+        background: #ef4444;
+        color: white;
+    }
+
+    .delete-btn:hover {
+        background: #dc2626;
+    }
 </style>
 
 <div class="companies-container">
     <div class="header-row">
         <h2 class="header-title">Insurance Companies</h2>
-        <button class="add-btn" onclick="alert('Add company functionality coming soon')">
+        <a href="{{ url_for('core.add_company') }}" class="add-btn">
             <i class="fas fa-plus"></i> Add New Company
-        </button>
+        </a>
     </div>
 
     {% if companies %}
@@ -130,8 +159,9 @@
             <tr>
                 <th>ID</th>
                 <th>Company Name</th>
-                <th>Contact Email</th>
+                <th>Email</th>
                 <th>Phone</th>
+                <th>Address</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -142,9 +172,10 @@
                 <td>{{ company.name or 'N/A' }}</td>
                 <td>{{ company.email or 'N/A' }}</td>
                 <td>{{ company.phone or 'N/A' }}</td>
+                <td>{{ company.address or 'N/A' }}</td>
                 <td>
-                    <button onclick="alert('Edit functionality coming soon')" style="background: #667eea; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; margin-right: 0.5rem;">Edit</button>
-                    <button onclick="alert('Delete functionality coming soon')" style="background: #ef4444; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer;">Delete</button>
+                    <button class="action-btn edit-btn" onclick="alert('Edit functionality coming soon')">Edit</button>
+                    <button class="action-btn delete-btn" onclick="alert('Delete functionality coming soon')">Delete</button>
                 </td>
             </tr>
             {% endfor %}
@@ -155,9 +186,9 @@
         <div class="empty-icon">🏢</div>
         <div class="empty-title">No Companies Yet</div>
         <div class="empty-text">Add your first insurance company to start managing products and policies.</div>
-        <button class="empty-btn" onclick="alert('Add company functionality coming soon')">
+        <a href="{{ url_for('core.add_company') }}" class="empty-btn">
             <i class="fas fa-plus"></i> Add Your First Company
-        </button>
+        </a>
     </div>
     {% endif %}
 </div>

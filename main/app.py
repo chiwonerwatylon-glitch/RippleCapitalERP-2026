@@ -206,6 +206,28 @@ def create_app(config_name=None):
             clients_list = []
         return render_template("clients.html", clients=clients_list)
 
+    @core_bp.route("/clients/add", methods=["GET", "POST"])
+    @login_required
+    def add_client():
+        if request.method == "POST":
+            if HAS_NEW_MODELS:
+                try:
+                    client = Client(
+                        name=request.form.get("name"),
+                        email=request.form.get("email"),
+                        phone=request.form.get("phone"),
+                        address=request.form.get("address"),
+                        owner_id=current_user.id
+                    )
+                    db.session.add(client)
+                    db.session.commit()
+                    flash("Client added successfully.", "success")
+                    return redirect(url_for("core.clients"))
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f"Error adding client: {str(e)}", "danger")
+        return render_template("add_client.html")
+
     @core_bp.route("/companies")
     @login_required
     def companies():
@@ -214,6 +236,66 @@ def create_app(config_name=None):
         else:
             companies_list = []
         return render_template("companies.html", companies=companies_list)
+
+    @core_bp.route("/companies/add", methods=["GET", "POST"])
+    @login_required
+    def add_company():
+        if request.method == "POST":
+            if HAS_NEW_MODELS:
+                try:
+                    company = Company(
+                        name=request.form.get("name"),
+                        email=request.form.get("email"),
+                        phone=request.form.get("phone"),
+                        address=request.form.get("address"),
+                        owner_id=current_user.id
+                    )
+                    db.session.add(company)
+                    db.session.commit()
+                    flash("Company added successfully.", "success")
+                    return redirect(url_for("core.companies"))
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f"Error adding company: {str(e)}", "danger")
+        return render_template("add_company.html")
+
+    @core_bp.route("/commission-rules")
+    @login_required
+    def commission_rules():
+        if HAS_NEW_MODELS:
+            rules = CommissionRule.query.filter_by(owner_id=current_user.id).all()
+        else:
+            rules = []
+        return render_template("commission_rules.html", rules=rules)
+
+    @core_bp.route("/commission-rules/add", methods=["GET", "POST"])
+    @login_required
+    def add_commission_rule():
+        if HAS_NEW_MODELS:
+            companies_list = Company.query.filter_by(owner_id=current_user.id).all()
+            products_list = InsuranceProduct.query.filter_by(owner_id=current_user.id).all()
+        else:
+            companies_list = []
+            products_list = []
+
+        if request.method == "POST":
+            if HAS_NEW_MODELS:
+                try:
+                    rule = CommissionRule(
+                        company_id=request.form.get("company_id"),
+                        product_id=request.form.get("product_id"),
+                        commission_percentage=float(request.form.get("commission_percentage", 0)),
+                        owner_id=current_user.id
+                    )
+                    db.session.add(rule)
+                    db.session.commit()
+                    flash("Commission rule added successfully.", "success")
+                    return redirect(url_for("core.commission_rules"))
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f"Error adding commission rule: {str(e)}", "danger")
+        
+        return render_template("add_commission_rule.html", companies=companies_list, products=products_list)
 
     @core_bp.route("/policies")
     @login_required
@@ -236,52 +318,108 @@ def create_app(config_name=None):
             remittances = []
         return render_template("premium_remittance.html", remittances=remittances)
 
+    @core_bp.route("/premium-remittance/add", methods=["GET", "POST"])
+    @login_required
+    def add_premium_remittance():
+        if HAS_NEW_MODELS:
+            policies_list = Policy.query.filter_by(owner_id=current_user.id).all()
+        else:
+            policies_list = []
+
+        if request.method == "POST":
+            if HAS_NEW_MODELS:
+                try:
+                    remittance = PremiumRemittance(
+                        policy_id=request.form.get("policy_id"),
+                        amount=float(request.form.get("amount", 0)),
+                        payment_method=request.form.get("payment_method"),
+                        reference_number=request.form.get("reference_number"),
+                        owner_id=current_user.id
+                    )
+                    db.session.add(remittance)
+                    db.session.commit()
+                    flash("Premium remittance recorded successfully.", "success")
+                    return redirect(url_for("core.premium_remittance"))
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f"Error recording remittance: {str(e)}", "danger")
+        
+        return render_template("add_premium_remittance.html", policies=policies_list)
+
     @core_bp.route("/reports")
     @login_required
     def reports():
-        return render_template("reports.html")
+        if HAS_NEW_MODELS:
+            clients_count = Client.query.filter_by(owner_id=current_user.id).count()
+            companies_count = Company.query.filter_by(owner_id=current_user.id).count()
+            policies = Policy.query.filter_by(owner_id=current_user.id).all()
+            policies_count = len(policies)
+            total_premiums = sum(p.total_premiums_paid() for p in policies) if policies else 0
+            total_commissions = sum(p.total_commission_earned() for p in policies) if policies else 0
+            remittances = PremiumRemittance.query.filter_by(owner_id=current_user.id).all()
+        else:
+            clients_count = 0
+            companies_count = 0
+            policies_count = 0
+            total_premiums = 0
+            total_commissions = 0
+            remittances = []
+        
+        return render_template(
+            "reports.html",
+            clients_count=clients_count,
+            companies_count=companies_count,
+            policies_count=policies_count,
+            total_premiums=total_premiums,
+            total_commissions=total_commissions,
+            remittances_count=len(remittances)
+        )
 
     @core_bp.route("/profile", methods=["GET", "POST"])
     @login_required
     def profile():
-        form = ProfileForm()
-        if form.validate_on_submit():
-            current_user.full_name = form.full_name.data
-            current_user.phone = form.phone.data
+        if request.method == "POST":
+            current_user.full_name = request.form.get("full_name", current_user.full_name)
+            current_user.phone = request.form.get("phone", current_user.phone)
             
-            if form.profile_picture.data:
-                try:
-                    file = form.profile_picture.data
-                    filename = secure_filename(f"{current_user.id}_profile_{datetime.now().timestamp()}.{file.filename.split('.')[-1]}")
-                    filepath = UPLOAD_FOLDER / filename
-                    file.save(str(filepath))
-                    if HAS_NEW_MODELS and hasattr(current_user, 'profile_picture'):
-                        current_user.profile_picture = f"/uploads/{filename}"
-                except Exception as e:
-                    flash(f"Error uploading picture: {str(e)}", "warning")
+            if 'profile_picture' in request.files:
+                file = request.files['profile_picture']
+                if file and file.filename:
+                    try:
+                        filename = secure_filename(f"{current_user.id}_profile_{datetime.now().timestamp()}.{file.filename.split('.')[-1]}")
+                        filepath = UPLOAD_FOLDER / filename
+                        file.save(str(filepath))
+                        if HAS_NEW_MODELS and hasattr(current_user, 'profile_picture'):
+                            current_user.profile_picture = f"/uploads/{filename}"
+                    except Exception as e:
+                        flash(f"Error uploading picture: {str(e)}", "warning")
             
             db.session.commit()
             flash("Profile updated successfully.", "success")
             return redirect(url_for("core.profile"))
-        elif request.method == "GET":
-            form.full_name.data = current_user.full_name
-            form.email.data = current_user.email
-            form.phone.data = current_user.phone
         
-        return render_template("profile.html", form=form)
+        profile_picture_url = None
+        if HAS_NEW_MODELS and hasattr(current_user, 'profile_picture') and current_user.profile_picture:
+            profile_picture_url = current_user.profile_picture
+        
+        return render_template("profile.html", profile_picture_url=profile_picture_url)
 
     @core_bp.route("/profile/change-password", methods=["POST"])
     @login_required
     def change_password():
-        form = PasswordChangeForm()
-        if form.validate_on_submit():
-            if not current_user.check_password(form.current_password.data):
-                flash("Current password is incorrect.", "danger")
-            else:
-                current_user.set_password(form.new_password.data)
-                db.session.commit()
-                flash("Password changed successfully.", "success")
-                return redirect(url_for("core.profile"))
+        current_password = request.form.get("current_password")
+        new_password = request.form.get("new_password")
+        confirm_password = request.form.get("confirm_password")
+        
+        if not current_user.check_password(current_password):
+            flash("Current password is incorrect.", "danger")
+        elif new_password != confirm_password:
+            flash("New passwords do not match.", "danger")
+        else:
+            current_user.set_password(new_password)
+            db.session.commit()
+            flash("Password changed successfully.", "success")
+        
         return redirect(url_for("core.profile"))
 
     # ====================== ERROR HANDLERS ======================
