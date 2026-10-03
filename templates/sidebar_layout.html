@@ -305,46 +305,72 @@
     </div>
 
     <nav class="sidebar-menu">
-        {% if current_user.role in ['agent', 'admin'] %}
+        <li class="sidebar-menu-item">
+            <a href="{{ url_for('core.dashboard') }}" class="sidebar-menu-link {% if request.endpoint == 'core.dashboard' %}active{% endif %}">
+                <i class="sidebar-menu-icon fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+        
+        {% if current_user.role == 'owner' or current_user.role == 'ROLE_OWNER' %}
             <li class="sidebar-menu-item">
-                <a href="{{ url_for('core.agent_dashboard') }}" class="sidebar-menu-link {% if request.endpoint == 'core.agent_dashboard' %}active{% endif %}">
-                    <i class="sidebar-menu-icon fas fa-chart-line"></i>
-                    <span>Dashboard</span>
+                <a href="#" class="sidebar-menu-link">
+                    <i class="sidebar-menu-icon fas fa-users"></i>
+                    <span>Clients</span>
                 </a>
             </li>
             <li class="sidebar-menu-item">
-                <a href="{{ url_for('core.policy_create') }}" class="sidebar-menu-link {% if request.endpoint == 'core.policy_create' %}active{% endif %}">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="sidebar-menu-icon fas fa-building"></i>
+                    <span>Companies</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="sidebar-menu-icon fas fa-file-contract"></i>
+                    <span>Policies</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="sidebar-menu-icon fas fa-credit-card"></i>
+                    <span>Premium Remittance</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="sidebar-menu-icon fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+        {% elif current_user.role == 'client' or current_user.role == 'ROLE_CLIENT' %}
+            <li class="sidebar-menu-item">
+                <a href="{{ url_for('core.dashboard') }}" class="sidebar-menu-link">
+                    <i class="sidebar-menu-icon fas fa-file-contract"></i>
+                    <span>My Policies</span>
+                </a>
+            </li>
+        {% elif current_user.role == 'agent' or current_user.role == 'admin' %}
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
                     <i class="sidebar-menu-icon fas fa-plus-circle"></i>
                     <span>New Policy</span>
                 </a>
             </li>
             <li class="sidebar-menu-item">
-                <a href="{{ url_for('core.policy_view', policy_id=0) }}" class="sidebar-menu-link" onclick="alert('Select a policy from dashboard'); return false;">
+                <a href="#" class="sidebar-menu-link">
                     <i class="sidebar-menu-icon fas fa-file-contract"></i>
                     <span>Policies</span>
                 </a>
             </li>
             {% if current_user.role == 'admin' %}
             <li class="sidebar-menu-item">
-                <a href="{{ url_for('admin.dashboard') }}" class="sidebar-menu-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+                <a href="#" class="sidebar-menu-link">
                     <i class="sidebar-menu-icon fas fa-cog"></i>
                     <span>Admin Panel</span>
                 </a>
             </li>
             {% endif %}
-        {% else %}
-            <li class="sidebar-menu-item">
-                <a href="{{ url_for('core.client_dashboard') }}" class="sidebar-menu-link {% if request.endpoint == 'core.client_dashboard' %}active{% endif %}">
-                    <i class="sidebar-menu-icon fas fa-home"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li class="sidebar-menu-item">
-                <a href="{{ url_for('core.client_dashboard') }}" class="sidebar-menu-link {% if request.endpoint == 'core.client_dashboard' %}active{% endif %}">
-                    <i class="sidebar-menu-icon fas fa-file-contract"></i>
-                    <span>My Policies</span>
-                </a>
-            </li>
         {% endif %}
 
         <li class="sidebar-menu-item">
