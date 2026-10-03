@@ -1,0 +1,48 @@
+{% extends "sidebar_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <h2 class="mb-4">Add New User</h2>
+
+            <form method="POST" class="card p-4 shadow-sm">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                    <small class="text-muted">Must be unique and alphanumeric</small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="role" class="form-label">Role</label>
+                    <select class="form-select" id="role" name="role" required>
+                        <option value="user">User (Client)</option>
+                        <option value="owner">Owner (Agent)</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+
+                <div class="alert alert-warning">
+                    <strong>Note:</strong> Default password is <code>password2026</code>. User should change it on first login.
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-success">Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: 1px solid #ddd;
+    }
+</style>
+{% endblock %}

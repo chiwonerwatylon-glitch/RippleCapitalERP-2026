@@ -1,0 +1,47 @@
+{% extends "sidebar_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Company Management</h2>
+        </div>
+        <div class="col text-end">
+            <a href="{{ url_for('admin.add_company') }}" class="btn btn-success">+ Add New Company</a>
+        </div>
+    </div>
+
+    {% if companies %}
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Company Name</th>
+                <th>Contact Email</th>
+                <th>Created Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for company in companies %}
+            <tr>
+                <td><strong>{{ company.name }}</strong></td>
+                <td>{{ company.contact_email }}</td>
+                <td>{{ company.created_at.strftime('%Y-%m-%d') if company.created_at else 'N/A' }}</td>
+                <td>
+                    <a href="{{ url_for('admin.add_company') }}" class="btn btn-sm btn-primary">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-info">No companies found. <a href="{{ url_for('admin.add_company') }}">Create one now</a>.</div>
+    {% endif %}
+</div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+</style>
+{% endblock %}

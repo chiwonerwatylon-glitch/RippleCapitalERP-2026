@@ -1,0 +1,54 @@
+{% extends "sidebar_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <h2 class="mb-4">Edit User: {{ user.username }}</h2>
+
+            <form method="POST" class="card p-4 shadow-sm">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-control" value="{{ user.username }}" disabled>
+                    <small class="text-muted">Username cannot be changed</small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="role" class="form-label">Role</label>
+                    <select class="form-select" id="role" name="role" required>
+                        <option value="user" {% if user.role == 'user' %}selected{% endif %}>User (Client)</option>
+                        <option value="owner" {% if user.role == 'owner' %}selected{% endif %}>Owner (Agent)</option>
+                        <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Current Status</label>
+                    <div>
+                        <span class="badge {% if user.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                            {{ 'Active' if user.is_active else 'Inactive' }}
+                        </span>
+                    </div>
+                    <small class="text-muted">Use the Activate/Deactivate button on the Users list to change status</small>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: 1px solid #ddd;
+    }
+</style>
+{% endblock %}
