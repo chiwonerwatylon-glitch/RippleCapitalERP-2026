@@ -482,15 +482,16 @@
                     </div>
 
                     <div class="rc-form-group">
-                        <label class="rc-form-label" for="email_display">Email Address</label>
+                        <label class="rc-form-label" for="email">Email Address</label>
                         <input
-                            id="email_display"
+                            id="email"
                             type="email"
+                            name="email"
                             class="rc-input"
                             value="{{ current_user.email }}"
-                            disabled
+                            required
                         >
-                        <div class="rc-form-hint">Email is used as your login and cannot be changed.</div>
+                        <div class="rc-form-hint">Your email must be unique across all accounts.</div>
                     </div>
 
                     <div class="rc-form-group">

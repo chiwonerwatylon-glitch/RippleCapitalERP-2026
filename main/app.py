@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import re
 from datetime import datetime, date
 import io
 
@@ -481,7 +482,24 @@ def create_app(config_name=None):
     @login_required
     def profile():
         if request.method == "POST":
+            new_email = (request.form.get("email") or current_user.email or "").strip()
+            if not new_email:
+                flash("Email cannot be empty.", "danger")
+                return redirect(url_for("core.profile"))
+            if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", new_email):
+                flash("Please enter a valid email address.", "danger")
+                return redirect(url_for("core.profile"))
+            if new_email.lower() != (current_user.email or "").lower():
+                existing = User.query.filter(
+                    db.func.lower(User.email) == new_email.lower(),
+                    User.id != current_user.id,
+                ).first()
+                if existing:
+                    flash("That email address is already in use.", "danger")
+                    return redirect(url_for("core.profile"))
+
             current_user.full_name = request.form.get("full_name", current_user.full_name)
+            current_user.email = new_email
             current_user.phone = request.form.get("phone", current_user.phone)
             
             if 'profile_picture' in request.files:
