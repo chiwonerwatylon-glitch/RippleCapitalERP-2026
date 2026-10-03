@@ -182,6 +182,129 @@
         border-color: #ef4444;
     }
 
+    
+    /* Toolbar / filters */
+    .toolbar {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.25rem;
+    }
+
+    .toolbar-search {
+        flex: 1 1 240px;
+        position: relative;
+    }
+
+    .toolbar-search i {
+        position: absolute;
+        left: 0.9rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--ripple-gray-400);
+        font-size: 0.85rem;
+    }
+
+    .toolbar-input,
+    .toolbar-select {
+        width: 100%;
+        padding: 0.65rem 0.9rem;
+        border: 1.6px solid var(--ripple-gray-200);
+        border-radius: 0.65rem;
+        font-size: 0.9rem;
+        font-family: inherit;
+        background: #ffffff;
+        color: var(--ripple-gray-900);
+    }
+
+    .toolbar-search .toolbar-input {
+        padding-left: 2.4rem;
+    }
+
+    .toolbar-select-wrap {
+        flex: 0 1 180px;
+    }
+
+    .toolbar-input:focus,
+    .toolbar-select:focus {
+        outline: none;
+        border-color: var(--ripple-primary);
+        box-shadow: 0 0 0 3px rgba(27, 112, 45, 0.15);
+    }
+
+    .summary-row {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.25rem;
+    }
+
+    .summary-chip {
+        padding: 0.35rem 0.85rem;
+        border-radius: 999px;
+        background: var(--ripple-gray-50);
+        border: 1px solid var(--ripple-gray-200);
+        color: var(--ripple-gray-700);
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .summary-chip strong {
+        color: var(--ripple-primary);
+    }
+
+    .rule-description {
+        display: block;
+        font-size: 0.78rem;
+        color: var(--ripple-gray-500);
+        margin-top: 0.15rem;
+        max-width: 280px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .product-name {
+        font-weight: 600;
+        color: var(--ripple-gray-900);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.25rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+
+    .status-badge::before {
+        content: "";
+        width: 0.45rem;
+        height: 0.45rem;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .status-active {
+        background: var(--ripple-primary-lighter);
+        color: var(--ripple-primary);
+    }
+
+    .status-inactive {
+        background: var(--ripple-gray-100);
+        color: var(--ripple-gray-500);
+    }
+
+    .no-results {
+        display: none;
+        text-align: center;
+        padding: 1.75rem 1rem;
+        color: var(--ripple-gray-500);
+        font-size: 0.9rem;
+    }
+
     /* Empty state */
     .empty-state {
         text-align: center;
@@ -242,6 +365,10 @@
             width: 100%;
             justify-content: center;
         }
+
+        .toolbar-select-wrap {
+            flex: 1 1 100%;
+        }
     }
 </style>
 
@@ -261,56 +388,126 @@
         </div>
 
         {% if rules %}
+        {% set active_count = rules | selectattr('is_active') | list | length %}
+        <div class="summary-row">
+            <span class="summary-chip"><strong>{{ rules|length }}</strong> rule{{ '' if rules|length == 1 else 's' }}</span>
+            <span class="summary-chip"><strong>{{ active_count }}</strong> active</span>
+            <span class="summary-chip"><strong>{{ rules|length - active_count }}</strong> inactive</span>
+        </div>
+
+        <div class="toolbar">
+            <div class="toolbar-search">
+                <i class="fas fa-search"></i>
+                <input
+                    type="search"
+                    id="ruleSearch"
+                    class="toolbar-input"
+                    placeholder="Search by product or company..."
+                    autocomplete="off"
+                >
+            </div>
+            <div class="toolbar-select-wrap">
+                <select id="statusFilter" class="toolbar-select" aria-label="Filter by status">
+                    <option value="">All statuses</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+        </div>
+
         <div class="rules-table-wrapper">
             <table class="rules-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Company</th>
                         <th>Product</th>
+                        <th>Company</th>
                         <th>Commission %</th>
+                        <th>Status</th>
                         <th style="text-align: right;">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="rulesBody">
                     {% for rule in rules %}
-                    <tr>
-                        <td>#{{ rule.id }}</td>
+                    <tr
+                        data-search="{{ ((rule.product.name if rule.product else '') ~ ' ' ~ (rule.company.name if rule.company else ''))|lower }}"
+                        data-status="{{ 'active' if rule.is_active else 'inactive' }}"
+                    >
+                        <td>
+                            <span class="product-name">{{ rule.product.name if rule.product else 'N/A' }}</span>
+                            {% if rule.description %}
+                            <span class="rule-description" title="{{ rule.description }}">{{ rule.description }}</span>
+                            {% endif %}
+                        </td>
                         <td>{{ rule.company.name if rule.company else 'N/A' }}</td>
-                        <td>{{ rule.product.name if rule.product else 'N/A' }}</td>
                         <td>
                             <span class="commission-badge">
-                                {{ "%.2f"|format(rule.commission_percentage or 0) }}%
+                                {{ "%.2f"|format(rule.commission_percent or 0) }}%
                             </span>
                         </td>
+                        <td>
+                            {% if rule.is_active %}
+                            <span class="status-badge status-active">Active</span>
+                            {% else %}
+                            <span class="status-badge status-inactive">Inactive</span>
+                            {% endif %}
+                        </td>
                         <td class="actions-cell" style="text-align: right;">
-                            <!-- Placeholder actions; connect real editing/deletion later -->
-                            <button
-                                type="button"
+                            <a
+                                href="{{ url_for('core.edit_commission_rule', rule_id=rule.id) }}"
                                 class="action-btn edit-btn"
-                                onclick="alert('Edit commission rule functionality coming soon');"
+                                title="Edit rule"
+                                style="text-decoration: none;"
                             >
                                 <i class="fas fa-pen"></i>
                                 <span>Edit</span>
-                            </button>
-                            <button
-                                type="button"
-                                class="action-btn delete-btn"
-                                onclick="alert('Delete commission rule functionality coming soon');"
+                            </a>
+                            <form
+                                method="post"
+                                action="{{ url_for('core.delete_commission_rule', rule_id=rule.id) }}"
+                                style="display: inline;"
+                                onsubmit="return confirm('Are you sure you want to delete this commission rule? This action cannot be undone.');"
                             >
-                                <i class="fas fa-trash"></i>
-                                <span>Delete</span>
-                            </button>
+                                <button type="submit" class="action-btn delete-btn" title="Delete rule">
+                                    <i class="fas fa-trash"></i>
+                                    <span>Delete</span>
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+            <div class="no-results" id="noResults">No rules match your search.</div>
         </div>
+
+        <script>
+            (function () {
+                var search = document.getElementById('ruleSearch');
+                var status = document.getElementById('statusFilter');
+                var rows = document.querySelectorAll('#rulesBody tr');
+                var noResults = document.getElementById('noResults');
+
+                function applyFilters() {
+                    var q = search.value.trim().toLowerCase();
+                    var s = status.value;
+                    var visible = 0;
+                    rows.forEach(function (row) {
+                        var match = (!q || row.dataset.search.indexOf(q) !== -1) &&
+                                    (!s || row.dataset.status === s);
+                        row.style.display = match ? '' : 'none';
+                        if (match) visible++;
+                    });
+                    noResults.style.display = visible === 0 ? 'block' : 'none';
+                }
+
+                search.addEventListener('input', applyFilters);
+                status.addEventListener('change', applyFilters);
+            })();
+        </script>
         {% else %}
         <div class="empty-state">
             <div class="empty-icon">📊</div>
-            <div class="empty-title">No Commission Rules Yet</div>
+            <div class="empty-title">No commission rules configured yet</div>
             <div class="empty-text">
                 Set up commission rules to automatically calculate what your agency earns on each policy.
             </div>

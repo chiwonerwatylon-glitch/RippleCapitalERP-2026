@@ -1,8 +1,8 @@
 {% extends "sidebar_layout.html" %}
 
-{% block title %}Add Commission Rule - Ripple Capital Insurance ERP{% endblock %}
+{% block title %}{{ 'Edit' if rule else 'Add' }} Commission Rule - Ripple Capital Insurance ERP{% endblock %}
 
-{% block page_title %}Add Commission Rule{% endblock %}
+{% block page_title %}{{ 'Edit' if rule else 'Add' }} Commission Rule{% endblock %}
 {% block page_subtitle %}Set commission percentages for your companies and products{% endblock %}
 
 {% block content %}
@@ -175,6 +175,120 @@
         color: var(--ripple-primary);
     }
 
+
+
+    .form-textarea {
+        width: 100%;
+        padding: 0.75rem 0.95rem;
+        border: 1.6px solid var(--ripple-gray-200);
+        border-radius: 0.65rem;
+        font-size: 0.95rem;
+        font-family: inherit;
+        resize: vertical;
+        min-height: 90px;
+        color: var(--ripple-gray-900);
+    }
+
+    .form-textarea:focus {
+        outline: none;
+        border-color: var(--ripple-primary);
+        box-shadow: 0 0 0 1px var(--ripple-primary), 0 0 0 4px rgba(27, 112, 45, 0.15);
+    }
+
+    .input-suffix-wrap {
+        position: relative;
+    }
+
+    .input-suffix {
+        position: absolute;
+        right: 0.95rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--ripple-gray-500);
+        font-weight: 600;
+        pointer-events: none;
+    }
+
+    .status-options {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .status-option {
+        flex: 1 1 140px;
+        position: relative;
+    }
+
+    .status-option input {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .status-option label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1rem;
+        border: 1.6px solid var(--ripple-gray-200);
+        border-radius: 0.65rem;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--ripple-gray-600);
+        transition: all 0.18s ease;
+    }
+
+    .status-option input:checked + label.label-active {
+        border-color: var(--ripple-primary);
+        background: var(--ripple-primary-lighter);
+        color: var(--ripple-primary);
+    }
+
+    .status-option input:checked + label.label-inactive {
+        border-color: var(--ripple-secondary);
+        background: var(--ripple-secondary-lighter);
+        color: #92400e;
+    }
+
+    .status-option input:focus-visible + label {
+        outline: 2px solid var(--ripple-primary);
+        outline-offset: 2px;
+    }
+
+    .field-error {
+        display: none;
+        font-size: 0.8rem;
+        color: #b91c1c;
+        margin-top: 0.3rem;
+    }
+
+    .has-error .form-input,
+    .has-error .form-select,
+    .has-error .form-textarea {
+        border-color: #ef4444;
+    }
+
+    .has-error .field-error {
+        display: block;
+    }
+
+    .empty-notice {
+        background: var(--ripple-secondary-lighter);
+        border: 1px solid rgba(251, 163, 0, 0.5);
+        color: #92400e;
+        padding: 0.75rem 1rem;
+        border-radius: 0.65rem;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+    }
+
+    .empty-notice a {
+        color: var(--ripple-primary);
+        font-weight: 600;
+    }
+
     @media (max-width: 640px) {
         .form-card {
             padding: 1.6rem 1.4rem 1.8rem;
@@ -190,66 +304,133 @@
     }
 </style>
 
+{% set editing = rule is not none %}
+{% set fd = form_data %}
+{% if fd is not none %}
+    {% set sel_company = fd.get('company_id', '') | string %}
+    {% set sel_product = fd.get('product_id', '') | string %}
+    {% set val_percent = fd.get('commission_percent', '') %}
+    {% set val_description = fd.get('description', '') %}
+    {% set val_active = (fd.get('is_active', '1') == '1') %}
+{% elif editing %}
+    {% set sel_company = rule.company_id | string %}
+    {% set sel_product = rule.product_id | string %}
+    {% set val_percent = '%.2f'|format(rule.commission_percent or 0) %}
+    {% set val_description = rule.description or '' %}
+    {% set val_active = rule.is_active %}
+{% else %}
+    {% set sel_company = '' %}
+    {% set sel_product = '' %}
+    {% set val_percent = '' %}
+    {% set val_description = '' %}
+    {% set val_active = true %}
+{% endif %}
+
 <div class="form-shell">
     <div class="form-card">
         <header class="form-header">
-            <h2 class="form-header-title">Commission configuration</h2>
+            <h2 class="form-header-title">{{ 'Edit commission rule' if editing else 'Commission configuration' }}</h2>
             <p class="form-header-subtitle">
-                Link an insurance company and product to a commission percentage for your agency.
+                Link an insurance product and company to a commission percentage for your agency.
             </p>
         </header>
 
-        <form method="post" novalidate>
-            <div class="form-group">
-                <label class="form-label" for="company_id">
-                    Company <span class="required">Required</span>
-                </label>
-                <select id="company_id" name="company_id" class="form-select" required>
-                    <option value="">Select a company...</option>
-                    {% for company in companies %}
-                    <option value="{{ company.id }}">{{ company.name }}</option>
-                    {% endfor %}
-                </select>
-                <div class="form-hint">Choose the insurer or provider this rule will apply to.</div>
-            </div>
-
-            <div class="form-group">
+        <form
+            method="post"
+            action="{{ url_for('core.edit_commission_rule', rule_id=rule.id) if editing else url_for('core.add_commission_rule') }}"
+            id="ruleForm"
+            novalidate
+        >
+            <div class="form-group" data-field="product_id">
                 <label class="form-label" for="product_id">
                     Insurance Product <span class="required">Required</span>
                 </label>
                 <select id="product_id" name="product_id" class="form-select" required>
                     <option value="">Select a product...</option>
                     {% for product in products %}
-                    <option value="{{ product.id }}">{{ product.name }}</option>
+                    <option value="{{ product.id }}" {{ 'selected' if product.id | string == sel_product else '' }}>{{ product.name }}</option>
                     {% endfor %}
                 </select>
+                <div class="field-error">Please select a product.</div>
                 <div class="form-hint">Select the specific product or line of business.</div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="commission_percentage">
-                    Commission Percentage (%)
+            <div class="form-group" data-field="company_id">
+                <label class="form-label" for="company_id">
+                    Company <span class="required">Required</span>
                 </label>
-                <input
-                    id="commission_percentage"
-                    type="number"
-                    name="commission_percentage"
-                    class="form-input"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    value="0"
-                    required
-                >
+                <select id="company_id" name="company_id" class="form-select" required>
+                    <option value="">Select a company...</option>
+                    {% for company in companies %}
+                    <option value="{{ company.id }}" {{ 'selected' if company.id | string == sel_company else '' }}>{{ company.name }}</option>
+                    {% endfor %}
+                </select>
+                <div class="field-error">Please select a company.</div>
+                {% if not companies %}
+                <div class="empty-notice">
+                    You have no companies yet. <a href="{{ url_for('core.add_company') }}">Add a company</a> before creating a rule.
+                </div>
+                {% else %}
+                <div class="form-hint">Choose the insurer or provider this rule will apply to.</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group" data-field="commission_percent">
+                <label class="form-label" for="commission_percent">
+                    Commission Percentage <span class="required">Required</span>
+                </label>
+                <div class="input-suffix-wrap">
+                    <input
+                        id="commission_percent"
+                        type="number"
+                        name="commission_percent"
+                        class="form-input"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        placeholder="e.g. 12.5"
+                        value="{{ val_percent }}"
+                        required
+                    >
+                    <span class="input-suffix">%</span>
+                </div>
+                <div class="field-error">Enter a percentage between 0 and 100.</div>
                 <div class="form-hint">
                     Enter the commission rate you earn on this product (e.g., 12.5 for 12.5%).
                 </div>
             </div>
 
+            <div class="form-group">
+                <label class="form-label" for="description">Description</label>
+                <textarea
+                    id="description"
+                    name="description"
+                    class="form-textarea"
+                    maxlength="255"
+                    placeholder="Optional notes about this rule"
+                >{{ val_description }}</textarea>
+                <div class="form-hint">Optional. Up to 255 characters.</div>
+            </div>
+
+            <div class="form-group">
+                <span class="form-label">Status</span>
+                <div class="status-options">
+                    <div class="status-option">
+                        <input type="radio" id="status_active" name="is_active" value="1" {{ 'checked' if val_active else '' }}>
+                        <label for="status_active" class="label-active"><i class="fas fa-check-circle"></i> Active</label>
+                    </div>
+                    <div class="status-option">
+                        <input type="radio" id="status_inactive" name="is_active" value="0" {{ '' if val_active else 'checked' }}>
+                        <label for="status_inactive" class="label-inactive"><i class="fas fa-pause-circle"></i> Inactive</label>
+                    </div>
+                </div>
+                <div class="form-hint">Inactive rules are ignored when calculating commissions.</div>
+            </div>
+
             <div class="button-group">
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i>
-                    <span>Save Rule</span>
+                    <span>{{ 'Update Rule' if editing else 'Save Rule' }}</span>
                 </button>
                 <a href="{{ url_for('core.commission_rules') }}" class="btn btn-secondary">
                     <i class="fas fa-times"></i>
@@ -259,4 +440,35 @@
         </form>
     </div>
 </div>
+
+<script>
+    (function () {
+        var form = document.getElementById('ruleForm');
+
+        function setError(name, hasError) {
+            var group = form.querySelector('[data-field="' + name + '"]');
+            if (group) group.classList.toggle('has-error', hasError);
+        }
+
+        form.addEventListener('submit', function (e) {
+            var valid = true;
+
+            var product = form.elements['product_id'].value;
+            setError('product_id', !product);
+            if (!product) valid = false;
+
+            var company = form.elements['company_id'].value;
+            setError('company_id', !company);
+            if (!company) valid = false;
+
+            var raw = form.elements['commission_percent'].value;
+            var pct = parseFloat(raw);
+            var pctBad = raw === '' || isNaN(pct) || pct < 0 || pct > 100;
+            setError('commission_percent', pctBad);
+            if (pctBad) valid = false;
+
+            if (!valid) e.preventDefault();
+        });
+    })();
+</script>
 {% endblock %}
