@@ -1,0 +1,36 @@
+{% extends "sidebar_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <h2 class="mb-4">Add New Company</h2>
+
+            <form method="POST" class="card p-4 shadow-sm">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Company Name</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                    <small class="text-muted">Full legal name of the company</small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="contact_email" class="form-label">Contact Email</label>
+                    <input type="email" class="form-control" id="contact_email" name="contact_email" required>
+                    <small class="text-muted">Primary contact email for this company</small>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{{ url_for('admin.companies') }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-success">Create Company</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: 1px solid #ddd;
+    }
+</style>
+{% endblock %}
