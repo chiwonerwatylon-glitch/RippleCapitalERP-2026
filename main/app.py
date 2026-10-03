@@ -244,6 +244,91 @@ def create_app(config_name=None):
                     flash(f"Error adding client: {str(e)}", "danger")
         return render_template("add_client.html")
 
+    def _validate_client_form(form):
+        """Validate and normalize client form data. Returns (data, errors)."""
+        data = {
+            "first_name": (form.get("first_name") or "").strip(),
+            "last_name": (form.get("last_name") or "").strip(),
+            "email": (form.get("email") or "").strip(),
+            "phone": (form.get("phone") or "").strip(),
+            "address": (form.get("address") or "").strip(),
+        }
+        errors = []
+        if not data["first_name"]:
+            errors.append("First name is required.")
+        if not data["last_name"]:
+            errors.append("Last name is required.")
+        if data["email"] and not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", data["email"]):
+            errors.append("Please enter a valid email address.")
+        if data["phone"] and not re.match(r"^\+?[0-9\s\-().]{6,30}$", data["phone"]):
+            errors.append("Please enter a valid phone number.")
+        return data, errors
+
+    @core_bp.route("/clients/<int:client_id>/edit", methods=["GET", "POST"])
+    @login_required
+    def edit_client(client_id):
+        if not HAS_NEW_MODELS:
+            flash("Client management is not available.", "danger")
+            return redirect(url_for("core.clients"))
+
+        client = Client.query.get_or_404(client_id)
+        if client.owner_id != current_user.id:
+            flash("You don't have permission to edit this client.", "danger")
+            return redirect(url_for("core.clients"))
+
+        if request.method == "POST":
+            data, errors = _validate_client_form(request.form)
+            if errors:
+                for error in errors:
+                    flash(error, "warning")
+                return render_template("add_client.html", client=client, form_data=data, editing=True)
+            try:
+                client.first_name = data["first_name"]
+                client.last_name = data["last_name"]
+                client.email = data["email"] or None
+                client.phone = data["phone"] or None
+                client.address = data["address"] or None
+                db.session.commit()
+                flash("Client updated successfully", "success")
+                return redirect(url_for("core.clients"))
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Error updating client: {str(e)}", "danger")
+                return render_template("add_client.html", client=client, form_data=data, editing=True)
+
+        form_data = {
+            "first_name": client.first_name or "",
+            "last_name": client.last_name or "",
+            "email": client.email or "",
+            "phone": client.phone or "",
+            "address": client.address or "",
+        }
+        return render_template("add_client.html", client=client, form_data=form_data, editing=True)
+
+    @core_bp.route("/clients/<int:client_id>/delete", methods=["POST"])
+    @login_required
+    def delete_client(client_id):
+        if not HAS_NEW_MODELS:
+            flash("Client management is not available.", "danger")
+            return redirect(url_for("core.clients"))
+
+        client = Client.query.get_or_404(client_id)
+        if client.owner_id != current_user.id:
+            flash("You don't have permission to delete this client.", "danger")
+            return redirect(url_for("core.clients"))
+
+        try:
+            # Remove related policies (and their remittances via ORM cascade)
+            for policy in client.policies.all():
+                db.session.delete(policy)
+            db.session.delete(client)
+            db.session.commit()
+            flash("Client deleted successfully", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error deleting client: {str(e)}", "danger")
+        return redirect(url_for("core.clients"))
+
     @core_bp.route("/companies")
     @login_required
     def companies():

@@ -1,9 +1,9 @@
 {% extends "sidebar_layout.html" %}
 
-{% block title %}Add Client - Ripple Capital Insurance ERP{% endblock %}
+{% block title %}{% if editing %}Edit Client{% else %}Add Client{% endif %} - Ripple Capital Insurance ERP{% endblock %}
 
-{% block page_title %}Add New Client{% endblock %}
-{% block page_subtitle %}Create a new client record{% endblock %}
+{% block page_title %}{% if editing %}Edit Client{% else %}Add New Client{% endif %}{% endblock %}
+{% block page_subtitle %}{% if editing %}Update the details for {{ client.first_name }} {{ client.last_name }}{% else %}Create a new client record{% endif %}{% endblock %}
 
 {% block content %}
 <style>
@@ -207,9 +207,13 @@
 <div class="form-shell">
     <div class="form-card">
         <header class="form-header">
-            <h2 class="form-header-title">Client details</h2>
+            <h2 class="form-header-title">{% if editing %}Edit client #{{ client.id }}{% else %}Client details{% endif %}</h2>
             <p class="form-header-subtitle">
-                Capture the key information needed to manage this client’s policies and communications.
+                {% if editing %}
+                    You are editing <strong>{{ client.first_name }} {{ client.last_name }}</strong>.
+                {% else %}
+                    Capture the key information needed to manage this client’s policies and communications.
+                {% endif %}
             </p>
         </header>
 
@@ -225,6 +229,7 @@
                         name="first_name"
                         class="form-input"
                         placeholder="Jane"
+                        value="{{ form_data.first_name if form_data else '' }}"
                         required
                     >
                 </div>
@@ -239,6 +244,7 @@
                         name="last_name"
                         class="form-input"
                         placeholder="Doe"
+                        value="{{ form_data.last_name if form_data else '' }}"
                         required
                     >
                 </div>
@@ -251,6 +257,7 @@
                         name="email"
                         class="form-input"
                         placeholder="client@company.com"
+                        value="{{ form_data.email if form_data else '' }}"
                         autocomplete="email"
                     >
                     <div class="form-hint">Used for client communications and portal access (if enabled).</div>
@@ -264,6 +271,7 @@
                         name="phone"
                         class="form-input"
                         placeholder="+1 (555) 123-4567"
+                        value="{{ form_data.phone if form_data else '' }}"
                     >
                 </div>
 
@@ -275,6 +283,7 @@
                         name="address"
                         class="form-input"
                         placeholder="Street, City, State, ZIP"
+                        value="{{ form_data.address if form_data else '' }}"
                     >
                 </div>
             </div>
@@ -282,7 +291,7 @@
             <div class="button-group">
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i>
-                    <span>Save Client</span>
+                    <span>{% if editing %}Update Client{% else %}Save Client{% endif %}</span>
                 </button>
                 <a href="{{ url_for('core.clients') }}" class="btn btn-secondary">
                     <i class="fas fa-times"></i>
