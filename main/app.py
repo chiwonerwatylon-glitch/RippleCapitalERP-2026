@@ -191,7 +191,11 @@ def create_app(config_name=None):
                     )
         except Exception as e:
             flash(f"Error loading dashboard: {str(e)}", "warning")
-            return render_template("index.html")
+            # Render a simple fallback page instead of non-existent index.html
+            if current_user.role == ROLE_CLIENT:
+                return render_template("client_dashboard.html", policies=[])
+            else:
+                return render_template("owner_dashboard.html", clients_count=0, policies_count=0, companies_count=0, products_count=0, total_premiums=0, total_commissions=0, recent_policies=[])
 
     @core_bp.route("/profile", methods=["GET", "POST"])
     @login_required
