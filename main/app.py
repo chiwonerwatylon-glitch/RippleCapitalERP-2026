@@ -36,6 +36,8 @@ try:
     from .models import (
         Policy,
         PremiumRemittance,
+        Claim,
+        ClaimDocument,
         Client,
         Company,
         InsuranceProduct,
@@ -776,7 +778,7 @@ def create_app(config_name=None):
                 policies_list = Policy.query.filter_by(owner_id=get_account_owner_id()).all()
         else:
             policies_list = []
-        return render_template("policies.html", policies=policies_list)
+        return render_template("policies_enhanced.html", policies=policies_list)
 
     @core_bp.route("/premium-remittance")
     @login_required
@@ -1361,6 +1363,10 @@ def create_app(config_name=None):
 
     @core_bp.route("/agent-dashboard")
     @login_required
+    # Register claims routes
+    from .claims_routes import register_claims_routes
+    register_claims_routes(core_bp)
+
     def agent_dashboard():
         """Alias for owner dashboard (backward compatibility)."""
         return redirect(url_for("core.dashboard"))

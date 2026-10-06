@@ -455,6 +455,73 @@
             border-left-color: #f59e0b;
         }
 
+        /* GLOBAL SEARCH */
+        .global-search-wrapper {
+            position: relative;
+            width: 280px;
+        }
+
+        .global-search-input {
+            width: 100%;
+            padding: 0.65rem 1rem 0.65rem 2.5rem;
+            border: 1px solid var(--ripple-gray-300);
+            border-radius: 0.6rem;
+            font-size: 0.9rem;
+            transition: border-color 0.16s ease, box-shadow 0.16s ease;
+        }
+
+        .global-search-input:focus {
+            outline: none;
+            border-color: var(--ripple-primary);
+            box-shadow: 0 0 0 3px rgba(27, 112, 45, 0.1);
+        }
+
+        .global-search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--ripple-gray-400);
+            font-size: 0.9rem;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border: 1px solid var(--ripple-gray-200);
+            border-top: none;
+            border-radius: 0 0 0.6rem 0.6rem;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
+            z-index: 1000;
+        }
+
+        .search-result-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--ripple-gray-100);
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--rc-text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: background 0.12s ease;
+        }
+
+        .search-result-item:hover {
+            background: var(--ripple-gray-50);
+        }
+
+        .search-result-icon { font-size: 0.9rem; color: var(--ripple-primary); width: 20px; text-align: center; }
+        .search-result-content { flex: 1; }
+        .search-result-title { font-weight: 600; font-size: 0.9rem; }
+        .search-result-subtitle { font-size: 0.8rem; color: var(--ripple-gray-500); }
+        .search-results-empty { padding: 1.5rem; text-align: center; color: var(--ripple-gray-500); font-size: 0.9rem; }
+
         .alert-info {
             background: #dbeafe;
             color: #1d4ed8;
@@ -575,6 +642,14 @@
                                    class="sidebar-menu-link {% if request.endpoint == 'core.premium_remittance' %}active{% endif %}">
                                     <i class="sidebar-menu-icon fas fa-credit-card"></i>
                                     <span class="sidebar-menu-label">Premium Remittance</span>
+                            <li class="sidebar-menu-item">
+                                <a href="{{ url_for('core.claims') }}"
+                                   class="sidebar-menu-link {% if request.endpoint == 'core.claims' %}active{% endif %}">
+                                    <i class="sidebar-menu-icon fas fa-file-invoice"></i>
+                                    <span class="sidebar-menu-label">Claims</span>
+                                    <span class="sidebar-menu-chevron"><i class="fas fa-chevron-right"></i></span>
+                                </a>
+                            </li>
                                     <span class="sidebar-menu-chevron"><i class="fas fa-chevron-right"></i></span>
                                 </a>
                             </li>
@@ -703,6 +778,11 @@
                 <p class="page-subtitle">{% block page_subtitle %}{% endblock %}</p>
             </div>
             <div class="top-nav-right">
+            <div class="global-search-wrapper">
+                <i class="global-search-icon fas fa-search"></i>
+                <input type="text" class="global-search-input" id="globalSearchInput" placeholder="Search clients, policies, claims...">
+                <div class="search-results" id="searchResults" style="display: none;"></div>
+            </div>
                 <a href="{{ url_for('auth.logout') }}" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
@@ -763,3 +843,42 @@
 </body>
 </html>
 
+<script>
+    document.getElementById("globalSearchInput").addEventListener("input", async function() {
+        const query = this.value.trim();
+        const searchResults = document.getElementById("searchResults");
+        
+        if (query.length < 2) {
+            searchResults.style.display = "none";
+            return;
+        }
+        
+        try {
+            const response = await fetch(`{{ url_for("core.global_search") }}?q=${encodeURIComponent(query)}`);
+            const results = await response.json();
+            
+            if (results.length === 0) {
+                searchResults.innerHTML = '<div class="search-results-empty">No results found</div>';
+            } else {
+                searchResults.innerHTML = results.map(result => `
+                    <a href="${result.url}" class="search-result-item">
+                        <i class="search-result-icon fas ${result.icon}"></i>
+                        <div class="search-result-content">
+                            <div class="search-result-title">${result.title}</div>
+                            <div class="search-result-subtitle">${result.subtitle}</div>
+                        </div>
+                    </a>
+                `).join("");
+            }
+            searchResults.style.display = "block";
+        } catch (error) {
+            console.error("Search error:", error);
+        }
+    });
+    
+    document.addEventListener("click", function(e) {
+        if (!e.target.closest(".global-search-wrapper")) {
+            document.getElementById("searchResults").style.display = "none";
+        }
+    });
+</script>
