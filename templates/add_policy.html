@@ -129,9 +129,51 @@
         background: #ffffff;
     }
 
+    .form-input:disabled {
+        background: var(--ripple-gray-50);
+        color: var(--ripple-gray-500);
+    }
+
     .form-hint {
         font-size: 0.8rem;
         color: var(--ripple-gray-400);
+    }
+
+    .calculation-box {
+        background: var(--ripple-primary-lighter);
+        border: 1px solid #c8e6c9;
+        border-radius: 0.65rem;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+
+    .calculation-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        font-size: 0.95rem;
+    }
+
+    .calculation-label {
+        color: var(--ripple-gray-700);
+        font-weight: 500;
+    }
+
+    .calculation-value {
+        color: var(--ripple-primary);
+        font-weight: 600;
+    }
+
+    .calculation-divider {
+        border-top: 1px solid #a5d6a7;
+        margin: 0.5rem 0;
+    }
+
+    .calculation-total {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--ripple-primary);
     }
 
     .button-group {
@@ -192,6 +234,16 @@
         color: var(--ripple-gray-600);
     }
 
+    .badge {
+        display: inline-block;
+        background: var(--ripple-secondary-lighter);
+        color: var(--ripple-secondary);
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
     @media (max-width: 640px) {
         .form-card {
             padding: 1.6rem 1.4rem 1.8rem;
@@ -212,11 +264,11 @@
         <header class="form-header">
             <h2 class="form-header-title">Create New Policy</h2>
             <p class="form-header-subtitle">
-                Add a new insurance policy and assign it to a client.
+                Add a new insurance policy and assign it to a client. Premium calculations are automatic for Motor and Homeowners products.
             </p>
         </header>
 
-        <form method="post" novalidate>
+        <form method="post" novalidate id="policyForm">
             <div class="form-grid">
                 <div class="form-group">
                     <label class="form-label" for="client_id">
@@ -248,21 +300,22 @@
                     <label class="form-label" for="product_id">
                         Insurance Product <span class="required">Required</span>
                     </label>
-                    <select id="product_id" name="product_id" class="form-select" required>
+                    <select id="product_id" name="product_id" class="form-select" required onchange="updateProductInfo()">
                         <option value="">-- Select a Product --</option>
                         {% for product in products %}
-                            <option value="{{ product.id }}">{{ product.name }}</option>
+                            <option value="{{ product.id }}" data-name="{{ product.name }}">{{ product.name }}</option>
                         {% endfor %}
                     </select>
                     <p class="form-hint">The type of insurance product.</p>
+                    <span id="productBadge"></span>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="policy_number">
-                        Policy Number <span class="required">Required</span>
+                        Policy Number <span class="badge">Auto-Generated</span>
                     </label>
-                    <input type="text" id="policy_number" name="policy_number" class="form-input" placeholder="POL-2024-001" required>
-                    <p class="form-hint">Unique identifier for this policy.</p>
+                    <input type="text" id="policy_number" name="policy_number" class="form-input" placeholder="Leave blank for auto-generation" readonly>
+                    <p class="form-hint">Unique identifier (auto-generated if left blank).</p>
                 </div>
             </div>
 
@@ -270,31 +323,67 @@
 
             <div class="form-grid">
                 <div class="form-group">
-                    <label class="form-label" for="coverage_amount">
-                        Coverage Amount
+                    <label class="form-label" for="sum_insured">
+                        Sum Insured <span class="required">Required</span>
                     </label>
-                    <input type="number" id="coverage_amount" name="coverage_amount" class="form-input" placeholder="0.00" step="0.01" min="0">
-                    <p class="form-hint">Total coverage amount in currency units.</p>
+                    <input type="number" id="sum_insured" name="sum_insured" class="form-input" placeholder="0.00" step="0.01" min="0" required onchange="calculatePremium()">
+                    <p class="form-hint">Total coverage/sum insured amount in currency units.</p>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="premium_amount">
-                        Premium Amount
+                <div class="form-group" id="rateGroup" style="display: none;">
+                    <label class="form-label" for="rate">
+                        Rate (%) <span id="rateRequired"></span>
                     </label>
-                    <input type="number" id="premium_amount" name="premium_amount" class="form-input" placeholder="0.00" step="0.01" min="0">
-                    <p class="form-hint">Policy premium amount.</p>
+                    <input type="number" id="rate" name="rate" class="form-input" placeholder="e.g., 6" step="0.01" min="0" onchange="calculatePremium()">
+                    <p class="form-hint">Percentage rate for premium calculation.</p>
+                </div>
+
+                <div class="form-group" id="stampDutyGroup" style="display: none;">
+                    <label class="form-label" for="stamp_duty">
+                        Stamp Duty (%) <span id="stampDutyRequired"></span>
+                    </label>
+                    <input type="number" id="stamp_duty" name="stamp_duty" class="form-input" placeholder="e.g., 5" step="0.01" min="0" onchange="calculatePremium()">
+                    <p class="form-hint">Stamp duty percentage on the rate amount.</p>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="premium_frequency">
                         Premium Frequency <span class="required">Required</span>
                     </label>
-                    <select id="premium_frequency" name="premium_frequency" class="form-select" required>
+                    <select id="premium_frequency" name="premium_frequency" class="form-select" required onchange="calculatePremium()">
                         <option value="monthly">Monthly</option>
-                        <option value="quarterly">Quarterly</option>
+                        <option value="termly">Termly (3 Months)</option>
                         <option value="annual" selected>Annual</option>
                     </select>
                     <p class="form-hint">How often premiums are paid.</p>
+                </div>
+
+                <!-- Premium Calculation Display -->
+                <div class="form-group full-width" id="premiumCalcBox" style="display: none;">
+                    <div class="calculation-box">
+                        <h4 style="margin-top: 0; color: var(--ripple-primary);">Premium Breakdown</h4>
+                        <div class="calculation-row">
+                            <span class="calculation-label">Rate Amount:</span>
+                            <span class="calculation-value" id="calcRateAmount">0.00</span>
+                        </div>
+                        <div class="calculation-row">
+                            <span class="calculation-label">Stamp Duty:</span>
+                            <span class="calculation-value" id="calcStampDuty">0.00</span>
+                        </div>
+                        <div class="calculation-divider"></div>
+                        <div class="calculation-row">
+                            <span class="calculation-label">Total Premium:</span>
+                            <span class="calculation-value calculation-total" id="calcTotalPremium">0.00</span>
+                        </div>
+                        <div class="calculation-row">
+                            <span class="calculation-label">Daily Premium:</span>
+                            <span class="calculation-value" id="calcDailyPremium">0.00</span>
+                        </div>
+                        <div class="calculation-row">
+                            <span class="calculation-label">Policy Period:</span>
+                            <span class="calculation-value" id="calcPolicyPeriod">-</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -303,18 +392,18 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label class="form-label" for="start_date">
-                        Start Date <span class="required">Required</span>
+                        Start Date (Inception) <span class="badge">Today</span>
                     </label>
-                    <input type="date" id="start_date" name="start_date" class="form-input" required>
-                    <p class="form-hint">When the policy coverage begins.</p>
+                    <input type="date" id="start_date" name="start_date" class="form-input" onchange="calculatePremium()">
+                    <p class="form-hint">When the policy coverage begins (defaults to today).</p>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="end_date">
-                        End Date <span class="required">Required</span>
+                        End Date <span class="badge">Auto-Calculated</span>
                     </label>
-                    <input type="date" id="end_date" name="end_date" class="form-input" required>
-                    <p class="form-hint">When the policy coverage ends.</p>
+                    <input type="date" id="end_date" name="end_date" class="form-input" readonly>
+                    <p class="form-hint">Auto-calculated based on premium frequency.</p>
                 </div>
 
                 <div class="form-group">
@@ -343,4 +432,136 @@
         </form>
     </div>
 </div>
+
+<script>
+const MOTOR_PRODUCTS = ["Motor Comprehensive", "Third Party", "Full Third Party"];
+const HOMEOWNERS_PRODUCT = "Homeowners";
+
+function updateProductInfo() {
+    const productSelect = document.getElementById('product_id');
+    const productOption = productSelect.options[productSelect.selectedIndex];
+    const productName = productOption.getAttribute('data-name');
+    const rateGroup = document.getElementById('rateGroup');
+    const stampDutyGroup = document.getElementById('stampDutyGroup');
+    const rateInput = document.getElementById('rate');
+    const stampDutyInput = document.getElementById('stamp_duty');
+    const rateRequired = document.getElementById('rateRequired');
+    const stampDutyRequired = document.getElementById('stampDutyRequired');
+    const badge = document.getElementById('productBadge');
+
+    if (MOTOR_PRODUCTS.includes(productName) || productName === HOMEOWNERS_PRODUCT) {
+        // Auto-calculated products - hide manual input
+        rateGroup.style.display = 'none';
+        stampDutyGroup.style.display = 'none';
+        rateInput.removeAttribute('required');
+        stampDutyInput.removeAttribute('required');
+        rateInput.value = '';
+        stampDutyInput.value = '';
+        
+        if (MOTOR_PRODUCTS.includes(productName)) {
+            badge.innerHTML = '<span class="badge">6% Rate + 5% Stamp Duty</span>';
+        } else if (productName === HOMEOWNERS_PRODUCT) {
+            badge.innerHTML = '<span class="badge">0.125% Rate + 5% Stamp Duty</span>';
+        }
+    } else {
+        // Manual products - show rate and stamp duty inputs
+        rateGroup.style.display = 'flex';
+        stampDutyGroup.style.display = 'flex';
+        rateInput.setAttribute('required', 'required');
+        stampDutyInput.setAttribute('required', 'required');
+        rateRequired.innerHTML = '<span class="required">Required</span>';
+        stampDutyRequired.innerHTML = '<span class="required">Required</span>';
+        badge.innerHTML = '<span class="badge">Manual Entry</span>';
+    }
+
+    calculatePremium();
+}
+
+function calculatePremium() {
+    const productSelect = document.getElementById('product_id');
+    const sumInsured = parseFloat(document.getElementById('sum_insured').value) || 0;
+    const premiumFreq = document.getElementById('premium_frequency').value;
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+    const calcBox = document.getElementById('premiumCalcBox');
+
+    // Set start date to today if not set
+    if (!startDateInput.value) {
+        const today = new Date().toISOString().split('T')[0];
+        startDateInput.value = today;
+    }
+
+    if (!productSelect.value || sumInsured <= 0) {
+        calcBox.style.display = 'none';
+        endDateInput.value = '';
+        return;
+    }
+
+    const productOption = productSelect.options[productSelect.selectedIndex];
+    const productName = productOption.getAttribute('data-name');
+    const rate = parseFloat(document.getElementById('rate').value) || null;
+    const stampDuty = parseFloat(document.getElementById('stamp_duty').value) || null;
+
+    // Call API for premium calculation
+    fetch('/api/calculate-premium', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: productSelect.value,
+            sum_insured: sumInsured,
+            rate: rate,
+            stamp_duty: stampDuty
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            calcBox.style.display = 'none';
+            endDateInput.value = '';
+            return;
+        }
+
+        // Update calculation display
+        document.getElementById('calcRateAmount').textContent = data.rate_amount.toFixed(2);
+        document.getElementById('calcStampDuty').textContent = data.stamp_duty.toFixed(2);
+        document.getElementById('calcTotalPremium').textContent = data.total_premium.toFixed(2);
+
+        // Calculate daily premium and end date
+        const startDate = new Date(startDateInput.value);
+        let endDate = new Date(startDate);
+
+        if (premiumFreq === 'termly' || premiumFreq === 'quarterly') {
+            endDate.setDate(endDate.getDate() + 92); // ~3 months
+        } else if (premiumFreq === 'annual') {
+            endDate.setDate(endDate.getDate() + 365);
+        } else if (premiumFreq === 'monthly') {
+            endDate.setDate(endDate.getDate() + 30);
+        }
+
+        const daysInPeriod = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+        const dailyPremium = (data.total_premium / daysInPeriod).toFixed(2);
+        
+        document.getElementById('calcDailyPremium').textContent = dailyPremium;
+        document.getElementById('calcPolicyPeriod').textContent = `${daysInPeriod} days`;
+
+        // Set end date
+        endDateInput.value = endDate.toISOString().split('T')[0];
+
+        calcBox.style.display = 'block';
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        calcBox.style.display = 'none';
+    });
+}
+
+// Initialize on page load
+window.addEventListener('load', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('start_date').value = today;
+});
+</script>
 {% endblock %}
+
