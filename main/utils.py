@@ -44,7 +44,7 @@ HOMEOWNERS_RATE_RANGE = {"min": 0.125, "max": 0.3, "default": 0.125}
 # Stamp duty percentage applied to the rate amount for Motor and Homeowners
 DEFAULT_STAMP_DUTY_PERCENT = 5.0
 
-# Days covered per premium frequency
+# Days covered per premium frequency (kept for backward compatibility)
 DAYS_BY_FREQUENCY = {
     "monthly": 30,
     "termly": 120,  # 4 months
@@ -57,6 +57,29 @@ DAYS_BY_FREQUENCY = {
 def get_days_in_period(frequency):
     """Return the number of days covered for a premium frequency (defaults to annual)."""
     return DAYS_BY_FREQUENCY.get(frequency, 365)
+
+
+def calculate_actual_days(start_date, end_date):
+    """
+    Calculate actual calendar days between start_date and end_date (inclusive).
+    
+    Args:
+        start_date: Policy start date (datetime.date or string 'YYYY-MM-DD')
+        end_date: Policy end date (datetime.date or string 'YYYY-MM-DD')
+    
+    Returns:
+        int: Number of days between dates (inclusive)
+    """
+    if isinstance(start_date, str):
+        start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+    if isinstance(end_date, str):
+        end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+    
+    if not start_date or not end_date or start_date >= end_date:
+        return 0
+    
+    # Calculate days inclusive (add 1 to include both start and end dates)
+    return (end_date - start_date).days + 1
 
 
 class PremiumCalculator:
@@ -155,10 +178,7 @@ class PremiumCalculator:
         Returns:
             float: Daily premium amount
         """
-        if not start_date or not end_date or start_date >= end_date:
-            return 0
-        
-        days = (end_date - start_date).days
+        days = calculate_actual_days(start_date, end_date)
         if days <= 0:
             return 0
         
@@ -177,6 +197,12 @@ def calculate_end_date_from_frequency(start_date, frequency):
     """
     Calculate end date based on premium frequency and start date.
     
+    For monthly: end date is the same day of the next month
+    For termly (4 months): end date is the same day 4 months later
+    For annual (12 months): end date is the same day 12 months later
+    
+    Example: Start 6 Oct → Monthly ends 5 Nov (30 days later)
+    
     Args:
         start_date: Policy start date (datetime.date)
         frequency: "termly" (4 months), "annually" (12 months), or "monthly" (1 month)
@@ -188,17 +214,60 @@ def calculate_end_date_from_frequency(start_date, frequency):
         return start_date
     
     if frequency == "termly" or frequency == "quarterly":
-        # Termly = 4 months = 120 days
-        end_date = start_date + timedelta(days=120)
+        # Termly = 4 months (calculate by adding months, then subtract 1 day for end date)
+        # Start: Oct 6 → +4 months = Dec 6 → subtract 1 day = Dec 5
+        month = start_date.month + 4
+        year = start_date.year
+        while month > 12:
+            month -= 12
+            year += 1
+        # Get the same day 4 months later
+        try:
+            end_date = date(year, month, start_date.day)
+        except ValueError:
+            # Handle edge case (e.g., Jan 31 + 1 month)
+            end_date = date(year, month, 28) if month == 2 else date(year, month, 30)
+        # Subtract 1 day to make it the day before the 4-month anniversary
+        end_date = end_date - timedelta(days=1)
     elif frequency == "annually" or frequency == "annual":
-        # Annual = 12 months
-        end_date = start_date + timedelta(days=365)
+        # Annual = 12 months (same logic as termly but +12 months)
+        month = start_date.month + 12
+        year = start_date.year
+        while month > 12:
+            month -= 12
+            year += 1
+        try:
+            end_date = date(year, month, start_date.day)
+        except ValueError:
+            end_date = date(year, month, 28) if month == 2 else date(year, month, 30)
+        # Subtract 1 day
+        end_date = end_date - timedelta(days=1)
     elif frequency == "monthly":
-        # Monthly = 1 month
-        end_date = start_date + timedelta(days=30)
+        # Monthly = 1 month (add 1 month, subtract 1 day)
+        month = start_date.month + 1
+        year = start_date.year
+        if month > 12:
+            month -= 12
+            year += 1
+        try:
+            end_date = date(year, month, start_date.day)
+        except ValueError:
+            # Handle edge case (e.g., Jan 31 + 1 month = Feb 31, which doesn't exist)
+            end_date = date(year, month, 28) if month == 2 else date(year, month, 30)
+        # Subtract 1 day to make it the day before the monthly anniversary
+        end_date = end_date - timedelta(days=1)
     else:
         # Default to annual
-        end_date = start_date + timedelta(days=365)
+        month = start_date.month + 12
+        year = start_date.year
+        while month > 12:
+            month -= 12
+            year += 1
+        try:
+            end_date = date(year, month, start_date.day)
+        except ValueError:
+            end_date = date(year, month, 28) if month == 2 else date(year, month, 30)
+        end_date = end_date - timedelta(days=1)
     
     return end_date
 
