@@ -18,7 +18,7 @@ except ImportError:
 
 from .config import config_by_name
 from .models import db, User, ROLE_ADMIN, ROLE_AGENT, ROLE_CLIENT
-from .utils import role_required, get_account_owner_id
+from .utils import role_required, get_account_owner_id, PremiumCalculator, generate_policy_number, calculate_end_date_from_frequency
 
 # Safely import the models
 try:
@@ -993,101 +993,213 @@ def create_app(config_name=None):
         return redirect(url_for("core.profile"))
 
     @core_bp.route("/policies/add", methods=["GET", "POST"])
-    @login_required
-    def add_policy():
-        """Add a new insurance policy (owners only)."""
-        if current_user.role == ROLE_CLIENT:
-            flash("Clients cannot create policies.", "warning")
-            return redirect(url_for("core.policies"))
-        
-        if not HAS_NEW_MODELS:
-            flash("Policies feature not available in this version.", "warning")
-            return redirect(url_for("core.policies"))
-        
-        # Make sure the user has the default products
-        ensure_user_has_default_products(current_user)
+@login_required
+def add_policy():
+    """Add a new insurance policy with automatic premium calculations."""
+    if current_user.role == ROLE_CLIENT:
+        flash("Clients cannot create policies.", "warning")
+        return redirect(url_for("core.policies"))
+    
+    if not HAS_NEW_MODELS:
+        flash("Policies feature not available in this version.", "warning")
+        return redirect(url_for("core.policies"))
+    
+    # Make sure the user has the default products
+    ensure_user_has_default_products(current_user)
 
-        # Get account resources for dropdowns (shared across owner/admin/agent)
-        account_id = get_account_owner_id()
-        clients_list = Client.query.filter_by(owner_id=account_id).all()
-        companies_list = Company.query.filter_by(owner_id=account_id).all()
-        products_list = InsuranceProduct.query.filter_by(owner_id=account_id).all()
+    # Get account resources for dropdowns (shared across owner/admin/agent)
+    account_id = get_account_owner_id()
+    clients_list = Client.query.filter_by(owner_id=account_id).all()
+    companies_list = Company.query.filter_by(owner_id=account_id).all()
+    products_list = InsuranceProduct.query.filter_by(owner_id=account_id).all()
 
-        if request.method == "GET":
-            if not companies_list:
-                flash("No companies found. Add a company before creating a policy.", "info")
-            if not clients_list:
-                flash("No clients found. Add a client before creating a policy.", "info")
-        
-        if request.method == "POST":
+    if request.method == "GET":
+        if not companies_list:
+            flash("No companies found. Add a company before creating a policy.", "info")
+        if not clients_list:
+            flash("No clients found. Add a client before creating a policy.", "info")
+    
+    if request.method == "POST":
+        try:
+            # Get form data
+            client_id = (request.form.get("client_id") or "").strip()
+            company_id = (request.form.get("company_id") or "").strip()
+            product_id = (request.form.get("product_id") or "").strip()
+            sum_insured = request.form.get("sum_insured", "0").strip()
+            premium_frequency = request.form.get("premium_frequency", "annual") or "annual"
+            start_date_str = (request.form.get("start_date") or "").strip()
+            status = request.form.get("status") or "active"
+            
+            # Auto-generate policy number if not provided
+            policy_number = (request.form.get("policy_number") or "").strip()
+            if not policy_number:
+                policy_number = generate_policy_number()
+
+            # Validate required fields
+            if not all([client_id, company_id, product_id, sum_insured]):
+                flash("Client, Company, Product, and Sum Insured are required.", "warning")
+                return render_template(
+                    "add_policy.html", 
+                    clients=clients_list, 
+                    companies=companies_list, 
+                    products=products_list
+                )
+            
+            # Parse sum insured
             try:
-                # Get form data
-                client_id = (request.form.get("client_id") or "").strip()
-                company_id = (request.form.get("company_id") or "").strip()
-                product_id = (request.form.get("product_id") or "").strip()
-                policy_number = (request.form.get("policy_number") or "").strip()
-                premium_frequency = request.form.get("premium_frequency") or "annual"
-                start_date_str = (request.form.get("start_date") or "").strip()
-                end_date_str = (request.form.get("end_date") or "").strip()
-                status = request.form.get("status") or "active"
-
-                # Coverage and premium amounts are optional and default to 0
-                try:
-                    coverage_amount = float((request.form.get("coverage_amount") or "0").strip() or 0)
-                    premium_amount = float((request.form.get("premium_amount") or "0").strip() or 0)
-                except ValueError:
-                    flash("Coverage and premium amounts must be valid numbers.", "warning")
-                    return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
-
-                if coverage_amount < 0 or premium_amount < 0:
-                    flash("Coverage and premium amounts cannot be negative.", "warning")
-                    return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
-                
-                # Validate inputs
-                if not all([client_id, company_id, product_id, policy_number, start_date_str, end_date_str]):
-                    flash("All fields are required.", "warning")
-                    return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
-                
-                # Check if policy number already exists
-                if Policy.query.filter_by(policy_number=policy_number).first():
-                    flash(f"Policy number {policy_number} already exists.", "warning")
-                    return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
-                
-                # Parse dates
+                sum_insured_amount = float(sum_insured)
+            except ValueError:
+                flash("Sum Insured must be a valid number.", "warning")
+                return render_template(
+                    "add_policy.html", 
+                    clients=clients_list, 
+                    companies=companies_list, 
+                    products=products_list
+                )
+            
+            if sum_insured_amount <= 0:
+                flash("Sum Insured must be greater than 0.", "warning")
+                return render_template(
+                    "add_policy.html", 
+                    clients=clients_list, 
+                    companies=companies_list, 
+                    products=products_list
+                )
+            
+            # Get product name for premium calculation
+            product = InsuranceProduct.query.get(int(product_id))
+            if not product:
+                flash("Invalid product selected.", "warning")
+                return render_template(
+                    "add_policy.html", 
+                    clients=clients_list, 
+                    companies=companies_list, 
+                    products=products_list
+                )
+            
+            # Calculate premium automatically for Motor and Homeowners
+            rate = request.form.get("rate", "").strip()
+            stamp_duty = request.form.get("stamp_duty", "").strip()
+            
+            premium_calc = PremiumCalculator.calculate_premium(
+                product.name, 
+                sum_insured_amount,
+                rate=float(rate) if rate else None,
+                stamp_duty_percent=float(stamp_duty) if stamp_duty else None
+            )
+            
+            if not premium_calc:
+                flash("Please enter Rate and Stamp Duty percentages for this product.", "warning")
+                return render_template(
+                    "add_policy.html", 
+                    clients=clients_list, 
+                    companies=companies_list, 
+                    products=products_list
+                )
+            
+            premium_amount = premium_calc["total_premium"]
+            
+            # Parse start date (use today if not provided)
+            if start_date_str:
                 from datetime import datetime as dt
                 start_date = dt.strptime(start_date_str, "%Y-%m-%d").date()
-                end_date = dt.strptime(end_date_str, "%Y-%m-%d").date()
-                
-                if start_date >= end_date:
-                    flash("Start date must be before end date.", "warning")
-                    return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
-                
-                # Create new policy
-                policy = Policy(
-                    owner_id=account_id,
-                    client_id=int(client_id),
-                    company_id=int(company_id),
-                    product_id=int(product_id),
-                    policy_number=policy_number,
-                    coverage_amount=coverage_amount,
-                    premium_amount=premium_amount,
-                    premium_frequency=premium_frequency,
-                    start_date=start_date,
-                    end_date=end_date,
-                    status=status
-                )
-                
-                db.session.add(policy)
-                db.session.commit()
-                flash(f"Policy {policy_number} created successfully.", "success")
-                return redirect(url_for("core.policies"))
+            else:
+                start_date = date.today()
             
-            except Exception as e:
-                db.session.rollback()
-                flash(f"Error creating policy: {str(e)}", "danger")
-                return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
+            # Auto-calculate end date based on frequency
+            end_date = calculate_end_date_from_frequency(start_date, premium_frequency)
+            
+            # Check if policy number already exists
+            if Policy.query.filter_by(policy_number=policy_number).first():
+                flash(f"Policy number {policy_number} already exists.", "warning")
+                return render_template(
+                    "add_policy.html", 
+                    clients=clients_list, 
+                    companies=companies_list, 
+                    products=products_list
+                )
+            
+            # Create new policy
+            policy = Policy(
+                owner_id=account_id,
+                client_id=int(client_id),
+                company_id=int(company_id),
+                product_id=int(product_id),
+                policy_number=policy_number,
+                coverage_amount=sum_insured_amount,
+                premium_amount=premium_amount,
+                premium_frequency=premium_frequency,
+                start_date=start_date,
+                end_date=end_date,
+                status=status
+            )
+            
+            db.session.add(policy)
+            db.session.commit()
+            flash(f"Policy {policy_number} created successfully.", "success")
+            return redirect(url_for("core.policies"))
         
-        return render_template("add_policy.html", clients=clients_list, companies=companies_list, products=products_list)
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error creating policy: {str(e)}", "danger")
+            return render_template(
+                "add_policy.html", 
+                clients=clients_list, 
+                companies=companies_list, 
+                products=products_list
+            )
+    
+    return render_template(
+        "add_policy.html", 
+        clients=clients_list, 
+        companies=companies_list, 
+        products=products_list
+    )
+
+    @core_bp.route
+
+    # ====================== API ROUTES ======================
+    @core_bp.route("/api/calculate-premium", methods=["POST"])
+    @login_required
+    def calculate_premium_api():
+        """API endpoint for real-time premium calculation."""
+        try:
+            product_id = request.json.get("product_id")
+            sum_insured = request.json.get("sum_insured", 0)
+            rate = request.json.get("rate")
+            stamp_duty = request.json.get("stamp_duty")
+            
+            if not product_id or not sum_insured:
+                return jsonify({"error": "Missing product_id or sum_insured"}), 400
+            
+            # Get product
+            product = InsuranceProduct.query.get(product_id)
+            if not product:
+                return jsonify({"error": "Product not found"}), 404
+            
+            # Calculate premium
+            try:
+                sum_insured = float(sum_insured)
+            except (ValueError, TypeError):
+                return jsonify({"error": "Invalid sum_insured"}), 400
+            
+            if sum_insured <= 0:
+                return jsonify({"error": "Sum Insured must be greater than 0"}), 400
+            
+            calc = PremiumCalculator.calculate_premium(
+                product.name,
+                sum_insured,
+                rate=float(rate) if rate else None,
+                stamp_duty_percent=float(stamp_duty) if stamp_duty else None
+            )
+            
+            if not calc:
+                return jsonify({"error": "Cannot calculate premium for this product. Please enter Rate and Stamp Duty."}), 400
+            
+            return jsonify(calc)
+        
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
 
     @core_bp.route("/policies/<int:policy_id>/view")
     @login_required
