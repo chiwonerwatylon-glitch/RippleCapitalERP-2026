@@ -1363,14 +1363,14 @@ def create_app(config_name=None):
 
     @core_bp.route("/agent-dashboard")
     @login_required
-    # Register claims routes
-    from .claims_routes import register_claims_routes
-    register_claims_routes(core_bp)
-
     def agent_dashboard():
         """Alias for owner dashboard (backward compatibility)."""
         return redirect(url_for("core.dashboard"))
 
+
+    # ====================== CLAIMS ROUTES ======================
+    from .claims_routes import register_claims_routes
+    register_claims_routes(core_bp)
 
     # ====================== ERROR HANDLERS ======================
 
