@@ -330,6 +330,14 @@
                     <p class="form-hint">Total coverage/sum insured amount in currency units.</p>
                 </div>
 
+                <div class="form-group" id="selectedRateGroup" style="display: none;">
+                    <label class="form-label" for="selected_rate">
+                        Select Rate (%) <span class="required">Required</span>
+                    </label>
+                    <input type="number" id="selected_rate" name="selected_rate" class="form-input" step="0.1" min="3.5" max="10" value="6" disabled onchange="calculatePremium()" oninput="calculatePremium()">
+                    <p class="form-hint" id="selectedRateHint">Select a rate within the allowed range.</p>
+                </div>
+
                 <div class="form-group" id="rateGroup" style="display: none;">
                     <label class="form-label" for="rate">
                         Rate (%) <span id="rateRequired"></span>
@@ -358,7 +366,7 @@
                     </label>
                     <select id="premium_frequency" name="premium_frequency" class="form-select" required onchange="calculatePremium()">
                         <option value="monthly">Monthly</option>
-                        <option value="termly">Termly (3 Months)</option>
+                        <option value="termly">Termly (4 Months)</option>
                         <option value="annual" selected>Annual</option>
                     </select>
                     <p class="form-hint">How often premiums are paid.</p>
@@ -369,7 +377,11 @@
                     <div class="calculation-box">
                         <h4 style="margin-top: 0; color: var(--ripple-primary);">Premium Breakdown</h4>
                         <div class="calculation-row">
-                            <span class="calculation-label">Rate Amount:</span>
+                            <span class="calculation-label">Days Covered:</span>
+                            <span class="calculation-value" id="calcDaysCovered">0</span>
+                        </div>
+                        <div class="calculation-row">
+                            <span class="calculation-label">Rate Amount (includes daily pro-rating):</span>
                             <span class="calculation-value" id="calcRateAmount">0.00</span>
                         </div>
                         <div class="calculation-row">
@@ -446,11 +458,17 @@
 <script>
 const MOTOR_PRODUCTS = ["Motor Comprehensive", "Third Party", "Full Third Party"];
 const HOMEOWNERS_PRODUCT = "Homeowners";
+const MOTOR_RATE_RANGE = { min: 3.5, max: 10, step: 0.1, default: 6 };
+const HOMEOWNERS_RATE_RANGE = { min: 0.125, max: 0.3, step: 0.001, default: 0.125 };
+const DAYS_BY_FREQUENCY = { monthly: 30, termly: 120, quarterly: 120, annual: 365 };
 
 function updateProductInfo() {
     const productSelect = document.getElementById('product_id');
     const productOption = productSelect.options[productSelect.selectedIndex];
     const productName = productOption.getAttribute('data-name');
+    const selectedRateGroup = document.getElementById('selectedRateGroup');
+    const selectedRateInput = document.getElementById('selected_rate');
+    const selectedRateHint = document.getElementById('selectedRateHint');
     const rateGroup = document.getElementById('rateGroup');
     const stampDutyGroup = document.getElementById('stampDutyGroup');
     const rateInput = document.getElementById('rate');
@@ -460,21 +478,33 @@ function updateProductInfo() {
     const badge = document.getElementById('productBadge');
 
     if (MOTOR_PRODUCTS.includes(productName) || productName === HOMEOWNERS_PRODUCT) {
-        // Auto-calculated products - hide manual input
+        // Rate-selectable products - hide manual rate/stamp duty, show rate selector
         rateGroup.style.display = 'none';
         stampDutyGroup.style.display = 'none';
         rateInput.removeAttribute('required');
         stampDutyInput.removeAttribute('required');
+        rateInput.disabled = true;
+        stampDutyInput.disabled = true;
         rateInput.value = '';
         stampDutyInput.value = '';
-        
-        if (MOTOR_PRODUCTS.includes(productName)) {
-            badge.innerHTML = '<span class="badge">6% Rate + 5% Stamp Duty</span>';
-        } else if (productName === HOMEOWNERS_PRODUCT) {
-            badge.innerHTML = '<span class="badge">0.125% Rate + 5% Stamp Duty</span>';
-        }
+
+        const range = MOTOR_PRODUCTS.includes(productName) ? MOTOR_RATE_RANGE : HOMEOWNERS_RATE_RANGE;
+        selectedRateGroup.style.display = 'flex';
+        selectedRateInput.disabled = false;
+        selectedRateInput.setAttribute('required', 'required');
+        selectedRateInput.min = range.min;
+        selectedRateInput.max = range.max;
+        selectedRateInput.step = range.step;
+        selectedRateInput.value = range.default;
+        selectedRateHint.textContent = `Select a rate between ${range.min}% and ${range.max}% (default ${range.default}%).`;
+        badge.innerHTML = `<span class="badge">${range.min}% - ${range.max}% Rate + 5% Stamp Duty</span>`;
     } else {
-        // Manual products - show rate and stamp duty inputs
+        // Manual products - hide rate selector, show rate and stamp duty inputs
+        selectedRateGroup.style.display = 'none';
+        selectedRateInput.removeAttribute('required');
+        selectedRateInput.disabled = true;
+        rateInput.disabled = false;
+        stampDutyInput.disabled = false;
         rateGroup.style.display = 'flex';
         stampDutyGroup.style.display = 'flex';
         rateInput.setAttribute('required', 'required');
@@ -512,6 +542,19 @@ function calculatePremium() {
     const rate = parseFloat(document.getElementById('rate').value) || null;
     const stampDuty = parseFloat(document.getElementById('stamp_duty').value) || null;
     const levy = parseFloat(document.getElementById('levy').value) || 0;
+    const selectedRateInput = document.getElementById('selected_rate');
+    const selectedRate = selectedRateInput.disabled ? null : (parseFloat(selectedRateInput.value) || null);
+    const daysInPeriod = DAYS_BY_FREQUENCY[premiumFreq] || 365;
+
+    // Motor/Homeowners require a rate within the allowed range
+    if (!selectedRateInput.disabled) {
+        const min = parseFloat(selectedRateInput.min);
+        const max = parseFloat(selectedRateInput.max);
+        if (selectedRate === null || selectedRate < min || selectedRate > max) {
+            calcBox.style.display = 'none';
+            return;
+        }
+    }
 
     // Call API for premium calculation
     fetch('/api/calculate-premium', {
@@ -524,7 +567,10 @@ function calculatePremium() {
             sum_insured: sumInsured,
             rate: rate,
             stamp_duty: stampDuty,
-            levy: levy
+            levy: levy,
+            selected_rate: selectedRate,
+            premium_frequency: premiumFreq,
+            days_in_period: daysInPeriod
         })
     })
     .then(response => response.json())
@@ -536,6 +582,7 @@ function calculatePremium() {
         }
 
         // Update calculation display
+        document.getElementById('calcDaysCovered').textContent = data.days_in_period || daysInPeriod;
         document.getElementById('calcRateAmount').textContent = data.rate_amount.toFixed(2);
         document.getElementById('calcStampDuty').textContent = data.stamp_duty.toFixed(2);
         document.getElementById('calcLevy').textContent = data.levy.toFixed(2);
@@ -546,7 +593,7 @@ function calculatePremium() {
         let endDate = new Date(startDate);
 
         if (premiumFreq === 'termly' || premiumFreq === 'quarterly') {
-            endDate.setDate(endDate.getDate() + 92); // ~3 months
+            endDate.setDate(endDate.getDate() + 120); // 4 months
         } else if (premiumFreq === 'annual') {
             endDate.setDate(endDate.getDate() + 365);
         } else if (premiumFreq === 'monthly') {
