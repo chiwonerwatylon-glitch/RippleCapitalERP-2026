@@ -32,6 +32,8 @@ class User(UserMixin, db.Model):
     policies = db.relationship("Policy", backref="owner", lazy="dynamic", foreign_keys="Policy.owner_id")
     remittances = db.relationship("PremiumRemittance", backref="owner", lazy="dynamic")
     journal_entries = db.relationship("ManualJournalEntry", backref="created_by")
+    claims = db.relationship("Claim", backref="owner_ref", lazy="dynamic", foreign_keys="Claim.owner_id")
+    claim_documents = db.relationship("ClaimDocument", backref="owner_ref", lazy="dynamic", foreign_keys="ClaimDocument.owner_id")
 
     @property
     def username(self):
@@ -68,6 +70,7 @@ class Client(db.Model):
 
     # Relationships
     policies = db.relationship("Policy", backref="client", lazy="dynamic", foreign_keys="Policy.client_id")
+    claims = db.relationship("Claim", backref="client_ref", lazy="dynamic", foreign_keys="Claim.client_id")
 
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
@@ -156,6 +159,7 @@ class Policy(db.Model):
 
     # Relationships
     remittances = db.relationship("PremiumRemittance", backref="policy", lazy="dynamic", cascade="all, delete-orphan")
+    claims = db.relationship("Claim", backref="policy_ref", lazy="dynamic", cascade="all, delete-orphan", foreign_keys="Claim.policy_id")
 
     def is_expired(self) -> bool:
         return date.today() > self.end_date
@@ -228,4 +232,54 @@ class BulkUploadLog(db.Model):
     error_log = db.Column(db.Text)
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Claim(db.Model):
+    __tablename__ = "claims"
+
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    policy_id = db.Column(db.Integer, db.ForeignKey("policies.id"), nullable=False)
+    client_id = db.Column(db.Integer, db.ForeignKey("clients.id"), nullable=False)
+    
+    claim_number = db.Column(db.String(100), nullable=False, unique=True, index=True)
+    description = db.Column(db.Text, nullable=False)
+    loss_date = db.Column(db.Date, nullable=False)
+    claim_date = db.Column(db.Date, nullable=False)
+    claimed_amount = db.Column(db.Float, nullable=False)
+    approved_amount = db.Column(db.Float, default=0.0)
+    
+    status = db.Column(db.String(50), default="pending")  # pending, approved, denied, paid, under_review
+    priority = db.Column(db.String(50), default="normal")  # low, normal, high, critical
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    documents = db.relationship("ClaimDocument", backref="claim_ref", lazy="dynamic", cascade="all, delete-orphan", foreign_keys="ClaimDocument.claim_id")
+    
+    def __repr__(self):
+        return f"<Claim {self.claim_number}>"
+
+
+class ClaimDocument(db.Model):
+    __tablename__ = "claim_documents"
+
+    id = db.Column(db.Integer, primary_key=True)
+    claim_id = db.Column(db.Integer, db.ForeignKey("claims.id"), nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    
+    file_name = db.Column(db.String(255), nullable=False)
+    file_path = db.Column(db.String(500), nullable=False)  # Path to stored file
+    file_size = db.Column(db.Integer)  # Size in bytes
+    file_type = db.Column(db.String(50))  # pdf, jpg, png, doc, etc.
+    description = db.Column(db.Text)
+    
+    uploaded_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    uploaded_by = db.relationship("User", foreign_keys=[uploaded_by_id])
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f"<ClaimDocument {self.file_name}>"
 

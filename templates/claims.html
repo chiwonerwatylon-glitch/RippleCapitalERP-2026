@@ -1,0 +1,146 @@
+{% extends "sidebar_layout.html" %}
+
+{% block title %}Claims Management - Ripple Capital Insurance ERP{% endblock %}
+
+{% block page_title %}Claims Management{% endblock %}
+{% block page_subtitle %}Register, track, and manage insurance claims{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --ripple-primary: #1B702D;
+        --ripple-primary-light: #2D9F42;
+        --ripple-primary-lighter: #E8F5EA;
+        --ripple-gray-900: #111827;
+        --ripple-gray-800: #1F2937;
+        --ripple-gray-700: #374151;
+        --ripple-gray-600: #4B5563;
+        --ripple-gray-500: #6B7280;
+        --ripple-gray-300: #D1D5DB;
+        --ripple-gray-200: #E5E7EB;
+        --ripple-gray-100: #F3F4F6;
+        --ripple-gray-50: #F9FAFB;
+        --ripple-shadow-md: 0 10px 25px rgba(15, 23, 42, 0.08);
+    }
+
+    .claims-shell { max-width: 1200px; margin: 0 auto; }
+    .claims-container { background: #ffffff; border-radius: 1rem; padding: 1.8rem; box-shadow: var(--ripple-shadow-md); border: 1px solid var(--ripple-gray-200); }
+    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.75rem; padding-bottom: 1.3rem; border-bottom: 1px solid var(--ripple-gray-200); flex-wrap: wrap; gap: 0.75rem; }
+    .header-title { font-size: 1.3rem; font-weight: 700; color: var(--ripple-gray-900); }
+    
+    .register-btn {
+        display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.6rem;
+        background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
+        color: #ffffff; border: none; border-radius: 999px; font-weight: 600; cursor: pointer; text-decoration: none;
+        transition: transform 0.18s ease, box-shadow 0.18s ease; font-size: 0.9rem; box-shadow: 0 10px 24px rgba(27, 112, 45, 0.45);
+    }
+
+    .register-btn:hover { transform: translateY(-1px); box-shadow: 0 14px 30px rgba(27, 112, 45, 0.65); }
+
+    .filter-section { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .filter-btn { padding: 0.5rem 1rem; border: 1px solid var(--ripple-gray-300); background: #ffffff; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem; }
+    .filter-btn.active { background: var(--ripple-primary); color: #ffffff; border-color: var(--ripple-primary); }
+
+    .claims-table-wrapper { width: 100%; overflow-x: auto; border-radius: 0.75rem; border: 1px solid var(--ripple-gray-200); }
+    .claims-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .claims-table thead { background: var(--ripple-gray-50); }
+    .claims-table thead th { padding: 0.9rem; text-align: left; font-weight: 700; color: var(--ripple-gray-700); border-bottom: 1px solid var(--ripple-gray-200); font-size: 0.78rem; text-transform: uppercase; }
+    .claims-table tbody td { padding: 0.9rem; border-bottom: 1px solid var(--ripple-gray-100); color: var(--ripple-gray-600); }
+    .claims-table tbody tr:hover { background: var(--ripple-primary-lighter); }
+
+    .status-badge {
+        display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600;
+    }
+    
+    .status-pending { background: #fef3c7; color: #78350f; }
+    .status-under_review { background: #bfdbfe; color: #1e40af; }
+    .status-approved { background: #d1fae5; color: #065f46; }
+    .status-denied { background: #fee2e2; color: #7f1d1d; }
+    .status-paid { background: #c6f6d5; color: #22543d; }
+
+    .amount-text { font-weight: 600; color: var(--ripple-primary); }
+    .view-link { color: var(--ripple-primary); text-decoration: none; font-weight: 600; }
+    .view-link:hover { text-decoration: underline; }
+
+    .empty-state { text-align: center; padding: 2.5rem 2rem; color: var(--ripple-gray-600); }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .empty-title { font-size: 1.15rem; font-weight: 600; color: var(--ripple-gray-800); margin-bottom: 0.5rem; }
+</style>
+
+<div class="claims-shell">
+    <div class="claims-container">
+        <div class="header-row">
+            <div>
+                <h2 class="header-title">Claims Management</h2>
+            </div>
+            <a href="{{ url_for('core.register_claim') }}" class="register-btn">
+                <i class="fas fa-plus"></i>
+                <span>Register New Claim</span>
+            </a>
+        </div>
+
+        {% if claims %}
+        <div class="filter-section">
+            <a href="{{ url_for('core.claims') }}" class="filter-btn active">All Claims</a>
+            <a href="{{ url_for('core.claims', status='pending') }}" class="filter-btn">Pending</a>
+            <a href="{{ url_for('core.claims', status='under_review') }}" class="filter-btn">Under Review</a>
+            <a href="{{ url_for('core.claims', status='approved') }}" class="filter-btn">Approved</a>
+            <a href="{{ url_for('core.claims', status='paid') }}" class="filter-btn">Paid</a>
+        </div>
+
+        <div class="claims-table-wrapper">
+            <table class="claims-table">
+                <thead>
+                    <tr>
+                        <th>Claim Number</th>
+                        <th>Client Name</th>
+                        <th>Policy Number</th>
+                        <th>Claimed Amount</th>
+                        <th>Loss Date</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for claim in claims %}
+                    <tr>
+                        <td><strong>{{ claim.claim_number }}</strong></td>
+                        <td>{{ claim.client_ref.first_name }} {{ claim.client_ref.last_name }}</td>
+                        <td>{{ claim.policy_ref.policy_number }}</td>
+                        <td><span class="amount-text">${{ "%.2f"|format(claim.claimed_amount) }}</span></td>
+                        <td>{{ claim.loss_date.strftime('%d %b %Y') }}</td>
+                        <td>
+                            <span class="status-badge" style="background: 
+                                {% if claim.priority == 'critical' %}#fecaca{% elif claim.priority == 'high' %}#fbbf24{% elif claim.priority == 'normal' %}#d1d5db{% else %}#e0e7ff{% endif %};
+                                color: 
+                                {% if claim.priority == 'critical' %}#7f1d1d{% elif claim.priority == 'high' %}#78350f{% elif claim.priority == 'normal' %}#374151{% else %}#3730a3{% endif %};">
+                                {{ claim.priority|upper }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ claim.status }}">{{ claim.status|upper }}</span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('core.claim_detail', claim_id=claim.id) }}" class="view-link">View Details</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <div class="empty-title">No Claims Yet</div>
+            <div style="margin-bottom: 1.3rem;">Start by registering your first insurance claim.</div>
+            <a href="{{ url_for('core.register_claim') }}" class="register-btn">
+                <i class="fas fa-plus"></i>
+                <span>Register First Claim</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
