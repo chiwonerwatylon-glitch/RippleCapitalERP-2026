@@ -1077,6 +1077,28 @@ def create_app(config_name=None):
                         products=products_list
                     )
             
+                # Parse and validate levy
+                levy_str = (request.form.get("levy") or "").strip()
+                try:
+                    levy = float(levy_str) if levy_str else 0.0
+                except ValueError:
+                    flash("Levy must be a valid number.", "warning")
+                    return render_template(
+                        "add_policy.html", 
+                        clients=clients_list, 
+                        companies=companies_list, 
+                        products=products_list
+                    )
+            
+                if levy < 0:
+                    flash("Levy must be a non-negative number.", "warning")
+                    return render_template(
+                        "add_policy.html", 
+                        clients=clients_list, 
+                        companies=companies_list, 
+                        products=products_list
+                    )
+            
                 # Calculate premium automatically for Motor and Homeowners
                 rate = request.form.get("rate", "").strip()
                 stamp_duty = request.form.get("stamp_duty", "").strip()
@@ -1097,7 +1119,8 @@ def create_app(config_name=None):
                         products=products_list
                     )
             
-                premium_amount = premium_calc["total_premium"]
+                # Levy is added on top of the calculated premium
+                premium_amount = round(premium_calc["total_premium"] + levy, 2)
             
                 # Parse start date (use today if not provided)
                 if start_date_str:
@@ -1128,6 +1151,7 @@ def create_app(config_name=None):
                     policy_number=policy_number,
                     coverage_amount=sum_insured_amount,
                     premium_amount=premium_amount,
+                    levy=levy,
                     premium_frequency=premium_frequency,
                     start_date=start_date,
                     end_date=end_date,
@@ -1169,6 +1193,14 @@ def create_app(config_name=None):
             rate = request.json.get("rate")
             stamp_duty = request.json.get("stamp_duty")
             
+            try:
+                levy = float(request.json.get("levy") or 0.0)
+            except (ValueError, TypeError):
+                return jsonify({"error": "Invalid levy"}), 400
+            
+            if levy < 0:
+                return jsonify({"error": "Levy must be a non-negative number"}), 400
+            
             if not product_id or not sum_insured:
                 return jsonify({"error": "Missing product_id or sum_insured"}), 400
             
@@ -1195,6 +1227,10 @@ def create_app(config_name=None):
             
             if not calc:
                 return jsonify({"error": "Cannot calculate premium for this product. Please enter Rate and Stamp Duty."}), 400
+            
+            calc = dict(calc)
+            calc["levy"] = round(levy, 2)
+            calc["total_premium"] = round(calc["rate_amount"] + calc["stamp_duty"] + levy, 2)
             
             return jsonify(calc)
         
