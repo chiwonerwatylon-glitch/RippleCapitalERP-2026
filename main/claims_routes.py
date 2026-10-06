@@ -16,7 +16,7 @@ def register_claims_routes(core_bp):
     
     @core_bp.route("/claims")
     @login_required
-    @role_required([ROLE_OWNER, ROLE_ADMIN])
+    @role_required(ROLE_OWNER, ROLE_ADMIN)
     def claims():
         """Display all claims dashboard."""
         try:
@@ -32,7 +32,7 @@ def register_claims_routes(core_bp):
 
     @core_bp.route("/claims/register", methods=["GET", "POST"])
     @login_required
-    @role_required([ROLE_OWNER, ROLE_ADMIN])
+    @role_required(ROLE_OWNER, ROLE_ADMIN)
     def register_claim():
         """Register a new claim."""
         if request.method == "POST":
@@ -114,7 +114,7 @@ def register_claims_routes(core_bp):
 
     @core_bp.route("/claims/<int:claim_id>/detail")
     @login_required
-    @role_required([ROLE_OWNER, ROLE_ADMIN])
+    @role_required(ROLE_OWNER, ROLE_ADMIN)
     def claim_detail(claim_id):
         """View claim details and tracking."""
         claim = Claim.query.filter_by(
@@ -127,7 +127,7 @@ def register_claims_routes(core_bp):
 
     @core_bp.route("/claims/<int:claim_id>/update-status", methods=["POST"])
     @login_required
-    @role_required([ROLE_OWNER, ROLE_ADMIN])
+    @role_required(ROLE_OWNER, ROLE_ADMIN)
     def update_claim_status(claim_id):
         """Update claim status via AJAX."""
         claim = Claim.query.filter_by(
@@ -160,7 +160,7 @@ def register_claims_routes(core_bp):
 
     @core_bp.route("/claims/<int:claim_id>/document/add", methods=["POST"])
     @login_required
-    @role_required([ROLE_OWNER, ROLE_ADMIN])
+    @role_required(ROLE_OWNER, ROLE_ADMIN)
     def add_claim_document(claim_id):
         """Add document to claim via AJAX."""
         claim = Claim.query.filter_by(
@@ -283,7 +283,7 @@ def register_claims_routes(core_bp):
                     "title": f"{client.first_name} {client.last_name}",
                     "subtitle": client.email or client.phone or "No contact",
                     "icon": "fa-user",
-                    "url": "#"
+                    "url": url_for("core.clients")
                 })
             
             # Search policies by policy number
