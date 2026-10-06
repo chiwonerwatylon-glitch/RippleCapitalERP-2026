@@ -144,6 +144,7 @@ class Policy(db.Model):
     coverage_amount = db.Column(db.Float, nullable=False)
     premium_amount = db.Column(db.Float, nullable=False)
     levy = db.Column(db.Float, nullable=False, default=0.0)
+    selected_rate = db.Column(db.Float, nullable=True)  # Rate (%) selected for Motor/Homeowners
     premium_frequency = db.Column(db.String(20), default="annual")  # monthly, quarterly, annual
     
     start_date = db.Column(db.Date, nullable=False)

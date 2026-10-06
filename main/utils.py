@@ -34,15 +34,50 @@ def get_account_owner_id(user=None):
 
 # ==================== PREMIUM CALCULATION LOGIC ====================
 
+MOTOR_PRODUCTS = ["Motor Comprehensive", "Third Party", "Full Third Party"]
+HOMEOWNERS_PRODUCT = "Homeowners"
+
+# Rate ranges in percent (min, max, default)
+MOTOR_RATE_RANGE = {"min": 3.5, "max": 10.0, "default": 6.0}
+HOMEOWNERS_RATE_RANGE = {"min": 0.125, "max": 0.3, "default": 0.125}
+
+# Stamp duty percentage applied to the rate amount for Motor and Homeowners
+DEFAULT_STAMP_DUTY_PERCENT = 5.0
+
+# Days covered per premium frequency
+DAYS_BY_FREQUENCY = {
+    "monthly": 30,
+    "termly": 120,  # 4 months
+    "quarterly": 120,
+    "annual": 365,
+    "annually": 365,
+}
+
+
+def get_days_in_period(frequency):
+    """Return the number of days covered for a premium frequency (defaults to annual)."""
+    return DAYS_BY_FREQUENCY.get(frequency, 365)
+
+
 class PremiumCalculator:
     """Calculate insurance premiums based on product type and sum insured."""
     
     # Product-specific rates and stamp duties
-    MOTOR_PRODUCTS = ["Motor Comprehensive", "Third Party", "Full Third Party"]
-    HOMEOWNERS_PRODUCT = "Homeowners"
+    MOTOR_PRODUCTS = MOTOR_PRODUCTS
+    HOMEOWNERS_PRODUCT = HOMEOWNERS_PRODUCT
+
+    @staticmethod
+    def get_rate_range(product_name):
+        """Return the allowed rate range dict for a product, or None for manual products."""
+        if product_name in MOTOR_PRODUCTS:
+            return MOTOR_RATE_RANGE
+        if product_name == HOMEOWNERS_PRODUCT:
+            return HOMEOWNERS_RATE_RANGE
+        return None
     
     @staticmethod
-    def calculate_premium(product_name, sum_insured, rate=None, stamp_duty_percent=None):
+    def calculate_premium(product_name, sum_insured, rate=None, stamp_duty_percent=None,
+                          selected_rate=None, days_in_period=365):
         """
         Calculate premium for insurance products.
         
@@ -51,39 +86,41 @@ class PremiumCalculator:
             sum_insured: Coverage/Sum Insured amount
             rate: Custom rate percentage (for manual products)
             stamp_duty_percent: Custom stamp duty percentage (for manual products)
+            selected_rate: User-selected rate percentage (Motor/Homeowners), must be
+                within the product's allowed range. Defaults to the range default.
+            days_in_period: Days covered, used to pro-rate Motor/Homeowners premiums
         
         Returns:
-            dict with keys: rate, stamp_duty, premium, or None if not calculable
+            dict with premium components, or None if not calculable
+
+        Raises:
+            ValueError: if selected_rate is outside the allowed range
         """
         if not sum_insured or sum_insured <= 0:
             return None
         
-        # Motor vehicle insurance: 6% rate, 5% stamp duty on (sum_insured * rate)
-        if product_name in PremiumCalculator.MOTOR_PRODUCTS:
-            rate_pct = 6.0
-            rate_amount = (sum_insured * rate_pct) / 100
-            stamp_duty = (rate_amount * 5) / 100
+        rate_range = PremiumCalculator.get_rate_range(product_name)
+        if rate_range is not None:
+            rate_pct = rate_range["default"] if selected_rate is None else float(selected_rate)
+            if rate_pct < rate_range["min"] or rate_pct > rate_range["max"]:
+                raise ValueError(
+                    f"Rate must be between {rate_range['min']}% and {rate_range['max']}% for this product."
+                )
+            days = int(days_in_period or 365)
+            if days <= 0:
+                raise ValueError("Days in period must be greater than 0.")
+
+            # rate_amount = sum_insured * rate% * days / 365
+            rate_amount = (sum_insured * rate_pct * days) / (100 * 365)
+            stamp_duty = (rate_amount * DEFAULT_STAMP_DUTY_PERCENT) / 100
             total = rate_amount + stamp_duty
             
             return {
                 "rate_percent": rate_pct,
+                "selected_rate": rate_pct,
+                "days_in_period": days,
                 "rate_amount": round(rate_amount, 2),
-                "stamp_duty_percent": 5.0,
-                "stamp_duty": round(stamp_duty, 2),
-                "total_premium": round(total, 2),
-            }
-        
-        # Homeowners insurance: 0.125% rate, 5% stamp duty on (sum_insured * rate)
-        elif product_name == PremiumCalculator.HOMEOWNERS_PRODUCT:
-            rate_pct = 0.125
-            rate_amount = (sum_insured * rate_pct) / 100
-            stamp_duty = (rate_amount * 5) / 100
-            total = rate_amount + stamp_duty
-            
-            return {
-                "rate_percent": rate_pct,
-                "rate_amount": round(rate_amount, 2),
-                "stamp_duty_percent": 5.0,
+                "stamp_duty_percent": DEFAULT_STAMP_DUTY_PERCENT,
                 "stamp_duty": round(stamp_duty, 2),
                 "total_premium": round(total, 2),
             }
@@ -142,7 +179,7 @@ def calculate_end_date_from_frequency(start_date, frequency):
     
     Args:
         start_date: Policy start date (datetime.date)
-        frequency: "termly" (3 months), "annually" (12 months), or "monthly" (1 month)
+        frequency: "termly" (4 months), "annually" (12 months), or "monthly" (1 month)
     
     Returns:
         datetime.date: Calculated end date
@@ -151,8 +188,8 @@ def calculate_end_date_from_frequency(start_date, frequency):
         return start_date
     
     if frequency == "termly" or frequency == "quarterly":
-        # Termly = 3 months
-        end_date = start_date + timedelta(days=92)  # approximately 3 months
+        # Termly = 4 months = 120 days
+        end_date = start_date + timedelta(days=120)
     elif frequency == "annually" or frequency == "annual":
         # Annual = 12 months
         end_date = start_date + timedelta(days=365)

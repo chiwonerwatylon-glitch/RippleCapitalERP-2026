@@ -18,7 +18,18 @@ except ImportError:
 
 from .config import config_by_name
 from .models import db, User, ROLE_ADMIN, ROLE_AGENT, ROLE_CLIENT
-from .utils import role_required, get_account_owner_id, PremiumCalculator, generate_policy_number, calculate_end_date_from_frequency
+from .utils import (
+    role_required,
+    get_account_owner_id,
+    PremiumCalculator,
+    generate_policy_number,
+    calculate_end_date_from_frequency,
+    get_days_in_period,
+    MOTOR_PRODUCTS,
+    HOMEOWNERS_PRODUCT,
+    MOTOR_RATE_RANGE,
+    HOMEOWNERS_RATE_RANGE,
+)
 
 # Safely import the models
 try:
@@ -1102,12 +1113,44 @@ def create_app(config_name=None):
                 # Calculate premium automatically for Motor and Homeowners
                 rate = request.form.get("rate", "").strip()
                 stamp_duty = request.form.get("stamp_duty", "").strip()
+                days_in_period = get_days_in_period(premium_frequency)
+
+                # Motor/Homeowners: user-selected rate within the allowed range
+                selected_rate = None
+                rate_range = PremiumCalculator.get_rate_range(product.name)
+                if rate_range is not None:
+                    selected_rate_str = (request.form.get("selected_rate") or "").strip()
+                    try:
+                        selected_rate = float(selected_rate_str) if selected_rate_str else None
+                    except ValueError:
+                        selected_rate = None
+                    if selected_rate is None:
+                        flash("Please select a rate for this product.", "warning")
+                        return render_template(
+                            "add_policy.html", 
+                            clients=clients_list, 
+                            companies=companies_list, 
+                            products=products_list
+                        )
+                    if selected_rate < rate_range["min"] or selected_rate > rate_range["max"]:
+                        flash(
+                            f"Rate must be between {rate_range['min']}% and {rate_range['max']}% for {product.name}.",
+                            "warning"
+                        )
+                        return render_template(
+                            "add_policy.html", 
+                            clients=clients_list, 
+                            companies=companies_list, 
+                            products=products_list
+                        )
             
                 premium_calc = PremiumCalculator.calculate_premium(
                     product.name, 
                     sum_insured_amount,
                     rate=float(rate) if rate else None,
-                    stamp_duty_percent=float(stamp_duty) if stamp_duty else None
+                    stamp_duty_percent=float(stamp_duty) if stamp_duty else None,
+                    selected_rate=selected_rate,
+                    days_in_period=days_in_period
                 )
             
                 if not premium_calc:
@@ -1152,6 +1195,7 @@ def create_app(config_name=None):
                     coverage_amount=sum_insured_amount,
                     premium_amount=premium_amount,
                     levy=levy,
+                    selected_rate=selected_rate,
                     premium_frequency=premium_frequency,
                     start_date=start_date,
                     end_date=end_date,
@@ -1192,6 +1236,8 @@ def create_app(config_name=None):
             sum_insured = request.json.get("sum_insured", 0)
             rate = request.json.get("rate")
             stamp_duty = request.json.get("stamp_duty")
+            selected_rate = request.json.get("selected_rate")
+            premium_frequency = request.json.get("premium_frequency")
             
             try:
                 levy = float(request.json.get("levy") or 0.0)
@@ -1218,11 +1264,36 @@ def create_app(config_name=None):
             if sum_insured <= 0:
                 return jsonify({"error": "Sum Insured must be greater than 0"}), 400
             
+            # Days covered come from the premium frequency (termly = 120 days)
+            if premium_frequency:
+                days_in_period = get_days_in_period(premium_frequency)
+            else:
+                try:
+                    days_in_period = int(request.json.get("days_in_period") or 365)
+                except (ValueError, TypeError):
+                    return jsonify({"error": "Invalid days_in_period"}), 400
+            
+            try:
+                selected_rate = float(selected_rate) if selected_rate not in (None, "") else None
+            except (ValueError, TypeError):
+                return jsonify({"error": "Invalid selected_rate"}), 400
+            
+            rate_range = PremiumCalculator.get_rate_range(product.name)
+            if rate_range is not None:
+                if selected_rate is None:
+                    selected_rate = rate_range["default"]
+                if selected_rate < rate_range["min"] or selected_rate > rate_range["max"]:
+                    return jsonify({
+                        "error": f"Rate must be between {rate_range['min']}% and {rate_range['max']}% for this product"
+                    }), 400
+            
             calc = PremiumCalculator.calculate_premium(
                 product.name,
                 sum_insured,
                 rate=float(rate) if rate else None,
-                stamp_duty_percent=float(stamp_duty) if stamp_duty else None
+                stamp_duty_percent=float(stamp_duty) if stamp_duty else None,
+                selected_rate=selected_rate,
+                days_in_period=days_in_period
             )
             
             if not calc:
