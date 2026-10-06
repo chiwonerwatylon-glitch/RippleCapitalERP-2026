@@ -143,6 +143,7 @@ class Policy(db.Model):
     policy_number = db.Column(db.String(100), nullable=False, unique=True, index=True)
     coverage_amount = db.Column(db.Float, nullable=False)
     premium_amount = db.Column(db.Float, nullable=False)
+    levy = db.Column(db.Float, nullable=False, default=0.0)
     premium_frequency = db.Column(db.String(20), default="annual")  # monthly, quarterly, annual
     
     start_date = db.Column(db.Date, nullable=False)
