@@ -602,13 +602,13 @@
                             {% endif %}
                             <option
                                 value="{{ policy.id }}"
-                                data-premium="{{ '%.2f'|format(policy.premium_amount or 0) }}"
+                                data-premium="{{ '%.2f'|format(policy.outstanding_premium()) }}"
                             >
-                                {{ policy.policy_number or ('Policy #' ~ policy.id) }} — {{ holder_name }}
+                                {{ policy.policy_number or ('Policy #' ~ policy.id) }} — {{ holder_name }} (outstanding ${{ '%.2f'|format(policy.outstanding_premium()) }})
                             </option>
                         {% endfor %}
                     </select>
-                    <span class="modal-hint">Choose the policy this payment should be applied to.</span>
+                    <span class="modal-hint">{% if policies %}Only policies with an outstanding premium are listed.{% else %}No policies with an outstanding premium.{% endif %}</span>
                 </div>
 
                 <div class="modal-form-group">

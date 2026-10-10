@@ -215,11 +215,11 @@
                     <select id="policy_id" name="policy_id" class="form-select" required>
                         <option value="">Select a policy...</option>
                         {% for policy in policies %}
-                        <option value="{{ policy.id }}">{{ policy.policy_number }} - {{ policy.client.full_name() if policy.client else 'Unknown client' }} - {{ policy.product.name if policy.product else 'Unknown product' }}</option>
+                        <option value="{{ policy.id }}">{{ policy.policy_number }} - {{ policy.client.full_name() if policy.client else 'Unknown client' }} - {{ policy.product.name if policy.product else 'Unknown product' }} (outstanding ${{ '%.2f'|format(policy.outstanding_premium()) }})</option>
                         {% endfor %}
                     </select>
                     {% if not policies %}
-                    <div class="form-hint">No policies found. Add a policy before recording a remittance.</div>
+                    <div class="form-hint">No policies with an outstanding premium. Every policy has been fully remitted.</div>
                     {% else %}
                     <div class="form-hint">Choose the policy this remittance should be applied to.</div>
                     {% endif %}

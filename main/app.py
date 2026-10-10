@@ -932,28 +932,37 @@ def create_app(config_name=None):
             "policies_enhanced.html", policies=policies_list
         )
 
+    def _policies_needing_remittance():
+        """Policies of the current account that still have an unpaid premium balance."""
+        policies_list = (
+            Policy.query.filter_by(owner_id=get_account_owner_id())
+            .order_by(Policy.policy_number)
+            .all()
+        )
+        return [p for p in policies_list if p.needs_remittance()]
+
     @core_bp.route("/premium-remittance")
     @login_required
     def premium_remittance():
         if HAS_NEW_MODELS:
             remittances = PremiumRemittance.query.filter_by(
                 owner_id=get_account_owner_id()
-            ).all()
+            ).order_by(PremiumRemittance.created_at.desc()).all()
+            policies_list = _policies_needing_remittance()
         else:
             remittances = []
+            policies_list = []
         return render_template(
-            "premium_remittance.html", remittances=remittances
+            "premium_remittance.html",
+            remittances=remittances,
+            policies=policies_list,
         )
 
     @core_bp.route("/premium-remittance/add", methods=["GET", "POST"])
     @login_required
     def add_premium_remittance():
         if HAS_NEW_MODELS:
-            policies_list = (
-                Policy.query.filter_by(owner_id=get_account_owner_id())
-                .order_by(Policy.policy_number)
-                .all()
-            )
+            policies_list = _policies_needing_remittance()
         else:
             policies_list = []
 
@@ -979,6 +988,24 @@ def create_app(config_name=None):
                     amount = 0
                 if not amount > 0:  # also rejects NaN
                     flash("Amount must be greater than zero.", "danger")
+                    return render_template(
+                        "add_premium_remittance.html", policies=policies_list
+                    )
+
+                outstanding = policy.outstanding_premium()
+                if outstanding <= 0:
+                    flash(
+                        "This policy has no outstanding premium to remit.",
+                        "warning",
+                    )
+                    return render_template(
+                        "add_premium_remittance.html", policies=policies_list
+                    )
+                if amount > outstanding + 0.005:
+                    flash(
+                        f"Amount exceeds the outstanding premium of ${outstanding:,.2f}.",
+                        "danger",
+                    )
                     return render_template(
                         "add_premium_remittance.html", policies=policies_list
                     )

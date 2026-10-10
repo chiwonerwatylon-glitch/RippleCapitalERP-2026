@@ -162,8 +162,14 @@ class Policy(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
+    company = db.relationship("Company", backref=db.backref("policies", lazy="dynamic"), foreign_keys=[company_id])
     remittances = db.relationship("PremiumRemittance", backref="policy", lazy="dynamic", cascade="all, delete-orphan")
     claims = db.relationship("Claim", backref="policy_ref", lazy="dynamic", cascade="all, delete-orphan", foreign_keys="Claim.policy_id")
+
+    @property
+    def product_name(self):
+        """Name of the insurance product (templates and emails use this)."""
+        return self.product.name if self.product else None
 
     def is_expired(self) -> bool:
         return date.today() > self.end_date
@@ -173,6 +179,14 @@ class Policy(db.Model):
 
     def total_premiums_paid(self) -> float:
         return sum(r.amount for r in self.remittances)
+
+    def outstanding_premium(self) -> float:
+        """Premium still to be remitted (premium_amount minus payments recorded)."""
+        return round(max((self.premium_amount or 0.0) - self.total_premiums_paid(), 0.0), 2)
+
+    def needs_remittance(self) -> bool:
+        """True when the policy is not cancelled and still has an unpaid balance."""
+        return (self.status or "").lower() != "cancelled" and self.outstanding_premium() > 0
 
     def total_commission_earned(self) -> float:
         total = 0
