@@ -335,7 +335,7 @@
             <div class="policy-item">
                 <div class="policy-item-label">Client Name</div>
                 <div class="policy-item-value">
-                    {{ policy.client.full_name if policy.client and policy.client.full_name is defined else (policy.client.first_name ~ ' ' ~ policy.client.last_name) if policy.client else 'N/A' }}
+                    {{ (policy.client.first_name ~ ' ' ~ policy.client.last_name) if policy.client else 'N/A' }}
                 </div>
             </div>
             <div class="policy-item">
