@@ -16,7 +16,10 @@ class Config:
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")  # used for real email sending
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-    DEFAULT_SENDER = os.environ.get("DEFAULT_SENDER", "no-reply@insurance.com")
+    DEFAULT_SENDER = os.environ.get("DEFAULT_SENDER", "noreply@ripplecapitalfinance.co.zw")
+    MAIL_FROM = os.environ.get("MAIL_FROM", "noreply@ripplecapitalfinance.co.zw")
+    RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
+    PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "")
     SCHEDULER_TIMEZONE = "UTC"
 
 class DevelopmentConfig(Config):

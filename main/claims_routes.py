@@ -2,6 +2,7 @@
 from pathlib import Path
 from datetime import datetime
 from flask import render_template, redirect, url_for, flash, request, jsonify, send_file
+from .email_tasks import notify_claim, safe_notify
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from .models import db, Claim, ClaimDocument, Policy, Client, ROLE_OWNER, ROLE_ADMIN, ROLE_AGENT
@@ -100,6 +101,7 @@ def register_claims_routes(core_bp):
                             db.session.add(doc)
                 
                 db.session.commit()
+                safe_notify(notify_claim, claim, "registered")
                 flash(f"Claim {claim_number} registered successfully.", "success")
                 return redirect(url_for("core.claims"))
                 
@@ -163,6 +165,7 @@ def register_claims_routes(core_bp):
                 claim.approved_amount = 0.0
             
             db.session.commit()
+            safe_notify(notify_claim, claim, "status")
             if not is_ajax:
                 flash("Claim status updated successfully.", "success")
             return jsonify({

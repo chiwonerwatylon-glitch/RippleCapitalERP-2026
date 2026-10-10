@@ -301,3 +301,18 @@ class ClaimDocument(db.Model):
     def __repr__(self):
         return f"<ClaimDocument {self.file_name}>"
 
+
+
+class NotificationLog(db.Model):
+    """Audit trail of outbound emails (policy, claim and password reset)."""
+    __tablename__ = "notification_logs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    policy_id = db.Column(db.Integer, db.ForeignKey("policies.id"), nullable=True, index=True)
+    claim_id = db.Column(db.Integer, db.ForeignKey("claims.id"), nullable=True)
+    recipient_email = db.Column(db.String(120), nullable=False)
+    notification_type = db.Column(db.String(50), nullable=False)
+    subject = db.Column(db.String(255))
+    message = db.Column(db.Text)
+    status = db.Column(db.String(20), default="sent")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
