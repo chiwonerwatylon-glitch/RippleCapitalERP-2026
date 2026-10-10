@@ -1,0 +1,70 @@
+{% extends "sidebar_layout.html" %}
+
+{% block title %}{{ client.full_name() }} - Ripple Capital Insurance ERP{% endblock %}
+{% block page_title %}{{ client.full_name() }}{% endblock %}
+{% block page_subtitle %}Client profile, policies, claims and remittances{% endblock %}
+
+{% block content %}
+<div class="content-card">
+  <h3>Profile</h3>
+  <p><strong>Email:</strong> {{ client.email or '—' }}</p>
+  <p><strong>Phone:</strong> {{ client.phone or '—' }}</p>
+  <p><strong>Address:</strong> {{ client.address or '—' }}</p>
+</div>
+
+<div class="content-card">
+  <h3>Policies ({{ policies|length }})</h3>
+  {% if policies %}
+  <table>
+    <thead><tr><th>Policy #</th><th>Product</th><th>Company</th><th>Status</th><th>Start</th><th>End</th><th>Premium</th><th>Outstanding</th></tr></thead>
+    <tbody>
+    {% for p in policies %}
+      <tr>
+        <td><a href="{{ url_for('core.view_policy', policy_id=p.id) }}">{{ p.policy_number }}</a></td>
+        <td>{{ p.product_name or '—' }}</td>
+        <td>{{ p.company.name if p.company else '—' }}</td>
+        <td>{{ p.status }}</td>
+        <td>{{ p.start_date }}</td>
+        <td>{{ p.end_date }}</td>
+        <td>{{ "%.2f"|format(p.premium_amount or 0) }}</td>
+        <td>{{ "%.2f"|format(p.outstanding_premium()) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p>No policies.</p>{% endif %}
+</div>
+
+<div class="content-card">
+  <h3>Claims ({{ claims|length }})</h3>
+  {% if claims %}
+  <table>
+    <thead><tr><th>Claim #</th><th>Policy</th><th>Status</th><th>Claim date</th><th>Claimed</th><th>Approved</th></tr></thead>
+    <tbody>
+    {% for c in claims %}
+      <tr>
+        <td><a href="{{ url_for('core.claim_detail', claim_id=c.id) }}">{{ c.claim_number }}</a></td>
+        <td>{{ c.policy_ref.policy_number if c.policy_ref else '—' }}</td>
+        <td>{{ c.status }}</td>
+        <td>{{ c.claim_date }}</td>
+        <td>{{ "%.2f"|format(c.claimed_amount or 0) }}</td>
+        <td>{{ "%.2f"|format(c.approved_amount or 0) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p>No claims.</p>{% endif %}
+</div>
+
+<div class="content-card">
+  <h3>Premium remittances</h3>
+  {% set ns = namespace(found=false) %}
+  {% for p in policies %}
+    {% for r in remittances.get(p.id, []) %}
+      {% set ns.found = true %}
+      <p>{{ p.policy_number }} — {{ r.date_received.date() if r.date_received else '' }} — {{ "%.2f"|format(r.amount) }} via {{ r.payment_method }}{% if r.reference %} (ref {{ r.reference }}){% endif %}</p>
+    {% endfor %}
+  {% endfor %}
+  {% if not ns.found %}<p>No remittances.</p>{% endif %}
+</div>
+{% endblock %}
