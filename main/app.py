@@ -1080,6 +1080,9 @@ def create_app(config_name=None):
                     owner_id=get_account_owner_id(),
                 )
                 db.session.add(remittance)
+                db.session.flush()
+                # Paid in full -> passed to the insurer automatically
+                policy.sync_remittance_status()
                 db.session.commit()
                 safe_notify(notify_policy, policy_snapshot(policy), "payment")
                 flash(
@@ -1981,6 +1984,7 @@ def create_app(config_name=None):
             total_paid=total_paid,
             total_commission=total_commission,
             is_client=is_client,
+            remitted_to_insurer=policy.is_fully_remitted(),
         )
 
     @core_bp.route("/policies/<int:policy_id>/delete", methods=["POST"])

@@ -204,6 +204,21 @@ class Policy(db.Model):
         """True once the client has paid the whole premium, which we then pass to the insurer."""
         return self.outstanding_premium() <= 0 and (self.premium_amount or 0) > 0
 
+    def sync_remittance_status(self) -> bool:
+        """Once the premium is fully paid it is passed on to the insurer automatically.
+
+        Marks every remittance on the policy as remitted to the company. Returns True
+        if the policy is fully remitted. Call after adding a remittance (before commit).
+        """
+        if not self.is_fully_remitted():
+            return False
+        now = datetime.utcnow()
+        for r in self.remittances.all():
+            if not r.is_remitted_to_company:
+                r.is_remitted_to_company = True
+                r.date_remitted = now
+        return True
+
     def commission_base(self) -> float:
         """Full premium less stamp duty and government levy."""
         return round(
