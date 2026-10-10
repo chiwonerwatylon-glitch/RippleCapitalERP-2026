@@ -1,70 +1,268 @@
 {% extends "sidebar_layout.html" %}
 
-{% block title %}{{ client.full_name() }} - Ripple Capital Insurance ERP{% endblock %}
-{% block page_title %}{{ client.full_name() }}{% endblock %}
-{% block page_subtitle %}Client profile, policies, claims and remittances{% endblock %}
+{% block title %}{{ client.first_name }} {{ client.last_name }} - Ripple Capital Insurance ERP{% endblock %}
+
+{% block page_title %}{{ client.first_name }} {{ client.last_name }}{% endblock %}
+{% block page_subtitle %}Client profile, policies, claims and premium remittances{% endblock %}
 
 {% block content %}
-<div class="content-card">
-  <h3>Profile</h3>
-  <p><strong>Email:</strong> {{ client.email or '—' }}</p>
-  <p><strong>Phone:</strong> {{ client.phone or '—' }}</p>
-  <p><strong>Address:</strong> {{ client.address or '—' }}</p>
-</div>
+<style>
+    .cd-shell { max-width: 1120px; margin: 0 auto; }
 
-<div class="content-card">
-  <h3>Policies ({{ policies|length }})</h3>
-  {% if policies %}
-  <table>
-    <thead><tr><th>Policy #</th><th>Product</th><th>Company</th><th>Status</th><th>Start</th><th>End</th><th>Premium</th><th>Outstanding</th></tr></thead>
-    <tbody>
+    .cd-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .cd-back { color: #4B5563; text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+    .cd-back:hover { color: #1B702D; }
+
+    .cd-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.6rem 1.25rem; border-radius: 999px; font-weight: 600; font-size: 0.9rem; text-decoration: none; background: linear-gradient(135deg, #1B702D 0%, #2D9F42 100%); color: #fff; box-shadow: 0 10px 22px rgba(27,112,45,0.3); transition: transform .15s ease; }
+    .cd-btn:hover { transform: translateY(-1px); }
+
+    .cd-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .cd-stat { background: #fff; border: 1px solid #E5E7EB; border-radius: 1rem; padding: 1.1rem 1.25rem; box-shadow: 0 10px 25px rgba(15,23,42,0.06); border-left: 4px solid #1B702D; }
+    .cd-stat.amber { border-left-color: #FBA300; }
+    .cd-stat.red { border-left-color: #EF4444; }
+    .cd-stat.teal { border-left-color: #0f766e; }
+    .cd-stat-label { font-size: 0.75rem; color: #6B7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .cd-stat-value { font-size: 1.45rem; font-weight: 700; color: #111827; margin-top: 0.3rem; }
+
+    .cd-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 1rem; box-shadow: 0 10px 25px rgba(15,23,42,0.08); padding: 1.6rem 1.7rem; margin-bottom: 1.5rem; position: relative; overflow: hidden; }
+    .cd-card-title { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; font-size: 1.05rem; font-weight: 700; color: #111827; padding-bottom: 0.9rem; margin-bottom: 1.2rem; border-bottom: 1px solid #E5E7EB; }
+    .cd-card-title .cd-count { font-size: 0.8rem; font-weight: 600; color: #1B702D; background: #E8F5EA; padding: 0.2rem 0.7rem; border-radius: 999px; }
+
+    .cd-profile { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem 1.25rem; }
+    .cd-field { padding: 0.85rem 1rem; background: #F9FAFB; border-radius: 0.75rem; border-left: 4px solid #1B702D; }
+    .cd-field.wide { grid-column: 1 / -1; }
+    .cd-label { font-size: 0.75rem; color: #6B7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+    .cd-value { font-size: 0.98rem; font-weight: 600; color: #111827; word-break: break-word; }
+    .cd-value a { color: #1B702D; text-decoration: none; }
+    .cd-value a:hover { text-decoration: underline; }
+    .cd-muted { color: #9CA3AF; font-weight: 500; }
+
+    .cd-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 0.75rem; border: 1px solid #E5E7EB; }
+    .cd-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.9rem; min-width: 640px; }
+    .cd-table thead th { background: #F9FAFB; text-align: left; padding: 0.8rem 0.9rem; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #374151; border-bottom: 1px solid #E5E7EB; white-space: nowrap; }
+    .cd-table tbody td { padding: 0.85rem 0.9rem; border-bottom: 1px solid #F3F4F6; color: #4B5563; vertical-align: middle; white-space: nowrap; }
+    .cd-table tbody tr:last-child td { border-bottom: none; }
+    .cd-table tbody tr:hover { background: #F9FAFB; }
+    .cd-table td.num, .cd-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .cd-table a { color: #1B702D; font-weight: 600; text-decoration: none; }
+    .cd-table a:hover { text-decoration: underline; }
+    .cd-table tfoot td { background: #F9FAFB; font-weight: 700; color: #111827; border-top: 1px solid #E5E7EB; }
+
+    .cd-pill { display: inline-block; padding: 0.25rem 0.7rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+    .cd-pill.active, .cd-pill.approved, .cd-pill.paid, .cd-pill.yes { background: #d1fae5; color: #065f46; }
+    .cd-pill.expired, .cd-pill.denied, .cd-pill.cancelled, .cd-pill.no { background: #fee2e2; color: #7f1d1d; }
+    .cd-pill.pending, .cd-pill.under_review { background: #fef3c7; color: #78350f; }
+    .cd-pill.neutral { background: #F3F4F6; color: #374151; }
+
+    .cd-amount-out { color: #B45309; font-weight: 700; }
+    .cd-amount-zero { color: #047857; font-weight: 700; }
+
+    .cd-empty { text-align: center; padding: 1.6rem 1rem; color: #6B7280; font-size: 0.92rem; background: #F9FAFB; border-radius: 0.75rem; }
+
+    @media (max-width: 768px) {
+        .cd-card { padding: 1.2rem 1.1rem; }
+        .cd-stat-value { font-size: 1.25rem; }
+        .cd-toolbar { flex-direction: column; align-items: stretch; }
+        .cd-btn { justify-content: center; }
+    }
+</style>
+
+<div class="cd-shell">
+
+    <div class="cd-toolbar">
+        <a class="cd-back" href="{{ url_for('core.clients') }}">&larr; Back to clients</a>
+        {% if current_user.role != 'client' %}
+        <a class="cd-btn" href="{{ url_for('core.edit_client', client_id=client.id) }}">Edit client</a>
+        {% endif %}
+    </div>
+
+    {% set ns = namespace(premium=0, paid=0, outstanding=0) %}
     {% for p in policies %}
-      <tr>
-        <td><a href="{{ url_for('core.view_policy', policy_id=p.id) }}">{{ p.policy_number }}</a></td>
-        <td>{{ p.product_name or '—' }}</td>
-        <td>{{ p.company.name if p.company else '—' }}</td>
-        <td>{{ p.status }}</td>
-        <td>{{ p.start_date }}</td>
-        <td>{{ p.end_date }}</td>
-        <td>{{ "%.2f"|format(p.premium_amount or 0) }}</td>
-        <td>{{ "%.2f"|format(p.outstanding_premium()) }}</td>
-      </tr>
+        {% set ns.premium = ns.premium + (p.premium_amount or 0) %}
+        {% set ns.outstanding = ns.outstanding + p.outstanding_premium() %}
+        {% set ns.paid = ns.paid + p.total_premiums_paid() %}
     {% endfor %}
-    </tbody>
-  </table>
-  {% else %}<p>No policies.</p>{% endif %}
-</div>
 
-<div class="content-card">
-  <h3>Claims ({{ claims|length }})</h3>
-  {% if claims %}
-  <table>
-    <thead><tr><th>Claim #</th><th>Policy</th><th>Status</th><th>Claim date</th><th>Claimed</th><th>Approved</th></tr></thead>
-    <tbody>
-    {% for c in claims %}
-      <tr>
-        <td><a href="{{ url_for('core.claim_detail', claim_id=c.id) }}">{{ c.claim_number }}</a></td>
-        <td>{{ c.policy_ref.policy_number if c.policy_ref else '—' }}</td>
-        <td>{{ c.status }}</td>
-        <td>{{ c.claim_date }}</td>
-        <td>{{ "%.2f"|format(c.claimed_amount or 0) }}</td>
-        <td>{{ "%.2f"|format(c.approved_amount or 0) }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  {% else %}<p>No claims.</p>{% endif %}
-</div>
+    <div class="cd-stats">
+        <div class="cd-stat">
+            <div class="cd-stat-label">Policies</div>
+            <div class="cd-stat-value">{{ policies|length }}</div>
+        </div>
+        <div class="cd-stat teal">
+            <div class="cd-stat-label">Premiums Paid</div>
+            <div class="cd-stat-value">${{ "%.2f"|format(ns.paid) }}</div>
+        </div>
+        <div class="cd-stat amber">
+            <div class="cd-stat-label">Outstanding</div>
+            <div class="cd-stat-value">${{ "%.2f"|format(ns.outstanding) }}</div>
+        </div>
+        <div class="cd-stat red">
+            <div class="cd-stat-label">Claims</div>
+            <div class="cd-stat-value">{{ claims|length }}</div>
+        </div>
+    </div>
 
-<div class="content-card">
-  <h3>Premium remittances</h3>
-  {% set ns = namespace(found=false) %}
-  {% for p in policies %}
-    {% for r in remittances.get(p.id, []) %}
-      {% set ns.found = true %}
-      <p>{{ p.policy_number }} — {{ r.date_received.date() if r.date_received else '' }} — {{ "%.2f"|format(r.amount) }} via {{ r.payment_method }}{% if r.reference %} (ref {{ r.reference }}){% endif %}</p>
-    {% endfor %}
-  {% endfor %}
-  {% if not ns.found %}<p>No remittances.</p>{% endif %}
+    <!-- Profile -->
+    <section class="cd-card">
+        <h2 class="cd-card-title">Client Profile</h2>
+        <div class="cd-profile">
+            <div class="cd-field">
+                <div class="cd-label">Full Name</div>
+                <div class="cd-value">{{ client.first_name }} {{ client.last_name }}</div>
+            </div>
+            <div class="cd-field">
+                <div class="cd-label">Email</div>
+                <div class="cd-value">{% if client.email %}<a href="mailto:{{ client.email }}">{{ client.email }}</a>{% else %}<span class="cd-muted">Not provided</span>{% endif %}</div>
+            </div>
+            <div class="cd-field">
+                <div class="cd-label">Phone</div>
+                <div class="cd-value">{% if client.phone %}<a href="tel:{{ client.phone }}">{{ client.phone }}</a>{% else %}<span class="cd-muted">Not provided</span>{% endif %}</div>
+            </div>
+            <div class="cd-field">
+                <div class="cd-label">Portal Access</div>
+                <div class="cd-value">{% if client.user_id %}<span class="cd-pill yes">Registered</span>{% else %}<span class="cd-pill neutral">Not registered</span>{% endif %}</div>
+            </div>
+            <div class="cd-field wide">
+                <div class="cd-label">Address</div>
+                <div class="cd-value">{{ client.address or '' }}{% if not client.address %}<span class="cd-muted">Not provided</span>{% endif %}</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Policies -->
+    <section class="cd-card">
+        <h2 class="cd-card-title">
+            Policies
+            <span class="cd-count">{{ policies|length }}</span>
+        </h2>
+        {% if policies %}
+        <div class="cd-table-wrap">
+            <table class="cd-table" aria-label="Client policies">
+                <thead>
+                    <tr>
+                        <th>Policy #</th>
+                        <th>Product</th>
+                        <th>Insurer</th>
+                        <th>Status</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th class="num">Premium</th>
+                        <th class="num">Outstanding</th>
+                        <th>Remitted</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for p in policies %}
+                    {% set status = (p.status or 'active')|lower %}
+                    <tr>
+                        <td><a href="{{ url_for('core.view_policy', policy_id=p.id) }}">{{ p.policy_number }}</a></td>
+                        <td>{{ p.product_name or '—' }}</td>
+                        <td>{{ p.company.name if p.company else '—' }}</td>
+                        <td><span class="cd-pill {{ status }}">{{ status }}</span></td>
+                        <td>{{ p.start_date.strftime('%d %b %Y') if p.start_date else '—' }}</td>
+                        <td>{{ p.end_date.strftime('%d %b %Y') if p.end_date else '—' }}</td>
+                        <td class="num">${{ "%.2f"|format(p.premium_amount or 0) }}</td>
+                        <td class="num">
+                            {% set out = p.outstanding_premium() %}
+                            <span class="{{ 'cd-amount-out' if out > 0 else 'cd-amount-zero' }}">${{ "%.2f"|format(out) }}</span>
+                        </td>
+                        <td><span class="cd-pill {{ 'yes' if p.is_fully_remitted() else 'no' }}">{{ 'Yes' if p.is_fully_remitted() else 'No' }}</span></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="6">Total</td>
+                        <td class="num">${{ "%.2f"|format(ns.premium) }}</td>
+                        <td class="num">${{ "%.2f"|format(ns.outstanding) }}</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <div class="cd-empty">No policies for this client yet.</div>
+        {% endif %}
+    </section>
+
+    <!-- Claims -->
+    <section class="cd-card">
+        <h2 class="cd-card-title">
+            Claims
+            <span class="cd-count">{{ claims|length }}</span>
+        </h2>
+        {% if claims %}
+        <div class="cd-table-wrap">
+            <table class="cd-table" aria-label="Client claims">
+                <thead>
+                    <tr>
+                        <th>Claim #</th>
+                        <th>Policy</th>
+                        <th>Status</th>
+                        <th>Claim Date</th>
+                        <th class="num">Claimed</th>
+                        <th class="num">Approved</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for c in claims %}
+                    {% set cstatus = (c.status or 'pending')|lower %}
+                    <tr>
+                        <td><a href="{{ url_for('core.claim_detail', claim_id=c.id) }}">{{ c.claim_number }}</a></td>
+                        <td>{{ c.policy_ref.policy_number if c.policy_ref else '—' }}</td>
+                        <td><span class="cd-pill {{ cstatus }}">{{ cstatus|replace('_', ' ') }}</span></td>
+                        <td>{{ c.claim_date.strftime('%d %b %Y') if c.claim_date else '—' }}</td>
+                        <td class="num">${{ "%.2f"|format(c.claimed_amount or 0) }}</td>
+                        <td class="num">${{ "%.2f"|format(c.approved_amount or 0) }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="cd-empty">No claims submitted.</div>
+        {% endif %}
+    </section>
+
+    <!-- Premium remittances -->
+    <section class="cd-card">
+        <h2 class="cd-card-title">Premium Remittances</h2>
+        {% set ns2 = namespace(found=false) %}
+        {% for p in policies %}{% if remittances.get(p.id) %}{% set ns2.found = true %}{% endif %}{% endfor %}
+        {% if ns2.found %}
+        <div class="cd-table-wrap">
+            <table class="cd-table" aria-label="Premium remittances">
+                <thead>
+                    <tr>
+                        <th>Date Received</th>
+                        <th>Policy #</th>
+                        <th>Payment Method</th>
+                        <th>Reference</th>
+                        <th class="num">Amount</th>
+                        <th>Remitted to Insurer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for p in policies %}
+                    {% for r in remittances.get(p.id, []) %}
+                    <tr>
+                        <td>{{ r.date_received.strftime('%d %b %Y') if r.date_received else '—' }}</td>
+                        <td><a href="{{ url_for('core.view_policy', policy_id=p.id) }}">{{ p.policy_number }}</a></td>
+                        <td>{{ r.payment_method or '—' }}</td>
+                        <td>{{ r.reference or '—' }}</td>
+                        <td class="num">${{ "%.2f"|format(r.amount or 0) }}</td>
+                        <td><span class="cd-pill {{ 'yes' if r.is_remitted_to_company else 'no' }}">{{ 'Yes' if r.is_remitted_to_company else 'No' }}</span></td>
+                    </tr>
+                    {% endfor %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="cd-empty">No premium remittances recorded.</div>
+        {% endif %}
+    </section>
+
 </div>
 {% endblock %}
+
