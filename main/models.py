@@ -11,6 +11,9 @@ ROLE_OWNER = "owner"
 ROLE_ADMIN = "admin"
 ROLE_AGENT = "agent"
 
+# Withholding tax withheld from commission; only the remainder is recorded in the books
+WITHHOLDING_TAX_RATE = 0.20
+
 
 class User(UserMixin, db.Model):
     __tablename__ = "users"
@@ -151,6 +154,7 @@ class Policy(db.Model):
     coverage_amount = db.Column(db.Float, nullable=False)
     premium_amount = db.Column(db.Float, nullable=False)
     levy = db.Column(db.Float, nullable=False, default=0.0)
+    stamp_duty = db.Column(db.Float, nullable=False, default=0.0)  # Included in premium_amount
     selected_rate = db.Column(db.Float, nullable=True)  # Rate (%) selected for Motor/Homeowners
     premium_frequency = db.Column(db.String(20), default="annual")  # monthly, quarterly, annual
     
@@ -188,18 +192,60 @@ class Policy(db.Model):
         """True when the policy is not cancelled and still has an unpaid balance."""
         return (self.status or "").lower() != "cancelled" and self.outstanding_premium() > 0
 
-    def total_commission_earned(self) -> float:
-        total = 0
-        for remittance in self.remittances:
-            rule = CommissionRule.query.filter_by(
-                product_id=self.product_id,
-                company_id=self.company_id,
-                is_active=True
-            ).first()
-            if rule:
-                total += remittance.amount * (rule.commission_percent / 100.0)
-        return total
+    def commission_rule(self):
+        """Active commission rule for this policy's product and company, if any."""
+        return CommissionRule.query.filter_by(
+            product_id=self.product_id,
+            company_id=self.company_id,
+            is_active=True,
+        ).first()
 
+    def is_fully_remitted(self) -> bool:
+        """True once the client has paid the whole premium, which we then pass to the insurer."""
+        return self.outstanding_premium() <= 0 and (self.premium_amount or 0) > 0
+
+    def commission_base(self) -> float:
+        """Full premium less stamp duty and government levy."""
+        return round(
+            (self.premium_amount or 0.0) - (self.stamp_duty or 0.0) - (self.levy or 0.0), 2
+        )
+
+    def commission_breakdown(self):
+        """Commission for the whole policy, payable by the insurer once the premium is remitted.
+
+        Returns None when there is no commission rule or the premium is not yet fully remitted.
+        """
+        rule = self.commission_rule()
+        if not rule or not self.is_fully_remitted():
+            return None
+        base = self.commission_base()
+        gross = round(base * rule.commission_percent / 100.0, 2)
+        wht = round(gross * WITHHOLDING_TAX_RATE, 2)
+        last = self.remittances.order_by(None).order_by(PremiumRemittance.date_received.desc()).first()
+        return {
+            "date_earned": last.date_received if last else None,
+            "base": base,
+            "rate_percent": rule.commission_percent,
+            "gross": gross,
+            "withholding_tax": wht,
+            "recorded": round(gross - wht, 2),
+        }
+
+    def commission_gross(self) -> float:
+        row = self.commission_breakdown()
+        return row["gross"] if row else 0.0
+
+    def withholding_tax(self) -> float:
+        row = self.commission_breakdown()
+        return row["withholding_tax"] if row else 0.0
+
+    def commission_recorded(self) -> float:
+        """Commission booked to our books (gross less 20% withholding tax)."""
+        row = self.commission_breakdown()
+        return row["recorded"] if row else 0.0
+
+    def total_commission_earned(self) -> float:
+        return self.commission_recorded()
 
 class PremiumRemittance(db.Model):
     __tablename__ = "premium_remittances"
