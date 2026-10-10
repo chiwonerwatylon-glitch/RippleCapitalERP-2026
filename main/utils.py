@@ -52,8 +52,8 @@ DEFAULT_STAMP_DUTY_PERCENT = 5.0
 # Days covered per premium frequency (kept for backward compatibility)
 DAYS_BY_FREQUENCY = {
     "monthly": 30,
-    "termly": 120,  # 4 months
-    "quarterly": 120,
+    "termly": 122,  # 4 months
+    "quarterly": 122,
     "annual": 365,
     "annually": 365,
 }
@@ -138,11 +138,17 @@ class PremiumCalculator:
             if days <= 0:
                 raise ValueError("Days in period must be greater than 0.")
 
-            # rate_amount = sum_insured * rate% * days / 365
-            rate_amount = (sum_insured * rate_pct * days) / (100 * 365)
-            stamp_duty = (rate_amount * DEFAULT_STAMP_DUTY_PERCENT) / 100
-            total = rate_amount + stamp_duty
-            
+            # Annual amount: sum insured x rate, then stamp duty (5%) on that amount
+            annual_rate_amount = sum_insured * rate_pct / 100
+            annual_stamp_duty = annual_rate_amount * DEFAULT_STAMP_DUTY_PERCENT / 100
+            annual_total = annual_rate_amount + annual_stamp_duty
+
+            # Pro-rate for the period: x days / 365 (kept unrounded until the final total)
+            factor = days / 365
+            rate_amount = annual_rate_amount * factor
+            stamp_duty = annual_stamp_duty * factor
+            total = annual_total * factor
+
             return {
                 "rate_percent": rate_pct,
                 "selected_rate": rate_pct,
@@ -151,6 +157,7 @@ class PremiumCalculator:
                 "stamp_duty_percent": DEFAULT_STAMP_DUTY_PERCENT,
                 "stamp_duty": round(stamp_duty, 2),
                 "total_premium": round(total, 2),
+                "total_premium_exact": total,
             }
         
         # Manual calculation for other products
@@ -165,6 +172,7 @@ class PremiumCalculator:
                 "stamp_duty_percent": stamp_duty_percent,
                 "stamp_duty": round(stamp_duty, 2),
                 "total_premium": round(total, 2),
+                "total_premium_exact": total,
             }
         
         # Not calculable yet (waiting for manual input)
