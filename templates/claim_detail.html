@@ -346,6 +346,22 @@
         box-shadow: 0 14px 28px rgba(27, 112, 45, 0.5);
     }
 
+    .status-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .status-message {
+        padding: 0.55rem 0.75rem;
+        border-radius: 0.5rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .status-message.success { background: #d1fae5; color: #065f46; }
+    .status-message.error   { background: #fee2e2; color: #7f1d1d; }
+
     /* STATUS BADGES */
     .status-badge {
         display: inline-block;
@@ -407,8 +423,8 @@
         <div class="header-row">
             <div class="header-info">
                 <h2>{{ claim.claim_number }}</h2>
-                <span class="status-badge status-{{ claim.status }}">
-                    {{ (claim.status or 'pending')|upper }}
+                <span class="status-badge status-{{ claim.status }}" id="claim-header-status">
+                    {{ (claim.status or 'pending')|replace('_', ' ')|upper }}
                 </span>
             </div>
             <div style="text-align: right;">
@@ -485,7 +501,7 @@
                         </div>
                         <div class="info-item">
                             <label>Approved Amount</label>
-                            <div class="value amount-highlight">
+                            <div class="value amount-highlight" id="claim-approved-amount">
                                 ${{ "%.2f"|format(claim.approved_amount or 0) }}
                             </div>
                         </div>
@@ -571,10 +587,14 @@
                 <div class="card">
                     <div class="card-title">Update Status</div>
                     <form
+                        id="claim-status-form"
                         method="POST"
                         action="{{ url_for('core.update_claim_status', claim_id=claim.id) }}"
                         class="status-form"
                     >
+                        {% if csrf_token is defined %}
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        {% endif %}
                         <select name="status" class="status-select" required>
                             <option value="pending" {% if claim.status == 'pending' %}selected{% endif %}>
                                 Pending
@@ -601,7 +621,8 @@
                             min="0"
                             value="{{ claim.approved_amount if claim.approved_amount is not none else '' }}"
                         >
-                        <button type="submit" class="status-btn">Update Status</button>
+                        <button type="submit" class="status-btn" id="claim-status-btn">Update Status</button>
+                        <div id="claim-status-message" class="status-message" role="status" aria-live="polite" style="display: none;"></div>
                     </form>
                 </div>
 
@@ -610,8 +631,8 @@
                     <div class="card-title">Summary</div>
                     <div class="info-item" style="margin-bottom: 1rem;">
                         <label>Status</label>
-                        <span class="status-badge status-{{ claim.status }}">
-                            {{ (claim.status or 'pending')|upper }}
+                        <span class="status-badge status-{{ claim.status }}" id="claim-summary-status">
+                            {{ (claim.status or 'pending')|replace('_', ' ')|upper }}
                         </span>
                     </div>
                     <div class="info-item" style="margin-bottom: 1rem;">
@@ -638,4 +659,76 @@
         </div>
     </div>
 </div>
+
+<script>
+    (function () {
+        var form = document.getElementById('claim-status-form');
+        if (!form) { return; }
+
+        var button = document.getElementById('claim-status-btn');
+        var message = document.getElementById('claim-status-message');
+        var badgeIds = ['claim-header-status', 'claim-summary-status'];
+        var statusClasses = ['pending', 'under_review', 'approved', 'denied', 'paid'];
+
+        function showMessage(text, kind) {
+            message.textContent = text;
+            message.className = 'status-message ' + kind;
+            message.style.display = 'block';
+        }
+
+        function updateBadge(id, status, label) {
+            var el = document.getElementById(id);
+            if (!el) { return; }
+            statusClasses.forEach(function (s) { el.classList.remove('status-' + s); });
+            el.classList.add('status-' + status);
+            el.textContent = label;
+        }
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            button.disabled = true;
+            message.style.display = 'none';
+
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin'
+            })
+                .then(function (response) {
+                    return response.json().catch(function () { return {}; }).then(function (data) {
+                        return { ok: response.ok, data: data };
+                    });
+                })
+                .then(function (result) {
+                    if (!result.ok || result.data.error) {
+                        showMessage(result.data.error || 'Could not update claim status.', 'error');
+                        return;
+                    }
+                    var data = result.data;
+                    badgeIds.forEach(function (id) {
+                        updateBadge(id, data.status, data.status_label);
+                    });
+                    var amountEl = document.getElementById('claim-approved-amount');
+                    if (amountEl) {
+                        amountEl.textContent = '$' + Number(data.approved_amount || 0).toFixed(2);
+                    }
+                    var amountInput = form.querySelector('input[name="approved_amount"]');
+                    if (amountInput) {
+                        amountInput.value = data.approved_amount;
+                    }
+                    showMessage(data.message || 'Claim status updated successfully.', 'success');
+                })
+                .catch(function () {
+                    showMessage('Network error. Please try again.', 'error');
+                })
+                .then(function () {
+                    button.disabled = false;
+                });
+        });
+    })();
+</script>
 {% endblock %}

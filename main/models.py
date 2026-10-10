@@ -23,10 +23,12 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(20), nullable=False, default=ROLE_OWNER)
     is_active = db.Column(db.Boolean, default=True)
     profile_picture = db.Column(db.String(500))  # URL or filename
+    # Staff (admin/agent) and clients point to the owner account whose data they share
+    account_owner_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships
-    clients_managed = db.relationship("Client", backref="owner", lazy="dynamic")
+    clients_managed = db.relationship("Client", backref="owner", lazy="dynamic", foreign_keys="Client.owner_id")
     companies = db.relationship("Company", backref="owner", lazy="dynamic")
     products = db.relationship("InsuranceProduct", backref="owner", lazy="dynamic")
     policies = db.relationship("Policy", backref="owner", lazy="dynamic", foreign_keys="Policy.owner_id")
@@ -55,6 +57,8 @@ class Client(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     owner_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    # Login account of the client, set when the client self-registers
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, unique=True)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120))

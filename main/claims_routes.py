@@ -4,7 +4,7 @@ from datetime import datetime
 from flask import render_template, redirect, url_for, flash, request, jsonify, send_file
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from .models import db, Claim, ClaimDocument, Policy, Client, ROLE_OWNER, ROLE_ADMIN
+from .models import db, Claim, ClaimDocument, Policy, Client, ROLE_OWNER, ROLE_ADMIN, ROLE_AGENT
 from .utils import role_required, get_account_owner_id, generate_policy_number
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,7 +16,7 @@ def register_claims_routes(core_bp):
     
     @core_bp.route("/claims")
     @login_required
-    @role_required(ROLE_OWNER, ROLE_ADMIN)
+    @role_required(ROLE_OWNER, ROLE_ADMIN, ROLE_AGENT)
     def claims():
         """Display all claims dashboard."""
         try:
@@ -32,7 +32,7 @@ def register_claims_routes(core_bp):
 
     @core_bp.route("/claims/register", methods=["GET", "POST"])
     @login_required
-    @role_required(ROLE_OWNER, ROLE_ADMIN)
+    @role_required(ROLE_OWNER, ROLE_ADMIN, ROLE_AGENT)
     def register_claim():
         """Register a new claim."""
         if request.method == "POST":
@@ -114,7 +114,7 @@ def register_claims_routes(core_bp):
 
     @core_bp.route("/claims/<int:claim_id>/detail")
     @login_required
-    @role_required(ROLE_OWNER, ROLE_ADMIN)
+    @role_required(ROLE_OWNER, ROLE_ADMIN, ROLE_AGENT)
     def claim_detail(claim_id):
         """View claim details and tracking."""
         claim = Claim.query.filter_by(
@@ -127,7 +127,7 @@ def register_claims_routes(core_bp):
 
     @core_bp.route("/claims/<int:claim_id>/update-status", methods=["POST"])
     @login_required
-    @role_required(ROLE_OWNER, ROLE_ADMIN)
+    @role_required(ROLE_OWNER, ROLE_ADMIN, ROLE_AGENT)
     def update_claim_status(claim_id):
         """Update claim status via AJAX."""
         claim = Claim.query.filter_by(
@@ -136,23 +136,42 @@ def register_claims_routes(core_bp):
         ).first_or_404()
         
         try:
+            is_ajax = (
+                request.headers.get("X-Requested-With") == "XMLHttpRequest"
+                or request.accept_mimetypes.best == "application/json"
+            )
             status = request.form.get("status", "").strip()
-            approved_amount = request.form.get("approved_amount", "0")
+            approved_raw = (request.form.get("approved_amount") or "").strip()
             
             valid_statuses = ["pending", "under_review", "approved", "denied", "paid"]
             if status not in valid_statuses:
                 return jsonify({"error": "Invalid status"}), 400
             
-            claim.status = status
-            if status == "approved":
+            new_amount = None
+            if approved_raw:
                 try:
-                    claim.approved_amount = float(approved_amount)
+                    new_amount = float(approved_raw)
                 except ValueError:
-                    claim.approved_amount = 0.0
+                    return jsonify({"error": "Approved amount must be a number"}), 400
+                if new_amount != new_amount or new_amount < 0:
+                    return jsonify({"error": "Approved amount must not be negative"}), 400
+            
+            claim.status = status
+            if new_amount is not None:
+                claim.approved_amount = new_amount
+            elif status == "approved":
+                claim.approved_amount = 0.0
             
             db.session.commit()
-            flash("Claim status updated successfully.", "success")
-            return jsonify({"success": True, "message": "Claim status updated"})
+            if not is_ajax:
+                flash("Claim status updated successfully.", "success")
+            return jsonify({
+                "success": True,
+                "message": "Claim status updated successfully.",
+                "status": claim.status,
+                "status_label": claim.status.replace("_", " ").upper(),
+                "approved_amount": claim.approved_amount or 0.0,
+            })
             
         except Exception as e:
             db.session.rollback()
@@ -160,7 +179,7 @@ def register_claims_routes(core_bp):
 
     @core_bp.route("/claims/<int:claim_id>/document/add", methods=["POST"])
     @login_required
-    @role_required(ROLE_OWNER, ROLE_ADMIN)
+    @role_required(ROLE_OWNER, ROLE_ADMIN, ROLE_AGENT)
     def add_claim_document(claim_id):
         """Add document to claim via AJAX."""
         claim = Claim.query.filter_by(

@@ -35,7 +35,7 @@ except ImportError:
     HAS_OPENPYXL = False
 
 from .config import config_by_name
-from .models import db, User, ROLE_ADMIN, ROLE_AGENT, ROLE_CLIENT
+from .models import db, User, ROLE_OWNER, ROLE_ADMIN, ROLE_AGENT, ROLE_CLIENT
 from .utils import (
     role_required,
     get_account_owner_id,
@@ -236,16 +236,55 @@ def create_app(config_name=None):
                 flash("Email already registered.", "warning")
                 return render_template("register.html", form=form)
 
-            role = ROLE_OWNER if HAS_NEW_MODELS else "agent"
-            user = User(
-                full_name=form.full_name.data,
-                email=form.email.data.lower(),
-                phone=form.phone.data,
-                role=role,
-            )
-            user.set_password(form.password.data)
-            db.session.add(user)
-            db.session.commit()
+            if not HAS_NEW_MODELS:
+                flash("Registration is not available.", "danger")
+                return render_template("register.html", form=form)
+
+            # Only clients already entered by the insurer may register.
+            def _normalize_name(value):
+                return " ".join((value or "").split()).lower()
+
+            submitted_name = _normalize_name(form.full_name.data)
+            unlinked_clients = Client.query.filter(Client.user_id.is_(None)).all()
+            matches = [
+                c
+                for c in unlinked_clients
+                if _normalize_name(f"{c.first_name} {c.last_name}") == submitted_name
+            ]
+
+            if not matches:
+                flash(
+                    "Your name is not on record. Please ask your insurer to add you first.",
+                    "danger",
+                )
+                return render_template("register.html", form=form)
+            if len(matches) > 1:
+                flash(
+                    "More than one client record matches your name. "
+                    "Please contact your insurer to complete your registration.",
+                    "danger",
+                )
+                return render_template("register.html", form=form)
+
+            client = matches[0]
+            try:
+                user = User(
+                    full_name=form.full_name.data,
+                    email=form.email.data.lower(),
+                    phone=form.phone.data,
+                    role=ROLE_CLIENT,
+                    account_owner_id=client.owner_id,
+                )
+                user.set_password(form.password.data)
+                db.session.add(user)
+                db.session.flush()
+                client.user_id = user.id
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Registration failed: {str(e)}", "danger")
+                return render_template("register.html", form=form)
+
             flash("Registration successful. You can now log in.", "success")
             return redirect(url_for("auth.login"))
         return render_template("register.html", form=form)
@@ -261,6 +300,13 @@ def create_app(config_name=None):
 
     # ====================== CORE ROUTES ======================
 
+    def _client_policies():
+        """Return the policies of the Client record linked to the current user."""
+        client = Client.query.filter_by(user_id=current_user.id).first()
+        if client is None:
+            return []
+        return Policy.query.filter_by(client_id=client.id).all()
+
     @core_bp.route("/")
     @core_bp.route("/dashboard")
     @login_required
@@ -268,7 +314,7 @@ def create_app(config_name=None):
         try:
             if HAS_NEW_MODELS:
                 if current_user.role == ROLE_CLIENT:
-                    policies = Policy.query.filter_by(client_id=current_user.id).all()
+                    policies = _client_policies()
                     return render_template(
                         "client_dashboard.html", policies=policies
                     )
@@ -875,9 +921,7 @@ def create_app(config_name=None):
     def policies():
         if HAS_NEW_MODELS:
             if current_user.role == ROLE_CLIENT:
-                policies_list = Policy.query.filter_by(
-                    client_id=current_user.id
-                ).all()
+                policies_list = _client_policies()
             else:
                 policies_list = Policy.query.filter_by(
                     owner_id=get_account_owner_id()
@@ -905,19 +949,46 @@ def create_app(config_name=None):
     @login_required
     def add_premium_remittance():
         if HAS_NEW_MODELS:
-            policies_list = Policy.query.filter_by(
-                owner_id=get_account_owner_id()
-            ).all()
+            policies_list = (
+                Policy.query.filter_by(owner_id=get_account_owner_id())
+                .order_by(Policy.policy_number)
+                .all()
+            )
         else:
             policies_list = []
 
         if request.method == "POST" and HAS_NEW_MODELS:
             try:
+                policy_id = request.form.get("policy_id", type=int)
+                policy = (
+                    Policy.query.filter_by(
+                        id=policy_id, owner_id=get_account_owner_id()
+                    ).first()
+                    if policy_id
+                    else None
+                )
+                if policy is None:
+                    flash("Please select a valid policy.", "danger")
+                    return render_template(
+                        "add_premium_remittance.html", policies=policies_list
+                    )
+
+                try:
+                    amount = float(request.form.get("amount") or 0)
+                except ValueError:
+                    amount = 0
+                if not amount > 0:  # also rejects NaN
+                    flash("Amount must be greater than zero.", "danger")
+                    return render_template(
+                        "add_premium_remittance.html", policies=policies_list
+                    )
+
                 remittance = PremiumRemittance(
-                    policy_id=request.form.get("policy_id"),
-                    amount=float(request.form.get("amount", 0)),
+                    policy_id=policy.id,
+                    amount=amount,
                     payment_method=request.form.get("payment_method"),
-                    reference=request.form.get("reference"),
+                    reference=request.form.get("reference_number")
+                    or request.form.get("reference"),
                     owner_id=get_account_owner_id(),
                 )
                 db.session.add(remittance)
@@ -1690,10 +1761,14 @@ def create_app(config_name=None):
         policy = Policy.query.get_or_404(policy_id)
 
         # Check ownership
-        if (
-            policy.owner_id != get_account_owner_id()
-            and policy.client_id != current_user.id
-        ):
+        if current_user.role == ROLE_CLIENT:
+            allowed = (
+                policy.client is not None
+                and policy.client.user_id == current_user.id
+            )
+        else:
+            allowed = policy.owner_id == get_account_owner_id()
+        if not allowed:
             flash("You don't have permission to view this policy.", "danger")
             return redirect(url_for("core.policies"))
 

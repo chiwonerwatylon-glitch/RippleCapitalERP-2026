@@ -17,19 +17,19 @@ def role_required(*roles):
     return decorator
 
 def get_account_owner_id(user=None):
-    """Get the account owner ID (for owner/admin/agent, it's their own ID; for clients, it's owner_id from context)."""
+    """Get the account owner ID that scopes business data.
+
+    Staff (admin/agent) and clients point to the owner via account_owner_id;
+    owners (and users without a link) use their own ID.
+    """
     from flask_login import current_user as cu
     user = user or cu
-    
+
     if not user or not user.is_authenticated:
         return None
-    
-    # Import here to avoid circular imports
-    from .models import ROLE_OWNER, ROLE_ADMIN, ROLE_AGENT, ROLE_CLIENT
-    
-    if user.role in [ROLE_OWNER, ROLE_ADMIN, ROLE_AGENT]:
-        return user.id
-    # For clients, we'd need context, but this shouldn't happen in most cases
+
+    if getattr(user, "account_owner_id", None):
+        return user.account_owner_id
     return user.id
 
 # ==================== PREMIUM CALCULATION LOGIC ====================

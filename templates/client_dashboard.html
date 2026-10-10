@@ -544,7 +544,7 @@
                             <div class="policy-heading">
                                 <div>
                                     <div class="policy-number">
-                                        {{ policy.product_name or 'Policy' }}
+                                        {{ policy.product.name if policy.product else 'Policy' }}
                                     </div>
                                     <div class="policy-sub">
                                         Policy #{{ policy.policy_number }}
@@ -628,7 +628,7 @@
                                         </span>
                                     {% endif %}
                                 </div>
-                                <a href="{{ url_for('core.policy_view', policy_id=policy.id) }}" class="action-btn">
+                                <a href="{{ url_for('core.view_policy', policy_id=policy.id) }}" class="action-btn">
                                     View Details
                                 </a>
                             </div>

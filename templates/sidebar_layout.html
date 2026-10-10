@@ -648,7 +648,7 @@
                         </li>
                     </ul>
 
-                    {% if current_user.role in ['owner', 'ROLE_OWNER', 'admin'] %}
+                    {% if current_user.role in ['owner', 'ROLE_OWNER', 'admin', 'agent'] %}
                         <div class="sidebar-section-label">Operations</div>
                         <ul class="sidebar-menu">
                             <li class="sidebar-menu-item">
@@ -748,34 +748,6 @@
                             </li>
                         </ul>
 
-                    {% elif current_user.role == 'agent' %}
-                        <div class="sidebar-section-label">Agent Tools</div>
-                        <ul class="sidebar-menu">
-                            <li class="sidebar-menu-item">
-                                <a href="{{ url_for('core.add_policy') }}"
-                                   class="sidebar-menu-link {% if request.endpoint == 'core.add_policy' %}active{% endif %}">
-                                    <i class="sidebar-menu-icon fas fa-plus-circle"></i>
-                                    <span class="sidebar-menu-label">New Policy</span>
-                                    <span class="sidebar-menu-chevron"><i class="fas fa-chevron-right"></i></span>
-                                </a>
-                            </li>
-                            <li class="sidebar-menu-item">
-                                <a href="{{ url_for('core.policies') }}"
-                                   class="sidebar-menu-link {% if request.endpoint == 'core.policies' %}active{% endif %}">
-                                    <i class="sidebar-menu-icon fas fa-file-contract"></i>
-                                    <span class="sidebar-menu-label">Policies</span>
-                                    <span class="sidebar-menu-chevron"><i class="fas fa-chevron-right"></i></span>
-                                </a>
-                            </li>
-                            <li class="sidebar-menu-item">
-                                <a href="{{ url_for('core.commission_rules') }}"
-                                   class="sidebar-menu-link {% if request.endpoint == 'core.commission_rules' %}active{% endif %}">
-                                    <i class="sidebar-menu-icon fas fa-percent"></i>
-                                    <span class="sidebar-menu-label">Commission Rules</span>
-                                    <span class="sidebar-menu-chevron"><i class="fas fa-chevron-right"></i></span>
-                                </a>
-                            </li>
-                        </ul>
                     {% endif %}
 
                     <div class="sidebar-section-label">Account</div>
