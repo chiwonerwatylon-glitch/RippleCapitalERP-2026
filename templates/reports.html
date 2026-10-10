@@ -1,6 +1,6 @@
 {% extends "sidebar_layout.html" %}
 
-{% block title %}Reports - Ripple Capital Insurance ERP{% endblock %}
+{% block title %}Reports - Ripple Capital Insurance{% endblock %}
 
 {% block page_title %}Reports & Analytics{% endblock %}
 {% block page_subtitle %}High-level financial and portfolio insights for your Ripple Capital workspace{% endblock %}
@@ -308,10 +308,14 @@
                         Total premiums: ${{ "%.2f"|format(total_premiums) }}
                     </div>
                     <div class="report-footer">
-                        <span>Format: PDF</span>
-                        <a href="{{ url_for('core.download_report', report_type='premium-pdf') }}" class="report-btn">
-                            <span>📥 Download</span>
-                        </a>
+                        <span>Choose format</span>
+                        <select class="form-select form-select-sm report-format" style="max-width:140px" onchange="if(this.value){window.location='{{ url_for('core.download_report', report_type='premium-pdf') }}?format='+this.value;}">
+                            <option value="" selected disabled>Select format…</option>
+                            <option value="pdf">PDF</option>
+                            <option value="excel">Excel</option>
+                            <option value="csv">CSV</option>
+                            <option value="docx">DOCX</option>
+                        </select>
                     </div>
                 </article>
 
@@ -329,10 +333,14 @@
                         Total commissions: ${{ "%.2f"|format(total_commissions) }}
                     </div>
                     <div class="report-footer">
-                        <span>Format: PDF</span>
-                        <a href="{{ url_for('core.download_report', report_type='commission-pdf') }}" class="report-btn">
-                            <span>📥 Download</span>
-                        </a>
+                        <span>Choose format</span>
+                        <select class="form-select form-select-sm report-format" style="max-width:140px" onchange="if(this.value){window.location='{{ url_for('core.download_report', report_type='commission-pdf') }}?format='+this.value;}">
+                            <option value="" selected disabled>Select format…</option>
+                            <option value="pdf">PDF</option>
+                            <option value="excel">Excel</option>
+                            <option value="csv">CSV</option>
+                            <option value="docx">DOCX</option>
+                        </select>
                     </div>
                 </article>
             </div>
@@ -359,10 +367,14 @@
                         Clients: {{ clients_count }}
                     </div>
                     <div class="report-footer">
-                        <span>Format: PDF</span>
-                        <a href="{{ url_for('core.download_report', report_type='clients-excel') }}" class="report-btn">
-                            <span>📥 Download</span>
-                        </a>
+                        <span>Choose format</span>
+                        <select class="form-select form-select-sm report-format" style="max-width:140px" onchange="if(this.value){window.location='{{ url_for('core.download_report', report_type='clients-excel') }}?format='+this.value;}">
+                            <option value="" selected disabled>Select format…</option>
+                            <option value="pdf">PDF</option>
+                            <option value="excel">Excel</option>
+                            <option value="csv">CSV</option>
+                            <option value="docx">DOCX</option>
+                        </select>
                     </div>
                 </article>
 
@@ -381,10 +393,14 @@
                         Policies: {{ policies_count }}
                     </div>
                     <div class="report-footer">
-                        <span>Format: PDF</span>
-                        <a href="{{ url_for('core.download_report', report_type='policy-portfolio') }}" class="report-btn">
-                            <span>📥 Download</span>
-                        </a>
+                        <span>Choose format</span>
+                        <select class="form-select form-select-sm report-format" style="max-width:140px" onchange="if(this.value){window.location='{{ url_for('core.download_report', report_type='policy-portfolio') }}?format='+this.value;}">
+                            <option value="" selected disabled>Select format…</option>
+                            <option value="pdf">PDF</option>
+                            <option value="excel">Excel</option>
+                            <option value="csv">CSV</option>
+                            <option value="docx">DOCX</option>
+                        </select>
                     </div>
                 </article>
 
@@ -402,10 +418,14 @@
                         Based on policy and payment history
                     </div>
                     <div class="report-footer">
-                        <span>Format: PDF</span>
-                        <a href="{{ url_for('core.download_report', report_type='client-activity') }}" class="report-btn">
-                            <span>📥 Download</span>
-                        </a>
+                        <span>Choose format</span>
+                        <select class="form-select form-select-sm report-format" style="max-width:140px" onchange="if(this.value){window.location='{{ url_for('core.download_report', report_type='client-activity') }}?format='+this.value;}">
+                            <option value="" selected disabled>Select format…</option>
+                            <option value="pdf">PDF</option>
+                            <option value="excel">Excel</option>
+                            <option value="csv">CSV</option>
+                            <option value="docx">DOCX</option>
+                        </select>
                     </div>
                 </article>
             </div>
@@ -432,10 +452,14 @@
                         Companies: {{ companies_count }}
                     </div>
                     <div class="report-footer">
-                        <span>Format: PDF</span>
-                        <a href="{{ url_for('core.download_report', report_type='company-overview') }}" class="report-btn">
-                            <span>📥 Download</span>
-                        </a>
+                        <span>Choose format</span>
+                        <select class="form-select form-select-sm report-format" style="max-width:140px" onchange="if(this.value){window.location='{{ url_for('core.download_report', report_type='company-overview') }}?format='+this.value;}">
+                            <option value="" selected disabled>Select format…</option>
+                            <option value="pdf">PDF</option>
+                            <option value="excel">Excel</option>
+                            <option value="csv">CSV</option>
+                            <option value="docx">DOCX</option>
+                        </select>
                     </div>
                 </article>
 
@@ -453,10 +477,14 @@
                         Based on your commission rules and policies
                     </div>
                     <div class="report-footer">
-                        <span>Format: PDF</span>
-                        <a href="{{ url_for('core.download_report', report_type='product-commission') }}" class="report-btn">
-                            <span>📥 Download</span>
-                        </a>
+                        <span>Choose format</span>
+                        <select class="form-select form-select-sm report-format" style="max-width:140px" onchange="if(this.value){window.location='{{ url_for('core.download_report', report_type='product-commission') }}?format='+this.value;}">
+                            <option value="" selected disabled>Select format…</option>
+                            <option value="pdf">PDF</option>
+                            <option value="excel">Excel</option>
+                            <option value="csv">CSV</option>
+                            <option value="docx">DOCX</option>
+                        </select>
                     </div>
                 </article>
 
@@ -474,10 +502,14 @@
                         Based on policies, remittances, commissions and claims
                     </div>
                     <div class="report-footer">
-                        <span>Format: PDF</span>
-                        <a href="{{ url_for('core.download_report', report_type='company-performance') }}" class="report-btn">
-                            <span>📥 Download</span>
-                        </a>
+                        <span>Choose format</span>
+                        <select class="form-select form-select-sm report-format" style="max-width:140px" onchange="if(this.value){window.location='{{ url_for('core.download_report', report_type='company-performance') }}?format='+this.value;}">
+                            <option value="" selected disabled>Select format…</option>
+                            <option value="pdf">PDF</option>
+                            <option value="excel">Excel</option>
+                            <option value="csv">CSV</option>
+                            <option value="docx">DOCX</option>
+                        </select>
                     </div>
                 </article>
             </div>

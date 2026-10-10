@@ -1,6 +1,6 @@
 {% extends "sidebar_layout.html" %}
 
-{% block title %}{% if editing %}Edit Client{% else %}Add Client{% endif %} - Ripple Capital Insurance ERP{% endblock %}
+{% block title %}{% if editing %}Edit Client{% else %}Add Client{% endif %} - Ripple Capital Insurance{% endblock %}
 
 {% block page_title %}{% if editing %}Edit Client{% else %}Add New Client{% endif %}{% endblock %}
 {% block page_subtitle %}{% if editing %}Update the details for {{ client.first_name }} {{ client.last_name }}{% else %}Create a new client record{% endif %}{% endblock %}
