@@ -262,11 +262,165 @@
         transition: transform 0.18s ease, box-shadow 0.18s ease;
         font-size: 0.9rem;
         box-shadow: 0 10px 24px rgba(27, 112, 45, 0.45);
+        border: none;
     }
 
     .empty-btn:hover {
         transform: translateY(-1px);
         box-shadow: 0 14px 30px rgba(27, 112, 45, 0.6);
+    }
+
+    /* MODAL */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(7, 20, 11, 0.55);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: 1rem;
+    }
+
+    .modal-overlay.open {
+        display: flex;
+    }
+
+    .modal-box {
+        background: #ffffff;
+        border-radius: 1rem;
+        width: 100%;
+        max-width: 480px;
+        box-shadow: var(--ripple-shadow-strong);
+        overflow: hidden;
+        animation: modalPop 0.18s ease;
+    }
+
+    @keyframes modalPop {
+        from { transform: translateY(8px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+        padding: 1.3rem 1.5rem;
+        border-bottom: 1px solid var(--ripple-gray-200);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(135deg, var(--ripple-gray-50) 0%, #ffffff 100%);
+    }
+
+    .modal-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--ripple-gray-900);
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.1rem;
+        color: var(--ripple-gray-500);
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.16s ease, color 0.16s ease;
+    }
+
+    .modal-close:hover {
+        background: var(--ripple-gray-100);
+        color: var(--ripple-gray-800);
+    }
+
+    .modal-body {
+        padding: 1.4rem 1.5rem 1.6rem;
+    }
+
+    .modal-form-group {
+        margin-bottom: 1.1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .modal-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--ripple-gray-700);
+    }
+
+    .modal-input,
+    .modal-select {
+        width: 100%;
+        padding: 0.65rem 0.85rem;
+        border: 1.5px solid var(--ripple-gray-200);
+        border-radius: 0.6rem;
+        font-size: 0.9rem;
+        font-family: inherit;
+        background: #ffffff;
+        color: var(--ripple-gray-900);
+        transition: border 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .modal-input:focus,
+    .modal-select:focus {
+        outline: none;
+        border-color: var(--ripple-primary);
+        box-shadow:
+            0 0 0 1px var(--ripple-primary),
+            0 0 0 4px rgba(27, 112, 45, 0.15);
+    }
+
+    .modal-hint {
+        font-size: 0.78rem;
+        color: var(--ripple-gray-400);
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        margin-top: 1.3rem;
+    }
+
+    .modal-btn-cancel {
+        padding: 0.65rem 1.3rem;
+        border-radius: 999px;
+        border: 1px solid var(--ripple-gray-300);
+        background: #ffffff;
+        color: var(--ripple-gray-800);
+        font-weight: 600;
+        font-size: 0.88rem;
+        cursor: pointer;
+        transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+    }
+
+    .modal-btn-cancel:hover {
+        background: var(--ripple-gray-100);
+        border-color: var(--ripple-primary);
+        color: var(--ripple-primary);
+    }
+
+    .modal-btn-submit {
+        padding: 0.65rem 1.4rem;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 0.88rem;
+        cursor: pointer;
+        box-shadow: 0 10px 22px rgba(27, 112, 45, 0.4);
+        transition: transform 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .modal-btn-submit:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 28px rgba(27, 112, 45, 0.55);
     }
 
     @media (max-width: 768px) {
@@ -301,6 +455,15 @@
         .action-btn {
             width: 100%;
         }
+
+        .modal-actions {
+            flex-direction: column-reverse;
+        }
+
+        .modal-btn-cancel,
+        .modal-btn-submit {
+            width: 100%;
+        }
     }
 </style>
 
@@ -313,10 +476,10 @@
                     View a history of premium payments and record new incoming remittances.
                 </p>
             </div>
-            <a href="{{ url_for('core.add_premium_remittance') }}" class="add-btn">
+            <button type="button" class="add-btn" onclick="openRemittanceModal()">
                 <i class="fas fa-plus"></i>
                 <span>Record Payment</span>
-            </a>
+            </button>
         </div>
 
         {% if remittances %}
@@ -394,12 +557,164 @@
             <div class="empty-text">
                 Record your first premium payment to begin tracking remittances in Ripple Capital.
             </div>
-            <a href="{{ url_for('core.add_premium_remittance') }}" class="empty-btn">
+            <button type="button" class="empty-btn" onclick="openRemittanceModal()">
                 <i class="fas fa-plus"></i>
                 <span>Record First Payment</span>
-            </a>
+            </button>
         </div>
         {% endif %}
     </div>
 </div>
+
+<!-- RECORD PAYMENT MODAL -->
+<div class="modal-overlay" id="remittanceModalOverlay" aria-hidden="true">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="remittanceModalTitle">
+        <div class="modal-header">
+            <div class="modal-title" id="remittanceModalTitle">Record Premium Payment</div>
+            <button type="button" class="modal-close" onclick="closeRemittanceModal()" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form method="POST" action="{{ url_for('core.add_premium_remittance') }}" id="remittanceForm">
+                {% if form is defined %}
+                    {{ form.hidden_tag() }}
+                {% endif %}
+
+                <div class="modal-form-group">
+                    <label class="modal-label" for="remittancePolicySelect">Policy</label>
+                    <select
+                        id="remittancePolicySelect"
+                        name="policy_id"
+                        class="modal-select"
+                        required
+                        onchange="handlePolicySelection(this)"
+                    >
+                        <option value="" data-premium="">Select a policy...</option>
+                        {% for policy in policies %}
+                            {% set holder_name = 'Unknown Client' %}
+                            {% if policy.client %}
+                                {% if policy.client.full_name is defined %}
+                                    {% set holder_name = policy.client.full_name() if policy.client.full_name is callable else policy.client.full_name %}
+                                {% else %}
+                                    {% set holder_name = (policy.client.first_name or '') ~ ' ' ~ (policy.client.last_name or '') %}
+                                {% endif %}
+                            {% endif %}
+                            <option
+                                value="{{ policy.id }}"
+                                data-premium="{{ '%.2f'|format(policy.premium_amount or 0) }}"
+                            >
+                                {{ policy.policy_number or ('Policy #' ~ policy.id) }} — {{ holder_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <span class="modal-hint">Choose the policy this payment should be applied to.</span>
+                </div>
+
+                <div class="modal-form-group">
+                    <label class="modal-label" for="remittanceAmountInput">Amount ($)</label>
+                    <input
+                        type="number"
+                        id="remittanceAmountInput"
+                        name="amount"
+                        class="modal-input"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        required
+                    >
+                    <span class="modal-hint">Auto-filled from the policy's premium amount. You can edit it if needed.</span>
+                </div>
+
+                <div class="modal-form-group">
+                    <label class="modal-label" for="remittanceMethodSelect">Payment Method</label>
+                    <select id="remittanceMethodSelect" name="payment_method" class="modal-select" required>
+                        <option value="">Select payment method...</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Cash">Cash</option>
+                        <option value="Mobile Money">Mobile Money</option>
+                    </select>
+                </div>
+
+                <div class="modal-form-group">
+                    <label class="modal-label" for="remittanceReferenceInput">Reference Number</label>
+                    <input
+                        type="text"
+                        id="remittanceReferenceInput"
+                        name="reference_number"
+                        class="modal-input"
+                        placeholder="e.g., Check #, Transaction ID"
+                    >
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn-cancel" onclick="closeRemittanceModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="modal-btn-submit">
+                        <i class="fas fa-save"></i>
+                        <span>Record Payment</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openRemittanceModal() {
+        const overlay = document.getElementById('remittanceModalOverlay');
+        if (!overlay) return;
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+
+        const firstField = document.getElementById('remittancePolicySelect');
+        if (firstField) {
+            firstField.focus();
+        }
+    }
+
+    function closeRemittanceModal() {
+        const overlay = document.getElementById('remittanceModalOverlay');
+        if (!overlay) return;
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    function handlePolicySelection(selectEl) {
+        const amountInput = document.getElementById('remittanceAmountInput');
+        if (!amountInput) return;
+
+        const selectedOption = selectEl.options[selectEl.selectedIndex];
+        const premium = selectedOption ? selectedOption.getAttribute('data-premium') : '';
+
+        if (premium) {
+            amountInput.value = premium;
+        } else {
+            amountInput.value = '';
+        }
+    }
+
+    // Close on overlay click (but not when clicking inside the modal box)
+    document.addEventListener('click', function (e) {
+        const overlay = document.getElementById('remittanceModalOverlay');
+        if (!overlay || !overlay.classList.contains('open')) return;
+
+        if (e.target === overlay) {
+            closeRemittanceModal();
+        }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', function (e) {
+        const overlay = document.getElementById('remittanceModalOverlay');
+        if (!overlay || !overlay.classList.contains('open')) return;
+
+        if (e.key === 'Escape') {
+            closeRemittanceModal();
+        }
+    });
+</script>
 {% endblock %}
