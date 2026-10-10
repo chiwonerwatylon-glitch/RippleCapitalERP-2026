@@ -1601,7 +1601,7 @@ def create_app(config_name=None):
 
                 # Levy is added on top of the calculated premium
                 premium_amount = round(
-                    premium_calc["total_premium"] + levy, 2
+                    premium_calc["total_premium_exact"] + levy, 2
                 )
 
                 # Parse start date (use today if not provided)
@@ -1915,7 +1915,7 @@ def create_app(config_name=None):
             calc = dict(calc)
             calc["levy"] = round(levy, 2)
             calc["total_premium"] = round(
-                calc["rate_amount"] + calc["stamp_duty"] + levy, 2
+                calc.pop("total_premium_exact") + levy, 2
             )
 
             return jsonify(calc)
