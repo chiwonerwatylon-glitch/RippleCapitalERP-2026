@@ -97,6 +97,7 @@ from .email_tasks import (
 )
 from .tokens import make_reset_token, verify_reset_token
 from .pdf_reports import build_report_pdf
+from .report_exports import REPORT_FORMATS, build_report_csv, build_report_xlsx, build_report_docx
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 UPLOAD_FOLDER = BASE_DIR / "uploads"
@@ -1481,9 +1482,14 @@ def create_app(config_name=None):
     @core_bp.route("/reports/download/<report_type>")
     @login_required
     def download_report(report_type):
-        """Download a report as a PDF with the Ripple Capital logo and name at the top."""
+        """Download a report as PDF, Excel, CSV or DOCX (chosen with ?format=)."""
         if not HAS_NEW_MODELS:
             flash("Reports not available in this version.", "warning")
+            return redirect(url_for("core.reports"))
+
+        fmt = (request.args.get("format") or "").lower()
+        if fmt not in REPORT_FORMATS:
+            flash("Please choose a format: PDF, Excel, CSV or DOCX.", "warning")
             return redirect(url_for("core.reports"))
 
         builder = REPORT_BUILDERS.get(report_type)
@@ -1493,21 +1499,29 @@ def create_app(config_name=None):
 
         try:
             report = builder(get_account_owner_id())
-            pdf = build_report_pdf(
-                title=report["title"],
-                subtitle=report.get("subtitle", ""),
-                headers=report["headers"],
-                rows=report["rows"],
-                numeric_cols=report.get("numeric_cols", ()),
-                col_weights=report.get("col_weights"),
-                summary=report.get("summary"),
-            )
+            if fmt == "pdf":
+                file_obj = build_report_pdf(
+                    title=report["title"],
+                    subtitle=report.get("subtitle", ""),
+                    headers=report["headers"],
+                    rows=report["rows"],
+                    numeric_cols=report.get("numeric_cols", ()),
+                    col_weights=report.get("col_weights"),
+                    summary=report.get("summary"),
+                )
+            elif fmt == "excel":
+                file_obj = build_report_xlsx(report)
+            elif fmt == "csv":
+                file_obj = build_report_csv(report)
+            else:
+                file_obj = build_report_docx(report)
+            mimetype, ext = REPORT_FORMATS[fmt]
             stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             return send_file(
-                pdf,
-                mimetype="application/pdf",
+                file_obj,
+                mimetype=mimetype,
                 as_attachment=True,
-                download_name=f"{report['filename']}_{stamp}.pdf",
+                download_name=f"{report['filename']}_{stamp}{ext}",
             )
         except Exception as e:
             flash(f"Error generating report: {str(e)}", "danger")

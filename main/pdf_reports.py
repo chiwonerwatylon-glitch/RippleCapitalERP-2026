@@ -21,7 +21,7 @@ from reportlab.platypus import (
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 LOGO_PATH = BASE_DIR / "Logo.png"
-COMPANY_NAME = "Ripple Capital Insurance ERP"
+COMPANY_NAME = "Ripple Capital Insurance"
 
 BRAND = colors.HexColor("#1B702D")
 BRAND_LIGHT = colors.HexColor("#E8F5EA")

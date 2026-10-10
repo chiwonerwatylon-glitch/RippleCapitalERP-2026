@@ -1,6 +1,6 @@
 {% extends "sidebar_layout.html" %}
 
-{% block title %}Policy {{ policy.policy_number if policy else 'Details' }} - Ripple Capital Insurance ERP{% endblock %}
+{% block title %}Policy {{ policy.policy_number if policy else 'Details' }} - Ripple Capital Insurance{% endblock %}
 
 {% block page_title %}{% if policy %}Policy #{{ policy.policy_number }}{% else %}Create New Policy{% endif %}{% endblock %}
 {% block page_subtitle %}{% if policy %}View and manage policy details{% else %}Add a new insurance policy{% endif %}{% endblock %}
