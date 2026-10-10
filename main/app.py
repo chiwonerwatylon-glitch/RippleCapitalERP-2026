@@ -96,6 +96,7 @@ from .email_tasks import (
     safe_notify,
 )
 from .tokens import make_reset_token, verify_reset_token
+from .pdf_reports import build_report_pdf
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 UPLOAD_FOLDER = BASE_DIR / "uploads"
@@ -190,22 +191,6 @@ def ensure_user_has_default_products(user):
     return InsuranceProduct.query.filter_by(owner_id=account_id).all()
 
 
-def _csv_download(filename, headers, rows):
-    """Return a CSV file download built from header and row lists."""
-    import csv
-
-    buf = io.StringIO()
-    writer = csv.writer(buf)
-    writer.writerow(headers)
-    writer.writerows(rows)
-    return send_file(
-        io.BytesIO(buf.getvalue().encode("utf-8-sig")),
-        mimetype="text/csv",
-        as_attachment=True,
-        download_name=filename,
-    )
-
-
 def _money(value):
     return round(float(value or 0.0), 2)
 
@@ -289,6 +274,257 @@ def _product_commission_rows(owner_id):
             _money(sum(p.commission_recorded() for p in policies)),
         ])
     return rows
+
+
+def _fmt_money(value):
+    return f"${(value or 0):,.2f}"
+
+
+def _client_name(client):
+    return f"{client.first_name} {client.last_name}" if client else "—"
+
+
+def _insurer_name(policy):
+    return policy.company.name if policy.company else "—"
+
+
+def _report_premium(owner_id):
+    policies = Policy.query.filter_by(owner_id=owner_id).order_by(Policy.policy_number).all()
+    rows = [
+        [
+            p.policy_number,
+            _client_name(p.client),
+            _insurer_name(p),
+            p.product_name or "—",
+            p.premium_amount or 0,
+            p.total_premiums_paid(),
+            p.outstanding_premium(),
+            "Yes" if p.is_fully_remitted() else "No",
+        ]
+        for p in policies
+    ]
+    return {
+        "filename": "Premium_Report",
+        "title": "Premium Report",
+        "subtitle": "All policies",
+        "headers": ["Policy #", "Client", "Insurer", "Product", "Premium", "Collected", "Outstanding", "Remitted"],
+        "rows": rows,
+        "numeric_cols": [4, 5, 6],
+        "col_weights": [1.5, 2, 1.6, 1.8, 1.1, 1.1, 1.1, 1],
+        "summary": [
+            ("Premium written", _fmt_money(sum(p.premium_amount or 0 for p in policies))),
+            ("Premium collected", _fmt_money(sum(p.total_premiums_paid() for p in policies))),
+            ("Outstanding", _fmt_money(sum(p.outstanding_premium() for p in policies))),
+        ],
+    }
+
+
+def _report_commission(owner_id):
+    rows, gross, wht, recorded = [], 0.0, 0.0, 0.0
+    for p in Policy.query.filter_by(owner_id=owner_id).order_by(Policy.policy_number).all():
+        row = p.commission_breakdown()
+        if not row:
+            continue
+        rows.append([
+            p.policy_number,
+            _client_name(p.client),
+            _insurer_name(p),
+            p.product_name or "—",
+            row["base"],
+            f"{row['rate_percent']:g}%",
+            row["gross"],
+            row["withholding_tax"],
+            row["recorded"],
+        ])
+        gross += row["gross"]
+        wht += row["withholding_tax"]
+        recorded += row["recorded"]
+    return {
+        "filename": "Commission_Report",
+        "title": "Commission Report",
+        "subtitle": "Policies fully remitted to the insurer",
+        "headers": [
+            "Policy #", "Client", "Insurer", "Product",
+            "Premium less stamp duty and levy", "Rate", "Gross commission",
+            "Withholding tax (20%)", "Recorded (80%)",
+        ],
+        "rows": rows,
+        "numeric_cols": [4, 6, 7, 8],
+        "col_weights": [1.4, 1.8, 1.5, 1.7, 1.7, 0.7, 1.2, 1.3, 1.2],
+        "summary": [
+            ("Gross commission", _fmt_money(gross)),
+            ("Withholding tax (20%)", _fmt_money(wht)),
+            ("Recorded in books", _fmt_money(recorded)),
+        ],
+    }
+
+
+def _report_clients(owner_id):
+    clients = Client.query.filter_by(owner_id=owner_id).order_by(Client.first_name, Client.last_name).all()
+    rows = [
+        [
+            _client_name(c),
+            c.email or "",
+            c.phone or "",
+            c.address or "",
+            Policy.query.filter_by(owner_id=owner_id, client_id=c.id).count(),
+        ]
+        for c in clients
+    ]
+    return {
+        "filename": "Client_Summary",
+        "title": "Client Summary",
+        "subtitle": "All clients",
+        "headers": ["Client", "Email", "Phone", "Address", "Policies"],
+        "rows": rows,
+        "numeric_cols": [4],
+        "col_weights": [1.8, 2.2, 1.3, 2.6, 0.9],
+        "summary": [("Clients", str(len(clients)))],
+    }
+
+
+def _report_portfolio(owner_id):
+    policies = Policy.query.filter_by(owner_id=owner_id).all()
+    policies.sort(key=lambda p: (
+        _client_name(p.client).lower(),
+        _insurer_name(p).lower(),
+        p.policy_number,
+    ))
+    rows = [
+        [
+            _client_name(p.client),
+            p.policy_number,
+            _insurer_name(p),
+            p.product_name or "—",
+            (p.status or "active").title(),
+            p.start_date.strftime("%d %b %Y") if p.start_date else "—",
+            p.end_date.strftime("%d %b %Y") if p.end_date else "—",
+            p.premium_amount or 0,
+            p.total_premiums_paid(),
+            p.outstanding_premium(),
+        ]
+        for p in policies
+    ]
+    return {
+        "filename": "Policy_Portfolio",
+        "title": "Policy Portfolio",
+        "subtitle": "Grouped by client and insurer",
+        "headers": [
+            "Client", "Policy #", "Insurer", "Product", "Status", "Start", "End",
+            "Premium", "Collected", "Outstanding",
+        ],
+        "rows": rows,
+        "numeric_cols": [7, 8, 9],
+        "col_weights": [1.8, 1.5, 1.4, 1.6, 0.9, 1, 1, 1, 1, 1],
+        "summary": [
+            ("Policies", str(len(policies))),
+            ("Premium", _fmt_money(sum(p.premium_amount or 0 for p in policies))),
+            ("Outstanding", _fmt_money(sum(p.outstanding_premium() for p in policies))),
+        ],
+    }
+
+
+def _report_client_activity(owner_id):
+    clients = Client.query.filter_by(owner_id=owner_id).order_by(Client.first_name, Client.last_name).all()
+    rows = []
+    for c in clients:
+        policies = Policy.query.filter_by(owner_id=owner_id, client_id=c.id).all()
+        claims = Claim.query.filter_by(owner_id=owner_id, client_id=c.id).all()
+        paid_dates = [
+            r.date_received
+            for p in policies
+            for r in p.remittances.all()
+            if r.date_received
+        ]
+        rows.append([
+            _client_name(c),
+            len(policies),
+            sum(1 for p in policies if (p.status or "").lower() == "active"),
+            sum(p.premium_amount or 0 for p in policies),
+            sum(p.total_premiums_paid() for p in policies),
+            sum(p.outstanding_premium() for p in policies),
+            len(claims),
+            sum(cl.claimed_amount or 0 for cl in claims),
+            sum(cl.approved_amount or 0 for cl in claims),
+            max(paid_dates).strftime("%d %b %Y") if paid_dates else "—",
+        ])
+    return {
+        "filename": "Client_Activity",
+        "title": "Client Activity",
+        "subtitle": "Policies, payments and claims by client",
+        "headers": [
+            "Client", "Policies", "Active", "Premium", "Collected", "Outstanding",
+            "Claims", "Claimed", "Approved", "Last payment",
+        ],
+        "rows": rows,
+        "numeric_cols": [1, 2, 3, 4, 5, 6, 7, 8],
+        "col_weights": [1.8, 0.9, 0.9, 1.1, 1.1, 1.1, 0.9, 1.1, 1.1, 1.2],
+        "summary": [
+            ("Clients", str(len(clients))),
+            ("Premium", _fmt_money(sum(r[3] for r in rows))),
+            ("Outstanding", _fmt_money(sum(r[5] for r in rows))),
+            ("Claimed", _fmt_money(sum(r[7] for r in rows))),
+        ],
+    }
+
+
+def _report_company_overview(owner_id):
+    return {
+        "filename": "Company_Overview",
+        "title": "Company Overview",
+        "subtitle": "Partner companies",
+        "headers": [
+            "Company", "Contact Email", "Phone", "Address", "Clients", "Policies",
+            "Active Policies", "Active Commission Rules", "Total Premium",
+        ],
+        "rows": _company_overview_rows(owner_id),
+        "numeric_cols": [4, 5, 6, 7, 8],
+        "col_weights": [1.8, 2, 1.3, 2.4, 0.9, 0.9, 1, 1.2, 1.3],
+    }
+
+
+def _report_company_performance(owner_id):
+    return {
+        "filename": "Company_Performance",
+        "title": "Company Performance",
+        "subtitle": "Premium, commission and claims by company",
+        "headers": [
+            "Company", "Policies", "Premium Written", "Premium Collected", "Outstanding",
+            "Gross Commission", "Withholding Tax (20%)", "Recorded (80%)", "Claims",
+            "Claimed", "Approved",
+        ],
+        "rows": _company_performance_rows(owner_id),
+        "numeric_cols": list(range(1, 11)),
+        "col_weights": [1.8, 0.9, 1.2, 1.2, 1.1, 1.2, 1.2, 1.2, 0.8, 1.1, 1.1],
+    }
+
+
+def _report_product_commission(owner_id):
+    return {
+        "filename": "Product_Commission",
+        "title": "Product & Commission",
+        "subtitle": "Commission rules by company and product",
+        "headers": [
+            "Company", "Product", "Coverage Type", "Commission %", "Rule Active",
+            "Policies", "Premium Written", "Gross Commission", "Withholding Tax (20%)",
+            "Recorded (80%)",
+        ],
+        "rows": _product_commission_rows(owner_id),
+        "numeric_cols": [3, 5, 6, 7, 8, 9],
+        "col_weights": [1.7, 1.8, 1.3, 1, 0.9, 0.9, 1.2, 1.2, 1.2, 1.2],
+    }
+
+
+REPORT_BUILDERS = {
+    "premium-pdf": _report_premium,
+    "commission-pdf": _report_commission,
+    "clients-excel": _report_clients,
+    "policy-portfolio": _report_portfolio,
+    "client-activity": _report_client_activity,
+    "company-overview": _report_company_overview,
+    "company-performance": _report_company_performance,
+    "product-commission": _report_product_commission,
+}
 
 
 def create_app(config_name=None):
@@ -1245,175 +1481,34 @@ def create_app(config_name=None):
     @core_bp.route("/reports/download/<report_type>")
     @login_required
     def download_report(report_type):
-        """Generate and download reports in various formats."""
+        """Download a report as a PDF with the Ripple Capital logo and name at the top."""
         if not HAS_NEW_MODELS:
             flash("Reports not available in this version.", "warning")
             return redirect(url_for("core.reports"))
 
+        builder = REPORT_BUILDERS.get(report_type)
+        if builder is None:
+            flash("Invalid report type.", "warning")
+            return redirect(url_for("core.reports"))
+
         try:
-            owner_id = get_account_owner_id()
-            if report_type == "premium-pdf":
-                # Generate Premium Report as text file
-                policies = Policy.query.filter_by(owner_id=owner_id).all()
-                total_premiums = (
-                    sum(p.total_premiums_paid() for p in policies)
-                    if policies
-                    else 0
-                )
-
-                filename = (
-                    f"Premium_Report_"
-                    f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-                )
-                content = "PREMIUM REPORT\n"
-                content += (
-                    f"Generated: "
-                    f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-                )
-                content += f"{'=' * 50}\n\n"
-                content += (
-                    f"Total Premiums Collected: "
-                    f"${total_premiums:.2f}\n\n"
-                )
-                content += "Policy Details:\n"
-                content += f"{'-' * 50}\n"
-
-                for policy in policies:
-                    content += f"Policy #{policy.policy_number}\n"
-                    content += (
-                        " Client: "
-                        f"{policy.client.full_name() if policy.client else 'N/A'}\n"
-                    )
-                    content += (
-                        f" Amount: "
-                        f"${policy.total_premiums_paid():.2f}\n"
-                    )
-                    content += (
-                        f" Premium: "
-                        f"${policy.premium_amount:.2f}\n\n"
-                    )
-
-                return send_file(
-                    io.BytesIO(content.encode()),
-                    mimetype="text/plain",
-                    as_attachment=True,
-                    download_name=filename,
-                )
-
-            elif report_type == "commission-pdf":
-                # Generate Commission Report as text file
-                policies = Policy.query.filter_by(owner_id=owner_id).all()
-                total_commissions = (
-                    sum(p.total_commission_earned() for p in policies)
-                    if policies
-                    else 0
-                )
-
-                filename = (
-                    f"Commission_Report_"
-                    f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-                )
-                content = "COMMISSION REPORT\n"
-                content += (
-                    f"Generated: "
-                    f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-                )
-                content += f"{'=' * 50}\n\n"
-                content += (
-                    f"Total Commissions Recorded (after WHT): "
-                    f"${total_commissions:.2f}\n\n"
-                )
-                content += "Commission Details:\n"
-                content += f"{'-' * 50}\n"
-
-                for policy in policies:
-                    row = policy.commission_breakdown()
-                    if row:
-                        content += f"Policy #{policy.policy_number}\n"
-                        content += (
-                            " Client: "
-                            f"{policy.client.full_name() if policy.client else 'N/A'}\n"
-                        )
-                        content += f" (Premium less stamp duty and levy): ${row['base']:.2f}\n"
-                        content += f" Commission (gross): ${row['gross']:.2f}\n"
-                        content += f" Withholding tax (20%): ${row['withholding_tax']:.2f}\n"
-                        content += f" Recorded in books (gross x 80%): ${row['recorded']:.2f}\n\n"
-
-                return send_file(
-                    io.BytesIO(content.encode()),
-                    mimetype="text/plain",
-                    as_attachment=True,
-                    download_name=filename,
-                )
-
-            elif report_type == "clients-excel":
-                # Generate Clients Report as CSV
-                clients = Client.query.filter_by(owner_id=owner_id).all()
-
-                filename = (
-                    f"Clients_Report_"
-                    f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-                )
-                content = "First Name,Last Name,Email,Phone,City,Address\n"
-
-                for client in clients:
-                    content += (
-                        f"\"{client.first_name}\","
-                        f"\"{client.last_name}\","
-                        f"\"{client.email or ''}\","
-                        f"\"{client.phone or ''}\","
-                        f"\"{getattr(client, 'city', '') or ''}\","
-                        f"\"{client.address or ''}\"\n"
-                    )
-
-                return send_file(
-                    io.BytesIO(content.encode()),
-                    mimetype="text/csv",
-                    as_attachment=True,
-                    download_name=filename,
-                )
-
-            elif report_type == "company-overview":
-                rows = _company_overview_rows(owner_id)
-                return _csv_download(
-                    f"Company_Overview_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                    [
-                        "Company", "Contact Email", "Phone", "Address", "Clients",
-                        "Policies", "Active Policies", "Active Commission Rules",
-                        "Total Premium",
-                    ],
-                    rows,
-                )
-
-            elif report_type == "company-performance":
-                rows = _company_performance_rows(owner_id)
-                return _csv_download(
-                    f"Company_Performance_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                    [
-                        "Company", "Policies", "Premium Written", "Premium Collected",
-                        "Outstanding", "Gross Commission", "Withholding Tax (20%)",
-                        "Recorded in Books (80%)", "Claims", "Claimed Amount",
-                        "Approved Amount",
-                    ],
-                    rows,
-                )
-
-            elif report_type == "product-commission":
-                rows = _product_commission_rows(owner_id)
-                return _csv_download(
-                    f"Product_Commission_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                    [
-                        "Company", "Product", "Coverage Type", "Commission %", "Rule Active",
-                        "Policies", "Premium Written", "Gross Commission",
-                        "Withholding Tax (20%)", "Recorded in Books (80%)",
-                    ],
-                    rows,
-                )
-
-            else:
-                flash("Invalid report type.", "warning")
-                return redirect(url_for("core.reports"))
-
+            report = builder(get_account_owner_id())
+            pdf = build_report_pdf(
+                title=report["title"],
+                subtitle=report.get("subtitle", ""),
+                headers=report["headers"],
+                rows=report["rows"],
+                numeric_cols=report.get("numeric_cols", ()),
+                col_weights=report.get("col_weights"),
+                summary=report.get("summary"),
+            )
+            stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            return send_file(
+                pdf,
+                mimetype="application/pdf",
+                as_attachment=True,
+                download_name=f"{report['filename']}_{stamp}.pdf",
+            )
         except Exception as e:
             flash(f"Error generating report: {str(e)}", "danger")
             return redirect(url_for("core.reports"))
