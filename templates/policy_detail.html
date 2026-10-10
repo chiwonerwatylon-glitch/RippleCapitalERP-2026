@@ -365,6 +365,12 @@
                 </div>
             </div>
             <div class="policy-item">
+                <div class="policy-item-label">Remitted to Insurer</div>
+                <div class="policy-item-value" style="color: {{ '#10B981' if remitted_to_insurer else '#EF4444' }};">
+                    {{ 'Yes' if remitted_to_insurer else 'No' }}
+                </div>
+            </div>
+            <div class="policy-item">
                 <div class="policy-item-label">Status</div>
                 <div class="policy-item-value">
                     {% set status = policy.status or 'active' %}
