@@ -2,7 +2,8 @@ import re
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
-from .models import db, User, ROLE_ADMIN
+from .models import db, User, ROLE_ADMIN, ROLE_AGENT
+from .models import ROLE_OWNER as _ROLE_OWNER
 from .utils import role_required, get_account_owner_id
 
 # Safely import optional models
@@ -23,6 +24,20 @@ except ImportError:
     ManualJournalForm = None
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
+
+
+def _owner_account_id():
+    """Return the owner account id that staff users should be attached to.
+
+    Owners use their own id; otherwise use the creator's linked owner, falling
+    back to the first owner user.
+    """
+    if current_user.role == _ROLE_OWNER:
+        return current_user.id
+    if current_user.account_owner_id:
+        return current_user.account_owner_id
+    owner = User.query.filter_by(role=_ROLE_OWNER).order_by(User.id).first()
+    return owner.id if owner else None
 
 
 @admin_bp.route("/")
@@ -79,6 +94,8 @@ def add_user():
                 return render_template("admin_add_user.html")
 
             user = User(full_name=username, email=email, role=role, is_active=True)
+            if role in (ROLE_ADMIN, ROLE_AGENT):
+                user.account_owner_id = _owner_account_id()
             user.set_password("password2026")
             db.session.add(user)
             db.session.commit()
@@ -123,6 +140,11 @@ def edit_user(user_id):
             old_email = user.email
             user.email = email
             user.role = role
+            if role in (ROLE_ADMIN, ROLE_AGENT):
+                if user.id != _owner_account_id():
+                    user.account_owner_id = _owner_account_id()
+            elif role == _ROLE_OWNER:
+                user.account_owner_id = None
             db.session.commit()
             if email_changed:
                 flash(
