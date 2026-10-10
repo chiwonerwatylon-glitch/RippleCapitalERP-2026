@@ -1216,21 +1216,23 @@ def create_app(config_name=None):
                 )
                 content += f"{'=' * 50}\n\n"
                 content += (
-                    f"Total Commissions Earned: "
+                    f"Total Commissions Recorded (after WHT): "
                     f"${total_commissions:.2f}\n\n"
                 )
                 content += "Commission Details:\n"
                 content += f"{'-' * 50}\n"
 
                 for policy in policies:
-                    comm = policy.total_commission_earned()
-                    if comm > 0:
+                    gross = policy.commission_gross()
+                    if gross > 0:
                         content += f"Policy #{policy.policy_number}\n"
                         content += (
                             " Client: "
                             f"{policy.client.full_name() if policy.client else 'N/A'}\n"
                         )
-                        content += f" Commission: ${comm:.2f}\n\n"
+                        content += f" Commission (gross): ${gross:.2f}\n"
+                        content += f" Withholding tax (20%): ${policy.withholding_tax():.2f}\n"
+                        content += f" Recorded in books (80%): ${policy.commission_recorded():.2f}\n\n"
 
                 return send_file(
                     io.BytesIO(content.encode()),
@@ -1653,6 +1655,7 @@ def create_app(config_name=None):
                     coverage_amount=sum_insured_amount,
                     premium_amount=premium_amount,
                     levy=levy,
+                    stamp_duty=round(premium_calc["stamp_duty"], 2),
                     selected_rate=selected_rate,
                     premium_frequency=premium_frequency,
                     start_date=start_date,
@@ -1952,22 +1955,19 @@ def create_app(config_name=None):
         )
 
         is_client = current_user.role == ROLE_CLIENT
-        commissions = []
-        if not is_client:
-            rule = CommissionRule.query.filter_by(
-                product_id=policy.product_id,
-                company_id=policy.company_id,
-                is_active=True,
-            ).first()
-            if rule:
-                commissions = [
-                    {
-                        "date_earned": r.date_received,
-                        "amount": r.amount * rule.commission_percent / 100.0,
-                        "notes": f"{rule.commission_percent}% of ${r.amount:,.2f}",
-                    }
-                    for r in remittances
-                ]
+        commission_rows = [] if is_client else policy.commission_breakdown()
+        commissions = [
+            {
+                "date_earned": row["date_earned"],
+                "amount": row["gross"],
+                "notes": (
+                    f"Base ${row['base']:,.2f} x {row['rate_percent']}% = ${row['gross']:,.2f}; "
+                    f"WHT ${row['withholding_tax']:,.2f}; "
+                    f"recorded ${row['recorded']:,.2f}"
+                ),
+            }
+            for row in commission_rows
+        ]
 
         return render_template(
             "policy_detail.html",
@@ -1975,6 +1975,9 @@ def create_app(config_name=None):
             remittances=remittances,
             premiums=remittances,
             commissions=commissions,
+            commission_gross=sum(r["gross"] for r in commission_rows),
+            commission_wht=sum(r["withholding_tax"] for r in commission_rows),
+            commission_recorded=sum(r["recorded"] for r in commission_rows),
             total_paid=total_paid,
             total_commission=total_commission,
             is_client=is_client,

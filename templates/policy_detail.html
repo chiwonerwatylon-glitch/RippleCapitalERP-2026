@@ -442,6 +442,11 @@
             <span class="icon">📊</span>
             Commission Transactions
         </h3>
+        <div class="policy-grid" style="margin-bottom:1rem;">
+            <div class="policy-item"><div class="policy-item-label">Gross Commission</div><div class="policy-item-value">${{ "%.2f"|format(commission_gross or 0) }}</div></div>
+            <div class="policy-item"><div class="policy-item-label">Withholding Tax (20%)</div><div class="policy-item-value">${{ "%.2f"|format(commission_wht or 0) }}</div></div>
+            <div class="policy-item"><div class="policy-item-label">Recorded in Books (80%)</div><div class="policy-item-value">${{ "%.2f"|format(commission_recorded or 0) }}</div></div>
+        </div>
         {% if commissions %}
             <div class="table-responsive">
                 <table aria-label="Commission transactions">
