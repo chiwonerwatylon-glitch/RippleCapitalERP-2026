@@ -1230,10 +1230,10 @@ def create_app(config_name=None):
                             " Client: "
                             f"{policy.client.full_name() if policy.client else 'N/A'}\n"
                         )
-                        content += f" Premium base (premium less stamp duty and levy): ${row['base']:.2f}\n"
+                        content += f" (Premium less stamp duty and levy): ${row['base']:.2f}\n"
                         content += f" Commission (gross): ${row['gross']:.2f}\n"
                         content += f" Withholding tax (20%): ${row['withholding_tax']:.2f}\n"
-                        content += f" Recorded in books (80%): ${row['recorded']:.2f}\n\n"
+                        content += f" Recorded in books (gross x 80%): ${row['recorded']:.2f}\n\n"
 
                 return send_file(
                     io.BytesIO(content.encode()),
