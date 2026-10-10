@@ -238,7 +238,7 @@ def manual_journal():
     if form.validate_on_submit():
         try:
             entry = ManualJournalEntry(
-                owner_id=current_user.id,
+                owner_id=get_account_owner_id(),
                 description=form.description.data,
                 debit_account=form.debit_account.data,
                 credit_account=form.credit_account.data,
@@ -252,7 +252,7 @@ def manual_journal():
         return redirect(url_for("admin.manual_journal"))
 
     try:
-        entries = ManualJournalEntry.query.filter_by(owner_id=current_user.id).order_by(
+        entries = ManualJournalEntry.query.filter_by(owner_id=get_account_owner_id()).order_by(
             ManualJournalEntry.date.desc()
         ).limit(50).all()
     except:

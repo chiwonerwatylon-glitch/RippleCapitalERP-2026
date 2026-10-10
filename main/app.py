@@ -357,6 +357,17 @@ def create_app(config_name=None):
             return []
         return Policy.query.filter_by(client_id=client.id).all()
 
+    def _client_claims():
+        """Return the claims raised against the Client record linked to the current user."""
+        client = Client.query.filter_by(user_id=current_user.id).first()
+        if client is None:
+            return []
+        return (
+            Claim.query.filter_by(client_id=client.id)
+            .order_by(Claim.claim_date.desc())
+            .all()
+        )
+
     @core_bp.route("/")
     @core_bp.route("/dashboard")
     @login_required
@@ -366,7 +377,7 @@ def create_app(config_name=None):
                 if current_user.role == ROLE_CLIENT:
                     policies = _client_policies()
                     return render_template(
-                        "client_dashboard.html", policies=policies
+                        "client_dashboard.html", policies=policies, claims=_client_claims()
                     )
                 else:
                     owner_id = get_account_owner_id()
@@ -408,7 +419,7 @@ def create_app(config_name=None):
                         client_id=current_user.id
                     ).all()
                     return render_template(
-                        "client_dashboard.html", policies=policies
+                        "client_dashboard.html", policies=policies, claims=_client_claims()
                     )
                 else:
                     policies = Policy.query.all()
@@ -428,7 +439,7 @@ def create_app(config_name=None):
             flash(f"Error loading dashboard: {str(e)}", "warning")
             # Render a simple fallback page instead of non-existent index.html
             if current_user.role == ROLE_CLIENT:
-                return render_template("client_dashboard.html", policies=[])
+                return render_template("client_dashboard.html", policies=[], claims=[])
             else:
                 return render_template(
                     "owner_dashboard.html",
@@ -1940,12 +1951,33 @@ def create_app(config_name=None):
             policy.total_commission_earned() if policy else 0.0
         )
 
+        is_client = current_user.role == ROLE_CLIENT
+        commissions = []
+        if not is_client:
+            rule = CommissionRule.query.filter_by(
+                product_id=policy.product_id,
+                company_id=policy.company_id,
+                is_active=True,
+            ).first()
+            if rule:
+                commissions = [
+                    {
+                        "date_earned": r.date_received,
+                        "amount": r.amount * rule.commission_percent / 100.0,
+                        "notes": f"{rule.commission_percent}% of ${r.amount:,.2f}",
+                    }
+                    for r in remittances
+                ]
+
         return render_template(
             "policy_detail.html",
             policy=policy,
             remittances=remittances,
+            premiums=remittances,
+            commissions=commissions,
             total_paid=total_paid,
             total_commission=total_commission,
+            is_client=is_client,
         )
 
     @core_bp.route("/policies/<int:policy_id>/delete", methods=["POST"])
