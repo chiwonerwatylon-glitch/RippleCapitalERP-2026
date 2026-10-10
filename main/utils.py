@@ -3,7 +3,7 @@ from flask import flash, redirect, url_for
 from flask_login import current_user
 from datetime import datetime, date, timedelta
 import uuid
-from .models import Policy
+from .models import Policy, User, ROLE_ADMIN, ROLE_AGENT
 
 def role_required(*roles):
     def decorator(f):
@@ -30,6 +30,11 @@ def get_account_owner_id(user=None):
 
     if getattr(user, "account_owner_id", None):
         return user.account_owner_id
+    # Staff created without a link (e.g. by seed/startup scripts) share the owner's data.
+    if user.role in (ROLE_ADMIN, ROLE_AGENT):
+        owner = User.query.filter_by(role="owner").order_by(User.id).first()
+        if owner:
+            return owner.id
     return user.id
 
 # ==================== PREMIUM CALCULATION LOGIC ====================

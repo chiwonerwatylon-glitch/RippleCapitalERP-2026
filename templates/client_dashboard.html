@@ -422,6 +422,31 @@
             font-size: 0.92rem;
         }
 
+        img, table { max-width: 100%; }
+
+        .claims-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .claims-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 620px; }
+        .claims-table th, .claims-table td { padding: 0.75rem; border-bottom: 1px solid var(--ripple-gray-100); text-align: left; white-space: nowrap; }
+        .claims-table th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ripple-gray-600); background: var(--ripple-gray-50); }
+        .claim-status { display: inline-block; padding: 0.25rem 0.7rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600; background: var(--ripple-gray-100); color: var(--ripple-gray-700); }
+        .claim-status.approved, .claim-status.paid { background: #d1fae5; color: #065f46; }
+        .claim-status.denied { background: #fee2e2; color: #7f1d1d; }
+        .claim-status.pending, .claim-status.under_review { background: #fef3c7; color: #78350f; }
+
+        @media (max-width: 1024px) {
+            .main-container { padding: 1.25rem 1rem 2rem; }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-title { font-size: 1.15rem; }
+            .dashboard-subtitle { font-size: 0.85rem; }
+            .card-body { padding: 1.1rem; }
+            .card-header { padding: 1rem; }
+            .stat-value { font-size: 1.5rem; }
+            .policy-card { padding: 1.1rem; }
+            .client-nav-right { flex-wrap: wrap; gap: 0.5rem 0.9rem; }
+        }
+
         @media (max-width: 768px) {
             .client-nav {
                 padding: 0.9rem 1rem;
@@ -529,6 +554,10 @@
                     {{ policies|selectattr('status', 'equalto', 'expired')|list|length }}
                 </div>
                 <div class="stat-label">Expired Policies</div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-value">{{ claims|length }}</div>
+                <div class="stat-label">Claims Submitted</div>
             </article>
         </section>
 
@@ -644,6 +673,50 @@
                         <p class="empty-state-text">
                             Please contact your Ripple Capital agent to discuss coverage options tailored to your needs.
                         </p>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Claims List -->
+        <section class="content-card" aria-label="Your claims">
+            <div class="card-header">
+                <h2 class="card-title">Your Claims</h2>
+            </div>
+            <div class="card-body" style="padding:0;">
+                {% if claims %}
+                    <div class="claims-wrap">
+                        <table class="claims-table" aria-label="Claims">
+                            <thead>
+                                <tr>
+                                    <th>Claim #</th>
+                                    <th>Policy</th>
+                                    <th>Claim Date</th>
+                                    <th>Claimed</th>
+                                    <th>Approved</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for claim in claims %}
+                                <tr>
+                                    <td>{{ claim.claim_number }}</td>
+                                    <td>{{ claim.policy_ref.policy_number if claim.policy_ref else 'N/A' }}</td>
+                                    <td>{{ claim.claim_date.strftime('%b %d, %Y') if claim.claim_date else 'N/A' }}</td>
+                                    <td>${{ "%.2f"|format(claim.claimed_amount or 0) }}</td>
+                                    <td>${{ "%.2f"|format(claim.approved_amount or 0) }}</td>
+                                    <td>
+                                        <span class="claim-status {{ claim.status }}">{{ (claim.status or 'pending').replace('_', ' ')|upper }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-title">No Claims</div>
+                        <div class="empty-state-text">You have not submitted any claims yet.</div>
                     </div>
                 {% endif %}
             </div>

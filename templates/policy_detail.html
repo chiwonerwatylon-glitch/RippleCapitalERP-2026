@@ -6,9 +6,11 @@
 {% block page_subtitle %}{% if policy %}View and manage policy details{% else %}Add a new insurance policy{% endif %}{% endblock %}
 
 {% block content %}
+{% if not is_client %}
 <div style="margin-bottom:1rem;text-align:right;">
     <a href="{{ url_for('core.edit_policy', policy_id=policy.id) }}" class="btn btn-primary">Edit Policy</a>
 </div>
+{% endif %}
 <style>
     :root {
         /* Ripple brand tokens (if not already global) */
@@ -433,6 +435,7 @@
         {% endif %}
     </section>
 
+    {% if not is_client %}
     <!-- Commissions Section -->
     <section class="content-card">
         <h3 class="card-title">
@@ -472,6 +475,7 @@
             </div>
         {% endif %}
     </section>
+    {% endif %}
 
 {% else %}
     <!-- Creating New Policy -->
