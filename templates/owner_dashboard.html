@@ -194,14 +194,6 @@
         font-size: 0.78rem;
     }
 
-    .rc-trend-badge {
-        padding: 0.1rem 0.4rem;
-        border-radius: 999px;
-        background: rgba(16, 185, 129, 0.09);
-        color: #059669;
-        font-weight: 600;
-    }
-
     .rc-trend-muted {
         color: var(--ripple-gray-400);
     }
@@ -277,7 +269,6 @@
         box-shadow: 0 10px 24px rgba(27, 112, 45, 0.35);
     }
 
-    .rc-btn svg,
     .rc-btn i {
         font-size: 0.9rem;
     }
@@ -507,13 +498,17 @@
     <!-- Header / Context -->
     <div class="rc-dashboard-header-row">
         <div class="rc-dashboard-header-text">
-            <div class="rc-dashboard-title">Welcome back, {{ current_user.full_name or 'User' }}</div>
+            <div class="rc-dashboard-title">
+                Welcome back, {{ current_user.full_name or 'User' }}
+            </div>
             <div class="rc-dashboard-subtitle">
                 Your agency overview at a glance – clients, companies, policies, and revenue performance.
             </div>
-            <div class="rc-dashboard-date">
-                Today is {{ (datetime.utcnow() | default(datetime.now())).strftime('%A, %B %d, %Y') }}
-            </div>
+            {% if datetime is defined %}
+                <div class="rc-dashboard-date">
+                    Today is {{ datetime.utcnow().strftime('%A, %B %d, %Y') }}
+                </div>
+            {% endif %}
         </div>
         <div>
             <span class="rc-pill">
@@ -529,17 +524,13 @@
             <!-- Clients -->
             <article class="rc-stat-card" aria-label="Clients summary">
                 <div class="rc-stat-header">
-                    <div>
-                        <div class="rc-stat-title">Active Clients</div>
-                    </div>
+                    <div class="rc-stat-title">Active Clients</div>
                     <div class="rc-stat-icon-wrapper" aria-hidden="true">👥</div>
                 </div>
                 <div class="rc-stat-value">{{ clients_count }}</div>
                 <div class="rc-stat-subtext">Total clients currently attached to your agency</div>
                 <div class="rc-stat-footer">
-                    <div class="rc-stat-trend">
-                        <span class="rc-trend-muted">Client base</span>
-                    </div>
+                    <span class="rc-trend-muted">Client base</span>
                     <a href="{{ url_for('core.clients') }}" class="rc-stat-link">Manage clients →</a>
                 </div>
             </article>
@@ -547,17 +538,13 @@
             <!-- Companies -->
             <article class="rc-stat-card" aria-label="Companies summary">
                 <div class="rc-stat-header">
-                    <div>
-                        <div class="rc-stat-title">Partner Companies</div>
-                    </div>
+                    <div class="rc-stat-title">Partner Companies</div>
                     <div class="rc-stat-icon-wrapper" aria-hidden="true">🏢</div>
                 </div>
                 <div class="rc-stat-value">{{ companies_count }}</div>
                 <div class="rc-stat-subtext">Insurers & underwriters linked to your book</div>
                 <div class="rc-stat-footer">
-                    <div class="rc-stat-trend">
-                        <span class="rc-trend-muted">Product network</span>
-                    </div>
+                    <span class="rc-trend-muted">Product network</span>
                     <a href="{{ url_for('core.companies') }}" class="rc-stat-link">View companies →</a>
                 </div>
             </article>
@@ -565,17 +552,13 @@
             <!-- Policies -->
             <article class="rc-stat-card" aria-label="Policies summary">
                 <div class="rc-stat-header">
-                    <div>
-                        <div class="rc-stat-title">Total Policies</div>
-                    </div>
+                    <div class="rc-stat-title">Total Policies</div>
                     <div class="rc-stat-icon-wrapper" aria-hidden="true">📋</div>
                 </div>
                 <div class="rc-stat-value">{{ policies_count }}</div>
                 <div class="rc-stat-subtext">Issued and recorded policies managed by you</div>
                 <div class="rc-stat-footer">
-                    <div class="rc-stat-trend">
-                        <span class="rc-trend-muted">Portfolio size</span>
-                    </div>
+                    <span class="rc-trend-muted">Portfolio size</span>
                     <a href="{{ url_for('core.policies') }}" class="rc-stat-link">View policies →</a>
                 </div>
             </article>
@@ -583,9 +566,7 @@
             <!-- Premiums -->
             <article class="rc-stat-card" aria-label="Premiums summary">
                 <div class="rc-stat-header">
-                    <div>
-                        <div class="rc-stat-title">Total Premiums</div>
-                    </div>
+                    <div class="rc-stat-title">Total Premiums</div>
                     <div class="rc-stat-icon-wrapper" aria-hidden="true">💵</div>
                 </div>
                 <div class="rc-stat-value">
@@ -593,9 +574,7 @@
                 </div>
                 <div class="rc-stat-subtext">Cumulative premiums received across all policies</div>
                 <div class="rc-stat-footer">
-                    <div class="rc-stat-trend">
-                        <span class="rc-trend-muted">Cash inflow</span>
-                    </div>
+                    <span class="rc-trend-muted">Cash inflow</span>
                     <a href="{{ url_for('core.premium_remittance') }}" class="rc-stat-link">Premium remittance →</a>
                 </div>
             </article>
@@ -603,9 +582,7 @@
             <!-- Commissions -->
             <article class="rc-stat-card" aria-label="Commissions summary">
                 <div class="rc-stat-header">
-                    <div>
-                        <div class="rc-stat-title">Total Commissions</div>
-                    </div>
+                    <div class="rc-stat-title">Total Commissions</div>
                     <div class="rc-stat-icon-wrapper" aria-hidden="true">💰</div>
                 </div>
                 <div class="rc-stat-value">
@@ -613,9 +590,7 @@
                 </div>
                 <div class="rc-stat-subtext">Lifetime commissions earned from your portfolio</div>
                 <div class="rc-stat-footer">
-                    <div class="rc-stat-trend">
-                        <span class="rc-trend-muted">Revenue performance</span>
-                    </div>
+                    <span class="rc-trend-muted">Revenue performance</span>
                     <a href="{{ url_for('core.reports') }}" class="rc-stat-link">Financial reports →</a>
                 </div>
             </article>
@@ -736,6 +711,18 @@
                     </div>
 
                     {% for policy in recent_policies[:5] %}
+                        {% set created_date = policy.created_at or policy.start_date or policy.issue_date %}
+                        {% set client = policy.client %}
+                        {% if client %}
+                            {% if client.full_name is defined %}
+                                {% set client_name = client.full_name() if client.full_name is callable else client.full_name %}
+                            {% else %}
+                                {% set client_name = (client.first_name or '') ~ ' ' ~ (client.last_name or '') %}
+                            {% endif %}
+                        {% else %}
+                            {% set client_name = None %}
+                        {% endif %}
+
                         <div class="rc-policy-row">
                             <!-- Policy column -->
                             <div>
@@ -747,19 +734,19 @@
                                     {% endif %}
                                 </div>
                                 <div class="rc-policy-meta">
-                                    Created {{ (policy.created_at or policy.start_date or policy.issue_date)|default('') }}
+                                    {% if created_date %}
+                                        Created {{ created_date.strftime('%b %d, %Y') }}
+                                    {% else %}
+                                        Creation date unavailable
+                                    {% endif %}
                                 </div>
                             </div>
 
                             <!-- Client column -->
                             <div>
-                                {% if policy.client %}
-                                    <div class="rc-policy-title">
-                                        {{ policy.client.full_name() if policy.client.full_name is defined else policy.client.first_name ~ ' ' ~ policy.client.last_name }}
-                                    </div>
-                                    <div class="rc-policy-meta">
-                                        ID: {{ policy.client_id }}
-                                    </div>
+                                {% if client_name %}
+                                    <div class="rc-policy-title">{{ client_name }}</div>
+                                    <div class="rc-policy-meta">ID: {{ policy.client_id }}</div>
                                 {% else %}
                                     <div class="rc-policy-meta">No client linked</div>
                                 {% endif %}

@@ -143,7 +143,7 @@
             box-shadow: 0 4px 12px rgba(27, 112, 45, 0.3);
             padding: 4px;
         }
-        
+
         .sidebar-logo-icon img {
             width: 100%;
             height: 100%;
@@ -353,6 +353,8 @@
             position: sticky;
             top: 0;
             z-index: 500;
+            flex-wrap: wrap;
+            gap: 0.75rem;
         }
 
         .top-nav-left {
@@ -377,6 +379,7 @@
             display: flex;
             gap: 1rem;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .logout-btn {
@@ -397,6 +400,7 @@
                 background 0.18s ease,
                 transform 0.12s ease,
                 box-shadow 0.18s ease;
+            white-space: nowrap;
         }
 
         .logout-btn:hover {
@@ -455,10 +459,17 @@
             border-left-color: #f59e0b;
         }
 
+        .alert-info {
+            background: #dbeafe;
+            color: #1d4ed8;
+            border-left-color: #3b82f6;
+        }
+
         /* GLOBAL SEARCH */
         .global-search-wrapper {
             position: relative;
             width: 280px;
+            max-width: 100%;
         }
 
         .global-search-input {
@@ -483,6 +494,7 @@
             transform: translateY(-50%);
             color: var(--ripple-gray-400);
             font-size: 0.9rem;
+            pointer-events: none;
         }
 
         .search-results {
@@ -512,20 +524,51 @@
             transition: background 0.12s ease;
         }
 
-        .search-result-item:hover {
-            background: var(--ripple-gray-50);
+        .search-result-item:last-child {
+            border-bottom: none;
         }
 
-        .search-result-icon { font-size: 0.9rem; color: var(--ripple-primary); width: 20px; text-align: center; }
-        .search-result-content { flex: 1; }
-        .search-result-title { font-weight: 600; font-size: 0.9rem; }
-        .search-result-subtitle { font-size: 0.8rem; color: var(--ripple-gray-500); }
-        .search-results-empty { padding: 1.5rem; text-align: center; color: var(--ripple-gray-500); font-size: 0.9rem; }
+        .search-result-item:hover,
+        .search-result-item:focus {
+            background: var(--ripple-gray-50);
+            outline: none;
+        }
 
-        .alert-info {
-            background: #dbeafe;
-            color: #1d4ed8;
-            border-left-color: #3b82f6;
+        .search-result-icon {
+            font-size: 0.9rem;
+            color: var(--ripple-primary);
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .search-result-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .search-result-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-result-subtitle {
+            font-size: 0.8rem;
+            color: var(--ripple-gray-500);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-results-empty,
+        .search-results-loading {
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--ripple-gray-500);
+            font-size: 0.9rem;
         }
 
         /* RESPONSIVE BEHAVIOR */
@@ -542,6 +585,17 @@
             }
             .hamburger-toggle {
                 display: inline-flex;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .global-search-wrapper {
+                width: 100%;
+                order: 3;
+            }
+            .top-nav-right {
+                width: 100%;
+                justify-content: space-between;
             }
         }
 
@@ -642,14 +696,14 @@
                                    class="sidebar-menu-link {% if request.endpoint == 'core.premium_remittance' %}active{% endif %}">
                                     <i class="sidebar-menu-icon fas fa-credit-card"></i>
                                     <span class="sidebar-menu-label">Premium Remittance</span>
+                                    <span class="sidebar-menu-chevron"><i class="fas fa-chevron-right"></i></span>
+                                </a>
+                            </li>
                             <li class="sidebar-menu-item">
                                 <a href="{{ url_for('core.claims') }}"
                                    class="sidebar-menu-link {% if request.endpoint == 'core.claims' %}active{% endif %}">
                                     <i class="sidebar-menu-icon fas fa-file-invoice"></i>
                                     <span class="sidebar-menu-label">Claims</span>
-                                    <span class="sidebar-menu-chevron"><i class="fas fa-chevron-right"></i></span>
-                                </a>
-                            </li>
                                     <span class="sidebar-menu-chevron"><i class="fas fa-chevron-right"></i></span>
                                 </a>
                             </li>
@@ -672,7 +726,7 @@
                             <ul class="sidebar-menu">
                                 <li class="sidebar-menu-item">
                                     <a href="{{ url_for('admin.dashboard') }}"
-                                       class="sidebar-menu-link">
+                                       class="sidebar-menu-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
                                         <i class="sidebar-menu-icon fas fa-cog"></i>
                                         <span class="sidebar-menu-label">Admin Panel</span>
                                         <span class="sidebar-menu-chevron"><i class="fas fa-chevron-right"></i></span>
@@ -778,11 +832,18 @@
                 <p class="page-subtitle">{% block page_subtitle %}{% endblock %}</p>
             </div>
             <div class="top-nav-right">
-            <div class="global-search-wrapper">
-                <i class="global-search-icon fas fa-search"></i>
-                <input type="text" class="global-search-input" id="globalSearchInput" placeholder="Search clients, policies, claims...">
-                <div class="search-results" id="searchResults" style="display: none;"></div>
-            </div>
+                <div class="global-search-wrapper" role="search">
+                    <i class="global-search-icon fas fa-search"></i>
+                    <input
+                        type="text"
+                        class="global-search-input"
+                        id="globalSearchInput"
+                        placeholder="Search clients, policies, claims..."
+                        aria-label="Global search"
+                        autocomplete="off"
+                    >
+                    <div class="search-results" id="searchResults" style="display: none;"></div>
+                </div>
                 <a href="{{ url_for('auth.logout') }}" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
@@ -837,48 +898,117 @@
             }
         });
     });
+
+    // ---- GLOBAL SEARCH ----
+    (function () {
+        const input = document.getElementById('globalSearchInput');
+        const resultsBox = document.getElementById('searchResults');
+        if (!input || !resultsBox) return;
+
+        let debounceTimer = null;
+        let activeController = null;
+
+        function closeResults() {
+            resultsBox.style.display = 'none';
+            resultsBox.innerHTML = '';
+        }
+
+        function renderLoading() {
+            resultsBox.innerHTML = '<div class="search-results-loading">Searching…</div>';
+            resultsBox.style.display = 'block';
+        }
+
+        function renderEmpty() {
+            resultsBox.innerHTML = '<div class="search-results-empty">No results found</div>';
+            resultsBox.style.display = 'block';
+        }
+
+        function renderResults(results) {
+            resultsBox.innerHTML = results.map(function (result) {
+                const icon = result.icon || 'fa-circle';
+                const title = result.title || 'Untitled';
+                const subtitle = result.subtitle || '';
+                const url = result.url || '#';
+                return (
+                    '<a href="' + url + '" class="search-result-item">' +
+                        '<i class="search-result-icon fas ' + icon + '"></i>' +
+                        '<div class="search-result-content">' +
+                            '<div class="search-result-title">' + title + '</div>' +
+                            '<div class="search-result-subtitle">' + subtitle + '</div>' +
+                        '</div>' +
+                    '</a>'
+                );
+            }).join('');
+            resultsBox.style.display = 'block';
+        }
+
+        async function runSearch(query) {
+            if (activeController) {
+                activeController.abort();
+            }
+            activeController = new AbortController();
+
+            renderLoading();
+
+            try {
+                const response = await fetch(
+                    '{{ url_for("core.global_search") }}?q=' + encodeURIComponent(query),
+                    { signal: activeController.signal }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Search request failed');
+                }
+
+                const results = await response.json();
+
+                if (!Array.isArray(results) || results.length === 0) {
+                    renderEmpty();
+                } else {
+                    renderResults(results);
+                }
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Search error:', error);
+                    resultsBox.innerHTML =
+                        '<div class="search-results-empty">Something went wrong. Please try again.</div>';
+                    resultsBox.style.display = 'block';
+                }
+            }
+        }
+
+        input.addEventListener('input', function () {
+            const query = this.value.trim();
+
+            if (debounceTimer) {
+                clearTimeout(debounceTimer);
+            }
+
+            if (query.length < 2) {
+                closeResults();
+                return;
+            }
+
+            debounceTimer = setTimeout(function () {
+                runSearch(query);
+            }, 250);
+        });
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeResults();
+                input.blur();
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.global-search-wrapper')) {
+                closeResults();
+            }
+        });
+    })();
 </script>
 
 {% block extra_js %}{% endblock %}
 </body>
 </html>
-
-<script>
-    document.getElementById("globalSearchInput").addEventListener("input", async function() {
-        const query = this.value.trim();
-        const searchResults = document.getElementById("searchResults");
-        
-        if (query.length < 2) {
-            searchResults.style.display = "none";
-            return;
-        }
-        
-        try {
-            const response = await fetch(`{{ url_for("core.global_search") }}?q=${encodeURIComponent(query)}`);
-            const results = await response.json();
-            
-            if (results.length === 0) {
-                searchResults.innerHTML = '<div class="search-results-empty">No results found</div>';
-            } else {
-                searchResults.innerHTML = results.map(result => `
-                    <a href="${result.url}" class="search-result-item">
-                        <i class="search-result-icon fas ${result.icon}"></i>
-                        <div class="search-result-content">
-                            <div class="search-result-title">${result.title}</div>
-                            <div class="search-result-subtitle">${result.subtitle}</div>
-                        </div>
-                    </a>
-                `).join("");
-            }
-            searchResults.style.display = "block";
-        } catch (error) {
-            console.error("Search error:", error);
-        }
-    });
-    
-    document.addEventListener("click", function(e) {
-        if (!e.target.closest(".global-search-wrapper")) {
-            document.getElementById("searchResults").style.display = "none";
-        }
-    });
-</script>

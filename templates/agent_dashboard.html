@@ -6,24 +6,112 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}">
     <style>
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
+        :root {
+            --ripple-primary: #1B702D;
+            --ripple-primary-light: #2D9F42;
+            --ripple-primary-lighter: #E8F5EA;
+            --ripple-secondary: #FBA300;
+            --ripple-secondary-light: #FDB833;
+            --ripple-secondary-lighter: #FFF3E0;
+
+            --ripple-gray-900: #111827;
+            --ripple-gray-800: #1F2937;
+            --ripple-gray-700: #374151;
+            --ripple-gray-600: #4B5563;
+            --ripple-gray-500: #6B7280;
+            --ripple-gray-400: #9CA3AF;
+            --ripple-gray-300: #D1D5DB;
+            --ripple-gray-200: #E5E7EB;
+            --ripple-gray-100: #F3F4F6;
+            --ripple-gray-50: #F9FAFB;
+
+            --ripple-success: #10B981;
+            --ripple-warning: #F59E0B;
+            --ripple-error: #EF4444;
+            --ripple-info: #3B82F6;
+
+            --ripple-shadow-md: 0 10px 25px rgba(15, 23, 42, 0.08);
+            --ripple-shadow-strong: 0 22px 45px rgba(15, 23, 42, 0.18);
         }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e5eee7 100%);
+            min-height: 100vh;
+            color: var(--ripple-gray-900);
+        }
+
+        /* NAVBAR */
+        .agent-nav {
+            background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
+            padding: 1rem 2rem;
+            box-shadow: var(--ripple-shadow-strong);
+            border-bottom: 3px solid var(--ripple-secondary);
+        }
+
+        .agent-nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .agent-nav-brand {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.03em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .agent-nav-right {
+            display: flex;
+            gap: 1.4rem;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.92);
+            font-size: 0.9rem;
+        }
+
+        .agent-nav-right a {
+            color: rgba(255, 255, 255, 0.92);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.3rem 0.65rem;
+            border-radius: 999px;
+            transition: background 0.16s ease, color 0.16s ease;
+        }
+
+        .agent-nav-right a:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+        }
+
+        /* DASHBOARD HEADER */
         .dashboard-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 3rem 1rem;
+            background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
+            color: #ffffff;
+            padding: 2.6rem 1rem 2.4rem;
             margin-bottom: 2rem;
-            border-radius: 0 0 24px 24px;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            border-radius: 0 0 28px 28px;
+            box-shadow: 0 16px 36px rgba(27, 112, 45, 0.35);
         }
 
         .dashboard-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
+            font-size: 1.9rem;
+            font-weight: 800;
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.02em;
         }
 
         .dashboard-subtitle {
@@ -31,40 +119,83 @@
             opacity: 0.95;
         }
 
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* ALERTS */
+        .alert {
+            padding: 1rem 1.1rem;
+            border-radius: 0.8rem;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.08);
+            border-left-color: var(--ripple-success);
+            color: #065f46;
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.08);
+            border-left-color: var(--ripple-error);
+            color: #7f1d1d;
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.08);
+            border-left-color: var(--ripple-warning);
+            color: #78350f;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.08);
+            border-left-color: var(--ripple-info);
+            color: #1e3a8a;
+        }
+
+        /* STAT CARDS */
         .stats-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 1.4rem;
             margin-bottom: 2rem;
         }
 
         .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
-            border-left: 4px solid #667eea;
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1.6rem 1.5rem;
+            box-shadow: var(--ripple-shadow-md);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-left: 4px solid var(--ripple-primary);
         }
 
         .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+            transform: translateY(-3px);
+            box-shadow: var(--ripple-shadow-strong);
         }
 
         .stat-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #667eea;
-            margin-bottom: 0.5rem;
+            font-size: 2.1rem;
+            font-weight: 800;
+            color: var(--ripple-primary);
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.02em;
         }
 
         .stat-label {
-            font-size: 0.95rem;
-            color: #6b7280;
+            font-size: 0.9rem;
+            color: var(--ripple-gray-600);
             font-weight: 500;
         }
 
+        /* ACTION BAR */
         .action-bar {
             display: flex;
             gap: 1rem;
@@ -73,56 +204,65 @@
         }
 
         .btn {
-            display: inline-block;
-            padding: 0.75rem 1.5rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.6rem;
+            background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
+            color: #ffffff;
             border: none;
-            border-radius: 8px;
+            border-radius: 999px;
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
             font-size: 0.95rem;
+            box-shadow: 0 10px 24px rgba(27, 112, 45, 0.4);
         }
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 14px 30px rgba(27, 112, 45, 0.55);
         }
 
         .btn-secondary {
-            background: #e5e7eb;
-            color: #374151;
+            background: #ffffff;
+            color: var(--ripple-gray-800);
+            border: 1px solid var(--ripple-gray-300);
+            box-shadow: none;
         }
 
         .btn-secondary:hover {
-            background: #d1d5db;
+            background: var(--ripple-primary-lighter);
+            border-color: var(--ripple-primary);
+            color: var(--ripple-primary);
         }
 
+        /* CONTENT CARD / TABLE */
         .content-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            background: #ffffff;
+            border-radius: 1rem;
+            box-shadow: var(--ripple-shadow-md);
             overflow: hidden;
             margin-bottom: 2rem;
+            border: 1px solid var(--ripple-gray-200);
         }
 
         .card-header {
-            background: linear-gradient(135deg, #f5f7fa 0%, white 100%);
-            padding: 1.5rem;
-            border-bottom: 1px solid #e5e7eb;
+            background: linear-gradient(135deg, var(--ripple-gray-50) 0%, #ffffff 100%);
+            padding: 1.3rem 1.5rem;
+            border-bottom: 1px solid var(--ripple-gray-200);
         }
 
         .card-title {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--ripple-gray-900);
             margin: 0;
         }
 
         .card-body {
-            padding: 2rem;
+            padding: 1.6rem 1.6rem 1.8rem;
         }
 
         .table-responsive {
@@ -133,31 +273,34 @@
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
+            font-size: 0.9rem;
         }
 
         thead {
-            background: #f9fafb;
+            background: var(--ripple-gray-50);
         }
 
         th {
-            padding: 1rem;
+            padding: 0.9rem 1rem;
             text-align: left;
-            font-weight: 600;
-            color: #374151;
-            border-bottom: 2px solid #e5e7eb;
-            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--ripple-gray-700);
+            border-bottom: 1px solid var(--ripple-gray-200);
+            font-size: 0.78rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
         }
 
         td {
-            padding: 1rem;
-            border-bottom: 1px solid #e5e7eb;
-            color: #6b7280;
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid var(--ripple-gray-100);
+            color: var(--ripple-gray-600);
+            vertical-align: middle;
         }
 
         tbody tr:hover {
-            background: #f9fafb;
+            background: var(--ripple-primary-lighter);
         }
 
         tbody tr:last-child td {
@@ -166,9 +309,9 @@
 
         .status-badge {
             display: inline-block;
-            padding: 0.4rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
+            padding: 0.35rem 0.8rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
             font-weight: 600;
         }
 
@@ -189,63 +332,72 @@
 
         .action-buttons {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.4rem;
+            flex-wrap: wrap;
         }
 
         .action-btn {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.45rem 0.9rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.3s ease;
+            border: none;
+            transition: background 0.16s ease, color 0.16s ease, transform 0.12s ease;
+            white-space: nowrap;
         }
 
-        .action-btn:hover {
-            background: #764ba2;
+        .action-btn-primary {
+            background: #ffffff;
+            color: var(--ripple-primary);
+            border: 1px solid rgba(27, 112, 45, 0.4);
+        }
+
+        .action-btn-primary:hover {
+            background: var(--ripple-primary-lighter);
+            border-color: var(--ripple-primary);
+            transform: translateY(-1px);
         }
 
         .action-btn-secondary {
-            background: #d1d5db;
-            color: #374151;
+            background: var(--ripple-secondary-lighter);
+            color: #92400e;
+            border: 1px solid rgba(251, 163, 0, 0.5);
         }
 
         .action-btn-secondary:hover {
-            background: #9ca3af;
+            background: #fde68a;
+            border-color: var(--ripple-secondary);
+            transform: translateY(-1px);
         }
 
+        /* EMPTY STATE */
         .empty-state {
             text-align: center;
-            padding: 3rem 1rem;
-            color: #6b7280;
+            padding: 2.6rem 1rem;
+            color: var(--ripple-gray-600);
         }
 
         .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+            font-size: 2.6rem;
+            margin-bottom: 0.9rem;
         }
 
         .empty-state-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #374151;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--ripple-gray-800);
             margin-bottom: 0.5rem;
         }
 
         .empty-state-text {
-            color: #6b7280;
-            margin-bottom: 1.5rem;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
+            color: var(--ripple-gray-600);
+            margin-bottom: 1.4rem;
+            font-size: 0.92rem;
         }
 
         @media (max-width: 768px) {
@@ -263,28 +415,40 @@
 
             .btn {
                 width: 100%;
-                text-align: center;
+                justify-content: center;
             }
 
             table {
-                font-size: 0.9rem;
+                font-size: 0.88rem;
             }
 
             th, td {
-                padding: 0.75rem 0.5rem;
+                padding: 0.75rem 0.6rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .action-btn {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
 </head>
 <body>
 <!-- Navigation -->
-<nav style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1rem 2rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-    <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
-        <div style="font-size: 1.5rem; font-weight: 700; color: white;">💼 Ripple Capital</div>
-        <div style="display: flex; gap: 1.5rem; align-items: center; color: rgba(255,255,255,0.9);">
-            <span style="font-weight: 500;">{{ current_user.full_name }} ({{ current_user.role }})</span>
-            <a href="{{ url_for('core.profile') }}" style="color: rgba(255,255,255,0.9); text-decoration: none; font-weight: 500;">Profile</a>
-            <a href="{{ url_for('auth.logout') }}" style="color: rgba(255,255,255,0.9); text-decoration: none; font-weight: 500;">Logout</a>
+<nav class="agent-nav">
+    <div class="agent-nav-inner">
+        <div class="agent-nav-brand">
+            💼 <span>Ripple Capital</span>
+        </div>
+        <div class="agent-nav-right">
+            <span>{{ current_user.full_name }} ({{ current_user.role }})</span>
+            <a href="{{ url_for('core.profile') }}">Profile</a>
+            <a href="{{ url_for('auth.logout') }}">Logout</a>
         </div>
     </div>
 </nav>
@@ -301,13 +465,23 @@
 <div class="container">
     <!-- Alerts -->
     {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div style="background: {% if category == 'success' %}#d1fae5{% elif category == 'danger' %}#fee2e2{% else %}#dbeafe{% endif %}; border-left: 4px solid {% if category == 'success' %}#10b981{% elif category == 'danger' %}#ef4444{% else %}#667eea{% endif %}; color: {% if category == 'success' %}#065f46{% elif category == 'danger' %}#7f1d1d{% else %}#0c2d6b{% endif %}; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-weight: 500;">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
+        {% if messages %}
+            {% for category, message in messages %}
+                {% set cat = category.lower() %}
+                {% if cat in ['danger', 'error'] %}
+                    {% set cls = 'alert-danger' %}
+                {% elif cat == 'warning' %}
+                    {% set cls = 'alert-warning' %}
+                {% elif cat == 'success' %}
+                    {% set cls = 'alert-success' %}
+                {% else %}
+                    {% set cls = 'alert-info' %}
+                {% endif %}
+                <div class="alert {{ cls }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
     {% endwith %}
 
     <!-- Stats Cards -->
@@ -317,19 +491,31 @@
             <div class="stat-label">Total Policies</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value">${{ "%.2f"|format(total_commission) }}</div>
+            <div class="stat-value">
+                ${{ "%.2f"|format(total_commission or 0) }}
+            </div>
             <div class="stat-label">Total Commission</div>
         </div>
-        <div class="stat-card" style="border-left-color: #10b981;">
-            <div class="stat-value" style="color: #10b981;">{{ policies|selectattr('status', 'equalto', 'active')|list|length }}</div>
+        <div class="stat-card" style="border-left-color: var(--ripple-success);">
+            <div class="stat-value" style="color: var(--ripple-success);">
+                {{ policies|selectattr('status', 'equalto', 'active')|list|length }}
+            </div>
             <div class="stat-label">Active Policies</div>
         </div>
     </div>
 
     <!-- Action Bar -->
     <div class="action-bar">
-        <a href="{{ url_for('core.policy_create') }}" class="btn">➕ Create New Policy</a>
-        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">⚙️ Admin Panel</a>
+        <a href="{{ url_for('core.policy_create') }}" class="btn">
+            <i class="fas fa-plus"></i>
+            <span>Create New Policy</span>
+        </a>
+        {% if current_user.role == 'admin' %}
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-cog"></i>
+                <span>Admin Panel</span>
+            </a>
+        {% endif %}
     </div>
 
     <!-- Policies Table -->
@@ -340,7 +526,7 @@
         <div class="card-body">
             {% if policies %}
                 <div class="table-responsive">
-                    <table>
+                    <table aria-label="Agent policies table">
                         <thead>
                             <tr>
                                 <th>Policy #</th>
@@ -350,27 +536,51 @@
                                 <th>Start Date</th>
                                 <th>End Date</th>
                                 <th>Status</th>
-                                <th>Actions</th>
+                                <th style="text-align: right;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for policy in policies %}
                             <tr>
-                                <td><strong>#{{ policy.policy_number }}</strong></td>
-                                <td>{{ policy.product_name }}</td>
-                                <td>{{ policy.client.full_name }}</td>
-                                <td>${{ "%.2f"|format(policy.premium_amount) }}</td>
-                                <td>{{ policy.start_date.strftime('%b %d, %Y') }}</td>
-                                <td>{{ policy.end_date.strftime('%b %d, %Y') }}</td>
+                                <td><strong>#{{ policy.policy_number or policy.id }}</strong></td>
+                                <td>{{ policy.product_name or 'N/A' }}</td>
                                 <td>
-                                    <span class="status-badge {% if policy.status == 'active' %}status-active{% elif policy.status == 'expired' %}status-expired{% else %}status-pending{% endif %}">
-                                        {{ policy.status|upper }}
-                                    </span>
+                                    {% if policy.client %}
+                                        {% if policy.client.full_name is defined %}
+                                            {{ policy.client.full_name() if policy.client.full_name is callable else policy.client.full_name }}
+                                        {% else %}
+                                            {{ (policy.client.first_name or '') ~ ' ' ~ (policy.client.last_name or '') }}
+                                        {% endif %}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td>${{ "%.2f"|format(policy.premium_amount or 0) }}</td>
+                                <td>
+                                    {{ policy.start_date.strftime('%b %d, %Y') if policy.start_date else 'N/A' }}
                                 </td>
                                 <td>
-                                    <div class="action-buttons">
-                                        <a href="{{ url_for('core.policy_view', policy_id=policy.id) }}" class="action-btn">View</a>
-                                        <a href="{{ url_for('core.policy_premium_record', policy_id=policy.id) }}" class="action-btn action-btn-secondary">Add Premium</a>
+                                    {{ policy.end_date.strftime('%b %d, %Y') if policy.end_date else 'N/A' }}
+                                </td>
+                                <td>
+                                    {% set status = policy.status or 'active' %}
+                                    <span class="status-badge
+                                        {% if status == 'active' %}status-active
+                                        {% elif status == 'expired' %}status-expired
+                                        {% else %}status-pending{% endif %}">
+                                        {{ status|upper }}
+                                    </span>
+                                </td>
+                                <td style="text-align: right;">
+                                    <div class="action-buttons" style="justify-content: flex-end;">
+                                        <a href="{{ url_for('core.policy_view', policy_id=policy.id) }}" class="action-btn action-btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                            <span>View</span>
+                                        </a>
+                                        <a href="{{ url_for('core.policy_premium_record', policy_id=policy.id) }}" class="action-btn action-btn-secondary">
+                                            <i class="fas fa-plus"></i>
+                                            <span>Add Premium</span>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -382,8 +592,11 @@
                 <div class="empty-state">
                     <div class="empty-state-icon">📋</div>
                     <div class="empty-state-title">No Policies Yet</div>
-                    <div class="empty-state-text">Start by creating your first policy</div>
-                    <a href="{{ url_for('core.policy_create') }}" class="btn">Create Policy</a>
+                    <div class="empty-state-text">Start by creating your first policy.</div>
+                    <a href="{{ url_for('core.policy_create') }}" class="btn">
+                        <i class="fas fa-plus"></i>
+                        <span>Create Policy</span>
+                    </a>
                 </div>
             {% endif %}
         </div>
@@ -391,4 +604,3 @@
 </div>
 </body>
 </html>
-

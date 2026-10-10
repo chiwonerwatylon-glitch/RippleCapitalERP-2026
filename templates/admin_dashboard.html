@@ -343,7 +343,7 @@
                 <div class="stat-icon-row">
                     <div class="stat-icon-wrapper">👥</div>
                 </div>
-                <div class="stat-value">{{ users_count }}</div>
+                <div class="stat-value">{{ users_count | default(0) }}</div>
                 <div class="stat-label">Total Users</div>
                 <a href="{{ url_for('admin.users') }}" class="stat-action">
                     View Users →
@@ -354,7 +354,7 @@
                 <div class="stat-icon-row">
                     <div class="stat-icon-wrapper">🏢</div>
                 </div>
-                <div class="stat-value">{{ companies_count }}</div>
+                <div class="stat-value">{{ companies_count | default(0) }}</div>
                 <div class="stat-label">Insurance Companies</div>
                 <a href="{{ url_for('admin.companies') }}" class="stat-action">
                     Manage Companies →
@@ -365,7 +365,7 @@
                 <div class="stat-icon-row">
                     <div class="stat-icon-wrapper">📋</div>
                 </div>
-                <div class="stat-value">0</div>
+                <div class="stat-value">{{ policies_count | default(0) }}</div>
                 <div class="stat-label">Total Policies</div>
                 <a href="{{ url_for('core.policies') }}" class="stat-action">
                     View Policies →
@@ -376,7 +376,9 @@
                 <div class="stat-icon-row">
                     <div class="stat-icon-wrapper">💰</div>
                 </div>
-                <div class="stat-value">$0.00</div>
+                <div class="stat-value">
+                    ${{ "%.2f"|format(total_commissions | default(0)) }}
+                </div>
                 <div class="stat-label">Total Commission</div>
                 <a href="{{ url_for('core.reports') }}" class="stat-action">
                     View Reports →
