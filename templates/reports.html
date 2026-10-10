@@ -308,7 +308,7 @@
                         Total premiums: ${{ "%.2f"|format(total_premiums) }}
                     </div>
                     <div class="report-footer">
-                        <span>Format: Text PDF-like</span>
+                        <span>Format: PDF</span>
                         <a href="{{ url_for('core.download_report', report_type='premium-pdf') }}" class="report-btn">
                             <span>📥 Download</span>
                         </a>
@@ -329,7 +329,7 @@
                         Total commissions: ${{ "%.2f"|format(total_commissions) }}
                     </div>
                     <div class="report-footer">
-                        <span>Format: Text PDF-like</span>
+                        <span>Format: PDF</span>
                         <a href="{{ url_for('core.download_report', report_type='commission-pdf') }}" class="report-btn">
                             <span>📥 Download</span>
                         </a>
@@ -359,7 +359,7 @@
                         Clients: {{ clients_count }}
                     </div>
                     <div class="report-footer">
-                        <span>Format: CSV</span>
+                        <span>Format: PDF</span>
                         <a href="{{ url_for('core.download_report', report_type='clients-excel') }}" class="report-btn">
                             <span>📥 Download</span>
                         </a>
@@ -371,7 +371,7 @@
                     <div class="report-header">
                         <div class="report-icon">📋</div>
                         <div>
-                            <div class="report-title">Policy Portfolio (Coming Soon)</div>
+                            <div class="report-title">Policy Portfolio</div>
                             <p class="report-desc">
                                 Policies grouped by client and company for deeper portfolio insight.
                             </p>
@@ -381,10 +381,10 @@
                         Policies: {{ policies_count }}
                     </div>
                     <div class="report-footer">
-                        <span>Format: Excel (planned)</span>
-                        <button type="button" class="report-btn" onclick="alert('Client policy report coming soon');">
-                            <span>🚧 In Development</span>
-                        </button>
+                        <span>Format: PDF</span>
+                        <a href="{{ url_for('core.download_report', report_type='policy-portfolio') }}" class="report-btn">
+                            <span>📥 Download</span>
+                        </a>
                     </div>
                 </article>
 
@@ -392,7 +392,7 @@
                     <div class="report-header">
                         <div class="report-icon">🎯</div>
                         <div>
-                            <div class="report-title">Client Activity (Coming Soon)</div>
+                            <div class="report-title">Client Activity</div>
                             <p class="report-desc">
                                 Engagement metrics and recent activity by client.
                             </p>
@@ -402,10 +402,10 @@
                         Based on policy and payment history
                     </div>
                     <div class="report-footer">
-                        <span>Format: Excel (planned)</span>
-                        <button type="button" class="report-btn" onclick="alert('Client activity report coming soon');">
-                            <span>🚧 In Development</span>
-                        </button>
+                        <span>Format: PDF</span>
+                        <a href="{{ url_for('core.download_report', report_type='client-activity') }}" class="report-btn">
+                            <span>📥 Download</span>
+                        </a>
                     </div>
                 </article>
             </div>
@@ -432,7 +432,7 @@
                         Companies: {{ companies_count }}
                     </div>
                     <div class="report-footer">
-                        <span>Format: CSV (opens in Excel)</span>
+                        <span>Format: PDF</span>
                         <a href="{{ url_for('core.download_report', report_type='company-overview') }}" class="report-btn">
                             <span>📥 Download</span>
                         </a>
@@ -453,7 +453,7 @@
                         Based on your commission rules and policies
                     </div>
                     <div class="report-footer">
-                        <span>Format: CSV (opens in Excel)</span>
+                        <span>Format: PDF</span>
                         <a href="{{ url_for('core.download_report', report_type='product-commission') }}" class="report-btn">
                             <span>📥 Download</span>
                         </a>
@@ -474,7 +474,7 @@
                         Based on policies, remittances, commissions and claims
                     </div>
                     <div class="report-footer">
-                        <span>Format: CSV (opens in Excel)</span>
+                        <span>Format: PDF</span>
                         <a href="{{ url_for('core.download_report', report_type='company-performance') }}" class="report-btn">
                             <span>📥 Download</span>
                         </a>
