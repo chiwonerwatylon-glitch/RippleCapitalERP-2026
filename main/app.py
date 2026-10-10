@@ -84,7 +84,17 @@ from .forms import (
     RegistrationForm,
     ProfileForm,
     PasswordChangeForm,
+    ForgotPasswordForm,
+    ResetPasswordForm,
 )
+from .email_tasks import (
+    send_password_reset_email,
+    send_expiry_reminders,
+    notify_policy,
+    policy_snapshot,
+    safe_notify,
+)
+from .tokens import make_reset_token, verify_reset_token
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 UPLOAD_FOLDER = BASE_DIR / "uploads"
@@ -288,6 +298,45 @@ def create_app(config_name=None):
             flash("Registration successful. You can now log in.", "success")
             return redirect(url_for("auth.login"))
         return render_template("register.html", form=form)
+
+    @auth_bp.route("/forgot-password", methods=["GET", "POST"])
+    def forgot_password():
+        if current_user.is_authenticated:
+            return redirect(url_for("core.dashboard"))
+
+        form = ForgotPasswordForm()
+        if form.validate_on_submit():
+            user = User.query.filter_by(email=form.email.data.lower()).first()
+            if user and user.is_active:
+                token = make_reset_token(user)
+                base = app.config.get("PUBLIC_BASE_URL") or request.host_url.rstrip("/")
+                link = f"{base}{url_for('auth.reset_password', token=token)}"
+                send_password_reset_email(user, link)
+            # Same message whether or not the account exists.
+            flash(
+                "If an account exists for that email, a reset link has been sent.",
+                "info",
+            )
+            return redirect(url_for("auth.login"))
+        return render_template("forgot_password.html", form=form)
+
+    @auth_bp.route("/reset-password/<token>", methods=["GET", "POST"])
+    def reset_password(token):
+        if current_user.is_authenticated:
+            return redirect(url_for("core.dashboard"))
+
+        user = verify_reset_token(token)
+        if user is None:
+            flash("This reset link is invalid or has expired. Please request a new one.", "danger")
+            return redirect(url_for("auth.forgot_password"))
+
+        form = ResetPasswordForm()
+        if form.validate_on_submit():
+            user.set_password(form.password.data)
+            db.session.commit()
+            flash("Your password has been reset. You can now sign in.", "success")
+            return redirect(url_for("auth.login"))
+        return render_template("reset_password.html", form=form)
 
     @auth_bp.route("/logout")
     @login_required
@@ -1020,6 +1069,7 @@ def create_app(config_name=None):
                 )
                 db.session.add(remittance)
                 db.session.commit()
+                safe_notify(notify_policy, policy_snapshot(policy), "payment")
                 flash(
                     "Premium remittance recorded successfully.", "success"
                 )
@@ -1600,6 +1650,7 @@ def create_app(config_name=None):
 
                 db.session.add(policy)
                 db.session.commit()
+                safe_notify(notify_policy, policy_snapshot(policy), "created")
                 flash(
                     f"Policy {policy_number} created successfully.",
                     "success",
@@ -1840,8 +1891,10 @@ def create_app(config_name=None):
 
         try:
             policy_number = policy.policy_number
+            snapshot = policy_snapshot(policy)
             db.session.delete(policy)
             db.session.commit()
+            safe_notify(notify_policy, snapshot, "deleted")
             flash(f"Policy {policy_number} has been deleted.", "success")
         except Exception as e:
             db.session.rollback()
@@ -1879,5 +1932,11 @@ def create_app(config_name=None):
         app.register_blueprint(admin_bp)
     except ImportError:
         pass
+
+    @app.cli.command("send-expiry-reminders")
+    def send_expiry_reminders_command():
+        """Email policy-expiry reminders. Schedule once a day."""
+        count = send_expiry_reminders()
+        print(f"Expiry reminders sent for {count} policies.")
 
     return app
