@@ -2,31 +2,284 @@
 
 {% block title %}Edit Policy - Ripple Capital Insurance ERP{% endblock %}
 {% block page_title %}Edit Policy #{{ policy.policy_number }}{% endblock %}
-{% block page_subtitle %}Changes are emailed to the client and account staff{% endblock %}
+{% block page_subtitle %}Update key policy details. Changes may be shared with the client and your team.{% endblock %}
 
 {% block content %}
-<div class="card" style="max-width:560px;">
-    <form method="post">
-        <div class="form-group">
-            <label for="policy_number">Policy Number</label>
-            <input id="policy_number" name="policy_number" type="text" required value="{{ request.form.get('policy_number', policy.policy_number) }}">
+<style>
+    :root {
+        --ripple-primary: #1B702D;
+        --ripple-primary-light: #2D9F42;
+        --ripple-primary-lighter: #E8F5EA;
+        --ripple-secondary: #FBA300;
+        --ripple-secondary-lighter: #FFF3E0;
+
+        --ripple-gray-900: #111827;
+        --ripple-gray-800: #1F2937;
+        --ripple-gray-700: #374151;
+        --ripple-gray-600: #4B5563;
+        --ripple-gray-500: #6B7280;
+        --ripple-gray-400: #9CA3AF;
+        --ripple-gray-300: #D1D5DB;
+        --ripple-gray-200: #E5E7EB;
+        --ripple-gray-100: #F3F4F6;
+        --ripple-gray-50: #F9FAFB;
+
+        --rc-bg-card: #ffffff;
+        --rc-text-main: var(--ripple-gray-900);
+        --rc-text-muted: var(--ripple-gray-600);
+        --rc-border-subtle: var(--ripple-gray-200);
+    }
+
+    .rc-policy-edit-root {
+        max-width: 720px;
+        margin: 0 auto;
+    }
+
+    .rc-card {
+        background: var(--rc-bg-card);
+        border-radius: 1rem;
+        border: 1px solid rgba(229, 231, 235, 0.9);
+        box-shadow:
+            0 14px 35px rgba(15, 23, 42, 0.06),
+            0 0 0 1px rgba(148, 163, 184, 0.16);
+        padding: 1.8rem 1.7rem 1.9rem;
+    }
+
+    @media (min-width: 768px) {
+        .rc-card {
+            padding: 2rem 2.1rem 2.2rem;
+        }
+    }
+
+    .rc-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .rc-card-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--rc-text-main);
+        letter-spacing: -0.02em;
+        margin-bottom: 0.25rem;
+    }
+
+    .rc-card-subtitle {
+        font-size: 0.9rem;
+        color: var(--rc-text-muted);
+    }
+
+    .rc-policy-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.25rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        background: var(--ripple-primary-lighter);
+        color: var(--ripple-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+    }
+
+    .rc-form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.2rem 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .rc-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .rc-form-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--ripple-gray-800);
+    }
+
+    .rc-form-hint {
+        font-size: 0.8rem;
+        color: var(--ripple-gray-400);
+    }
+
+    .rc-input,
+    .rc-select {
+        width: 100%;
+        padding: 0.7rem 0.9rem;
+        border-radius: 0.65rem;
+        border: 1.5px solid var(--rc-border-subtle);
+        font-size: 0.95rem;
+        font-family: inherit;
+        background: #ffffff;
+        color: var(--rc-text-main);
+        transition: border 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    .rc-input:focus,
+    .rc-select:focus {
+        outline: none;
+        border-color: var(--ripple-primary);
+        box-shadow:
+            0 0 0 1px var(--ripple-primary),
+            0 0 0 4px rgba(27, 112, 45, 0.18);
+    }
+
+    .rc-input[readonly] {
+        background: var(--ripple-gray-50);
+        color: var(--ripple-gray-700);
+    }
+
+    .rc-form-footer {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        border-top: 1px dashed var(--ripple-gray-200);
+        padding-top: 1.2rem;
+        margin-top: 0.4rem;
+    }
+
+    .rc-footer-note {
+        font-size: 0.78rem;
+        color: var(--ripple-gray-500);
+    }
+
+    .rc-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.7rem 1.5rem;
+        border-radius: 999px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
+    }
+
+    .rc-btn-primary {
+        background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
+        color: #f9fafb;
+        box-shadow: 0 12px 30px rgba(27, 112, 45, 0.5);
+    }
+
+    .rc-btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 18px 40px rgba(27, 112, 45, 0.65);
+    }
+
+    .rc-btn-secondary {
+        background: var(--ripple-gray-100);
+        color: var(--ripple-gray-700);
+        border: 1px solid var(--ripple-gray-200);
+    }
+
+    .rc-btn-secondary:hover {
+        background: var(--ripple-gray-200);
+    }
+
+    .rc-btn span.emoji {
+        font-size: 1rem;
+    }
+</style>
+
+<div class="rc-policy-edit-root">
+    <section class="rc-card" aria-label="Edit policy details">
+        <div class="rc-card-header">
+            <div>
+                <h2 class="rc-card-title">Policy #{{ policy.policy_number }}</h2>
+                <p class="rc-card-subtitle">
+                    Adjust the policy number, status, or end date. Ensure changes reflect your agreement with the insurer and client.
+                </p>
+            </div>
+            <div class="rc-policy-pill">
+                <i class="fas fa-file-contract"></i>
+                Policy Details
+            </div>
         </div>
-        <div class="form-group">
-            <label for="status">Status</label>
-            <select id="status" name="status">
-                {% for s in statuses %}
-                <option value="{{ s }}" {% if (request.form.get('status') or policy.status) == s %}selected{% endif %}>{{ s|capitalize }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="end_date">End Date</label>
-            <input id="end_date" name="end_date" type="date" required value="{{ request.form.get('end_date', policy.end_date.isoformat()) }}">
-        </div>
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-            <a href="{{ url_for('core.view_policy', policy_id=policy.id) }}" class="btn btn-secondary">Cancel</a>
-        </div>
-    </form>
+
+        <form method="post" novalidate>
+            {# If you use CSRFProtect / Flask-WTF, uncomment: #}
+            {# {{ csrf_token() }} or {{ form.csrf_token() }} #}
+
+            <div class="rc-form-grid">
+                <div class="rc-form-group">
+                    <label class="rc-form-label" for="policy_number">Policy Number</label>
+                    <input
+                        id="policy_number"
+                        name="policy_number"
+                        type="text"
+                        class="rc-input"
+                        required
+                        value="{{ request.form.get('policy_number', policy.policy_number) }}"
+                    >
+                    <div class="rc-form-hint">
+                        This should match the official policy number issued by the insurer.
+                    </div>
+                </div>
+
+                <div class="rc-form-group">
+                    <label class="rc-form-label" for="status">Status</label>
+                    <select id="status" name="status" class="rc-select">
+                        {% for s in statuses %}
+                            <option
+                                value="{{ s }}"
+                                {% if (request.form.get('status') or policy.status) == s %}selected{% endif %}
+                            >
+                                {{ s|replace('_', ' ')|capitalize }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <div class="rc-form-hint">
+                        Use this to mark the policy as active, lapsed, cancelled, or pending as appropriate.
+                    </div>
+                </div>
+
+                <div class="rc-form-group">
+                    <label class="rc-form-label" for="end_date">End Date</label>
+                    <input
+                        id="end_date"
+                        name="end_date"
+                        type="date"
+                        class="rc-input"
+                        required
+                        value="{{ request.form.get('end_date', policy.end_date.isoformat()) }}"
+                    >
+                    <div class="rc-form-hint">
+                        Ensure this aligns with the original cover period or any endorsed extensions.
+                    </div>
+                </div>
+            </div>
+
+            <div class="rc-form-footer">
+                <p class="rc-footer-note">
+                    After saving, a summary of these changes can be shared with the client and relevant account handlers.
+                </p>
+                <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+                    <a
+                        href="{{ url_for('core.view_policy', policy_id=policy.id) }}"
+                        class="rc-btn rc-btn-secondary"
+                    >
+                        Cancel
+                    </a>
+                    <button type="submit" class="rc-btn rc-btn-primary">
+                        <span class="emoji">💾</span>
+                        <span>Save changes</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </section>
 </div>
 {% endblock %}
