@@ -515,6 +515,19 @@
                     {% endfor %}
                 </div>
 
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.confirm_password.id }}">Confirm Password</label>
+                    {% set cpw_classes = 'form-input' + (' error' if form.confirm_password.errors else '') %}
+                    {{ form.confirm_password(
+                        class=cpw_classes,
+                        placeholder="Re-enter your password",
+                        required=true
+                    ) }}
+                    {% for error in form.confirm_password.errors %}
+                        <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
                 {{ form.submit(class="submit-btn", value="Create Account") }}
             </form>
 
