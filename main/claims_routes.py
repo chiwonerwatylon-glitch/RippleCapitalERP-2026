@@ -275,6 +275,32 @@ def register_claims_routes(core_bp):
         
         return redirect(url_for("core.claim_detail", claim_id=claim.id))
 
+    @core_bp.route("/clients/<int:client_id>/detail")
+    @login_required
+    @role_required(ROLE_OWNER, ROLE_ADMIN, ROLE_AGENT)
+    def client_detail(client_id):
+        """Client profile with all policies, claims and remittances in the account."""
+        owner_id = get_account_owner_id()
+        client = Client.query.filter_by(id=client_id, owner_id=owner_id).first_or_404()
+        policies = (
+            Policy.query.filter_by(client_id=client.id, owner_id=owner_id)
+            .order_by(Policy.start_date.desc()).all()
+        )
+        claims_list = (
+            Claim.query.filter_by(client_id=client.id, owner_id=owner_id)
+            .order_by(Claim.claim_date.desc()).all()
+        )
+        remittances = {}
+        for policy in policies:
+            remittances[policy.id] = policy.remittances.order_by(None).all()
+        return render_template(
+            "client_detail.html",
+            client=client,
+            policies=policies,
+            claims=claims_list,
+            remittances=remittances,
+        )
+
     @core_bp.route("/api/global-search")
     @login_required
     def global_search():
@@ -305,7 +331,7 @@ def register_claims_routes(core_bp):
                     "title": f"{client.first_name} {client.last_name}",
                     "subtitle": client.email or client.phone or "No contact",
                     "icon": "fa-user",
-                    "url": url_for("core.clients")
+                    "url": url_for("core.client_detail", client_id=client.id)
                 })
             
             # Search policies by policy number
