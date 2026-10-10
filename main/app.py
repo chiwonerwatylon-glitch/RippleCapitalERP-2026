@@ -190,6 +190,107 @@ def ensure_user_has_default_products(user):
     return InsuranceProduct.query.filter_by(owner_id=account_id).all()
 
 
+def _csv_download(filename, headers, rows):
+    """Return a CSV file download built from header and row lists."""
+    import csv
+
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(headers)
+    writer.writerows(rows)
+    return send_file(
+        io.BytesIO(buf.getvalue().encode("utf-8-sig")),
+        mimetype="text/csv",
+        as_attachment=True,
+        download_name=filename,
+    )
+
+
+def _money(value):
+    return round(float(value or 0.0), 2)
+
+
+def _company_overview_rows(owner_id):
+    rows = []
+    companies = Company.query.filter_by(owner_id=owner_id).order_by(Company.name).all()
+    for c in companies:
+        policies = Policy.query.filter_by(owner_id=owner_id, company_id=c.id).all()
+        client_ids = {p.client_id for p in policies}
+        rules = CommissionRule.query.filter_by(
+            owner_id=owner_id, company_id=c.id, is_active=True
+        ).count()
+        rows.append([
+            c.name,
+            c.contact_email or "",
+            c.phone or "",
+            c.address or "",
+            len(client_ids),
+            len(policies),
+            sum(1 for p in policies if (p.status or "").lower() == "active"),
+            rules,
+            _money(sum(p.premium_amount or 0 for p in policies)),
+        ])
+    return rows
+
+
+def _company_performance_rows(owner_id):
+    rows = []
+    companies = Company.query.filter_by(owner_id=owner_id).order_by(Company.name).all()
+    for c in companies:
+        policies = Policy.query.filter_by(owner_id=owner_id, company_id=c.id).all()
+        claims = (
+            Claim.query.join(Policy, Claim.policy_id == Policy.id)
+            .filter(Claim.owner_id == owner_id, Policy.company_id == c.id)
+            .all()
+        )
+        premium = sum(p.premium_amount or 0 for p in policies)
+        collected = sum(p.total_premiums_paid() for p in policies)
+        rows.append([
+            c.name,
+            len(policies),
+            _money(premium),
+            _money(collected),
+            _money(sum(p.outstanding_premium() for p in policies)),
+            _money(sum(p.commission_gross() for p in policies)),
+            _money(sum(p.withholding_tax() for p in policies)),
+            _money(sum(p.commission_recorded() for p in policies)),
+            len(claims),
+            _money(sum(cl.claimed_amount or 0 for cl in claims)),
+            _money(sum(cl.approved_amount or 0 for cl in claims)),
+        ])
+    return rows
+
+
+def _product_commission_rows(owner_id):
+    rows = []
+    rules = (
+        CommissionRule.query.filter_by(owner_id=owner_id)
+        .order_by(CommissionRule.company_id, CommissionRule.product_id)
+        .all()
+    )
+    for rule in rules:
+        company = rule.company
+        product = rule.product
+        if not company or not product:
+            continue
+        policies = Policy.query.filter_by(
+            owner_id=owner_id, company_id=company.id, product_id=product.id
+        ).all()
+        rows.append([
+            company.name,
+            product.name,
+            product.coverage_type or "",
+            rule.commission_percent,
+            "Yes" if rule.is_active else "No",
+            len(policies),
+            _money(sum(p.premium_amount or 0 for p in policies)),
+            _money(sum(p.commission_gross() for p in policies)),
+            _money(sum(p.withholding_tax() for p in policies)),
+            _money(sum(p.commission_recorded() for p in policies)),
+        ])
+    return rows
+
+
 def create_app(config_name=None):
     app = Flask(
         __name__,
@@ -1270,6 +1371,43 @@ def create_app(config_name=None):
                     mimetype="text/csv",
                     as_attachment=True,
                     download_name=filename,
+                )
+
+            elif report_type == "company-overview":
+                rows = _company_overview_rows(owner_id)
+                return _csv_download(
+                    f"Company_Overview_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    [
+                        "Company", "Contact Email", "Phone", "Address", "Clients",
+                        "Policies", "Active Policies", "Active Commission Rules",
+                        "Total Premium",
+                    ],
+                    rows,
+                )
+
+            elif report_type == "company-performance":
+                rows = _company_performance_rows(owner_id)
+                return _csv_download(
+                    f"Company_Performance_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    [
+                        "Company", "Policies", "Premium Written", "Premium Collected",
+                        "Outstanding", "Gross Commission", "Withholding Tax (20%)",
+                        "Recorded in Books (80%)", "Claims", "Claimed Amount",
+                        "Approved Amount",
+                    ],
+                    rows,
+                )
+
+            elif report_type == "product-commission":
+                rows = _product_commission_rows(owner_id)
+                return _csv_download(
+                    f"Product_Commission_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    [
+                        "Company", "Product", "Coverage Type", "Commission %", "Rule Active",
+                        "Policies", "Premium Written", "Gross Commission",
+                        "Withholding Tax (20%)", "Recorded in Books (80%)",
+                    ],
+                    rows,
                 )
 
             else:

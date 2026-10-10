@@ -422,9 +422,9 @@
                     <div class="report-header">
                         <div class="report-icon">🏢</div>
                         <div>
-                            <div class="report-title">Company Overview (Coming Soon)</div>
+                            <div class="report-title">Company Overview</div>
                             <p class="report-desc">
-                                Export a list of all partner companies and their basic metrics.
+                                Partner companies with contact details, client and policy counts, and total premium.
                             </p>
                         </div>
                     </div>
@@ -432,10 +432,10 @@
                         Companies: {{ companies_count }}
                     </div>
                     <div class="report-footer">
-                        <span>Format: PDF (planned)</span>
-                        <button type="button" class="report-btn" onclick="alert('Company overview report coming soon');">
-                            <span>🚧 In Development</span>
-                        </button>
+                        <span>Format: CSV (opens in Excel)</span>
+                        <a href="{{ url_for('core.download_report', report_type='company-overview') }}" class="report-btn">
+                            <span>📥 Download</span>
+                        </a>
                     </div>
                 </article>
 
@@ -443,20 +443,20 @@
                     <div class="report-header">
                         <div class="report-icon">📦</div>
                         <div>
-                            <div class="report-title">Product & Commission (Coming Soon)</div>
+                            <div class="report-title">Product & Commission</div>
                             <p class="report-desc">
-                                Products by company, including configured commission rules.
+                                Each company and product with its commission rate and commission earned, after stamp duty, levy and withholding tax.
                             </p>
                         </div>
                     </div>
                     <div class="report-meta">
-                        Driven by your product & commission setup
+                        Based on your commission rules and policies
                     </div>
                     <div class="report-footer">
-                        <span>Format: PDF (planned)</span>
-                        <button type="button" class="report-btn" onclick="alert('Product report coming soon');">
-                            <span>🚧 In Development</span>
-                        </button>
+                        <span>Format: CSV (opens in Excel)</span>
+                        <a href="{{ url_for('core.download_report', report_type='product-commission') }}" class="report-btn">
+                            <span>📥 Download</span>
+                        </a>
                     </div>
                 </article>
 
@@ -464,20 +464,20 @@
                     <div class="report-header">
                         <div class="report-icon">📊</div>
                         <div>
-                            <div class="report-title">Company Performance (Coming Soon)</div>
+                            <div class="report-title">Company Performance</div>
                             <p class="report-desc">
-                                Premium and commission performance by company.
+                                Premium written and collected, outstanding balance, commission and claims by company.
                             </p>
                         </div>
                     </div>
                     <div class="report-meta">
-                        Based on remittances & commissions
+                        Based on policies, remittances, commissions and claims
                     </div>
                     <div class="report-footer">
-                        <span>Format: PDF (planned)</span>
-                        <button type="button" class="report-btn" onclick="alert('Company performance report coming soon');">
-                            <span>🚧 In Development</span>
-                        </button>
+                        <span>Format: CSV (opens in Excel)</span>
+                        <a href="{{ url_for('core.download_report', report_type='company-performance') }}" class="report-btn">
+                            <span>📥 Download</span>
+                        </a>
                     </div>
                 </article>
             </div>
