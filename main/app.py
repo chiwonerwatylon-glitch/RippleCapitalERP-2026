@@ -23,6 +23,7 @@ from flask_login import (
     current_user,
 )
 from flask_migrate import Migrate
+import click
 from werkzeug.utils import secure_filename
 
 # Optional openpyxl support
@@ -1674,6 +1675,87 @@ def create_app(config_name=None):
             products=products_list,
         )
 
+    @core_bp.route("/policies/<int:policy_id>/edit", methods=["GET", "POST"])
+    @login_required
+    def edit_policy(policy_id):
+        """Edit policy number, status and end date; email the client and staff on change."""
+        if current_user.role == ROLE_CLIENT:
+            flash("Clients cannot edit policies.", "warning")
+            return redirect(url_for("core.policies"))
+
+        policy = Policy.query.get_or_404(policy_id)
+        if policy.owner_id != get_account_owner_id():
+            flash("You don't have permission to edit this policy.", "danger")
+            return redirect(url_for("core.policies"))
+
+        allowed_statuses = ["active", "expired", "cancelled"]
+
+        if request.method == "POST":
+            new_number = (request.form.get("policy_number") or "").strip()
+            new_status = (request.form.get("status") or "").strip()
+            end_str = (request.form.get("end_date") or "").strip()
+
+            errors = []
+            if not new_number:
+                errors.append("Policy number is required.")
+            elif new_number != policy.policy_number and Policy.query.filter(
+                Policy.policy_number == new_number, Policy.id != policy.id
+            ).first():
+                errors.append(f"Policy number {new_number} already exists.")
+            if new_status not in allowed_statuses:
+                errors.append("Invalid status.")
+            try:
+                new_end = datetime.strptime(end_str, "%Y-%m-%d").date()
+            except ValueError:
+                errors.append("End date must be a valid date.")
+                new_end = None
+            if new_end and new_end < policy.start_date:
+                errors.append("End date cannot be before the start date.")
+
+            if errors:
+                for message in errors:
+                    flash(message, "warning")
+                return render_template(
+                    "policy_edit.html", policy=policy, statuses=allowed_statuses
+                )
+
+            changes = []
+            if new_number != policy.policy_number:
+                changes.append(f"Policy number: {policy.policy_number} -> {new_number}")
+            if new_status != policy.status:
+                changes.append(f"Status: {policy.status} -> {new_status}")
+            if new_end != policy.end_date:
+                changes.append(f"End date: {policy.end_date} -> {new_end}")
+
+            if not changes:
+                flash("No changes to save.", "info")
+                return redirect(url_for("core.view_policy", policy_id=policy.id))
+
+            try:
+                policy.policy_number = new_number
+                policy.status = new_status
+                policy.end_date = new_end
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Error updating policy: {str(e)}", "danger")
+                return render_template(
+                    "policy_edit.html", policy=policy, statuses=allowed_statuses
+                )
+
+            safe_notify(
+                notify_policy,
+                policy_snapshot(policy),
+                "updated",
+                note="Changes made:\n- " + "\n- ".join(changes),
+            )
+            flash(f"Policy {policy.policy_number} updated.", "success")
+            return redirect(url_for("core.view_policy", policy_id=policy.id))
+
+        return render_template(
+            "policy_edit.html", policy=policy, statuses=allowed_statuses
+        )
+
     # ====================== API ROUTES ======================
 
     @core_bp.route("/api/calculate-premium", methods=["POST"])
@@ -1932,6 +2014,14 @@ def create_app(config_name=None):
         app.register_blueprint(admin_bp)
     except ImportError:
         pass
+
+    @app.cli.command("send-test-email")
+    @click.argument("to_email")
+    def send_test_email_command(to_email):
+        """Send one live test email through Resend to verify configuration."""
+        from .email_tasks import send_email as _send
+        ok = _send(to_email, "Ripple Capital ERP: test email", "This is a test email from the ERP.")
+        print("Sent." if ok else "NOT sent. Check RESEND_API_KEY and that the sending domain is verified.")
 
     @app.cli.command("send-expiry-reminders")
     def send_expiry_reminders_command():

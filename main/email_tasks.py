@@ -117,11 +117,20 @@ def _log_and_send(recipients, notification_type, subject, body, policy_id=None, 
 
 # ==================== POLICIES ====================
 
+POLICY_EVENT_SUBJECT = {
+    "created": "created",
+    "payment": "payment received",
+    "deleted": "cancelled",
+    "expiring": "expiry reminder",
+    "updated": "updated",
+}
+
 POLICY_EVENT_TEXT = {
     "created": "has been created",
     "payment": "has received a premium payment",
     "deleted": "has been cancelled and removed",
     "expiring": "is due to expire soon",
+    "updated": "has been updated",
 }
 
 
@@ -143,7 +152,7 @@ def policy_snapshot(policy: Policy) -> dict:
 def notify_policy(snapshot: dict, event: str, note: str = "", notification_type: str = None) -> None:
     """Email the client and account staff about a change to a policy."""
     policy_id = None if event == "deleted" else snapshot["id"]
-    subject = f"Policy {snapshot['policy_number']}: {event.replace('_', ' ')} update"
+    subject = f"Policy {snapshot['policy_number']} {POLICY_EVENT_SUBJECT[event]}"
     body = (
         "Hello,\n\n"
         f"Policy {snapshot['policy_number']} ({snapshot['product_name']}) with "
