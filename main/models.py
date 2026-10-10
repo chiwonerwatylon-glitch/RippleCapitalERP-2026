@@ -200,50 +200,51 @@ class Policy(db.Model):
             is_active=True,
         ).first()
 
-    def non_premium_ratio(self) -> float:
-        """Share of the premium that is stamp duty and government levy (not commissionable)."""
-        premium = self.premium_amount or 0.0
-        if premium <= 0:
-            return 0.0
-        return min(((self.stamp_duty or 0.0) + (self.levy or 0.0)) / premium, 1.0)
+    def is_fully_remitted(self) -> bool:
+        """True once the client has paid the whole premium, which we then pass to the insurer."""
+        return self.outstanding_premium() <= 0 and (self.premium_amount or 0) > 0
 
-    def commissionable_portion(self, amount: float) -> float:
-        """Part of a remittance left after removing stamp duty and levy."""
-        return round((amount or 0.0) * (1 - self.non_premium_ratio()), 2)
+    def commission_base(self) -> float:
+        """Full premium less stamp duty and government levy."""
+        return round(
+            (self.premium_amount or 0.0) - (self.stamp_duty or 0.0) - (self.levy or 0.0), 2
+        )
 
     def commission_breakdown(self):
-        """Per-remittance commission rows: base, gross commission, WHT, amount recorded."""
+        """Commission for the whole policy, payable by the insurer once the premium is remitted.
+
+        Returns None when there is no commission rule or the premium is not yet fully remitted.
+        """
         rule = self.commission_rule()
-        if not rule:
-            return []
-        rows = []
-        for r in self.remittances:
-            base = self.commissionable_portion(r.amount)
-            gross = round(base * rule.commission_percent / 100.0, 2)
-            wht = round(gross * WITHHOLDING_TAX_RATE, 2)
-            rows.append({
-                "date_earned": r.date_received,
-                "remittance_amount": r.amount,
-                "base": base,
-                "rate_percent": rule.commission_percent,
-                "gross": gross,
-                "withholding_tax": wht,
-                "recorded": round(gross - wht, 2),
-            })
-        return rows
+        if not rule or not self.is_fully_remitted():
+            return None
+        base = self.commission_base()
+        gross = round(base * rule.commission_percent / 100.0, 2)
+        wht = round(gross * WITHHOLDING_TAX_RATE, 2)
+        last = self.remittances.order_by(None).order_by(PremiumRemittance.date_received.desc()).first()
+        return {
+            "date_earned": last.date_received if last else None,
+            "base": base,
+            "rate_percent": rule.commission_percent,
+            "gross": gross,
+            "withholding_tax": wht,
+            "recorded": round(gross - wht, 2),
+        }
 
     def commission_gross(self) -> float:
-        return round(sum(row["gross"] for row in self.commission_breakdown()), 2)
+        row = self.commission_breakdown()
+        return row["gross"] if row else 0.0
 
     def withholding_tax(self) -> float:
-        return round(sum(row["withholding_tax"] for row in self.commission_breakdown()), 2)
+        row = self.commission_breakdown()
+        return row["withholding_tax"] if row else 0.0
 
     def commission_recorded(self) -> float:
-        """Commission booked to our books (gross less withholding tax)."""
-        return round(sum(row["recorded"] for row in self.commission_breakdown()), 2)
+        """Commission booked to our books (gross less 20% withholding tax)."""
+        row = self.commission_breakdown()
+        return row["recorded"] if row else 0.0
 
     def total_commission_earned(self) -> float:
-        """Commission recorded in the books (after 20% withholding tax)."""
         return self.commission_recorded()
 
 class PremiumRemittance(db.Model):

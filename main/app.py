@@ -1223,16 +1223,17 @@ def create_app(config_name=None):
                 content += f"{'-' * 50}\n"
 
                 for policy in policies:
-                    gross = policy.commission_gross()
-                    if gross > 0:
+                    row = policy.commission_breakdown()
+                    if row:
                         content += f"Policy #{policy.policy_number}\n"
                         content += (
                             " Client: "
                             f"{policy.client.full_name() if policy.client else 'N/A'}\n"
                         )
-                        content += f" Commission (gross): ${gross:.2f}\n"
-                        content += f" Withholding tax (20%): ${policy.withholding_tax():.2f}\n"
-                        content += f" Recorded in books (80%): ${policy.commission_recorded():.2f}\n\n"
+                        content += f" Premium base (premium less stamp duty and levy): ${row['base']:.2f}\n"
+                        content += f" Commission (gross): ${row['gross']:.2f}\n"
+                        content += f" Withholding tax (20%): ${row['withholding_tax']:.2f}\n"
+                        content += f" Recorded in books (80%): ${row['recorded']:.2f}\n\n"
 
                 return send_file(
                     io.BytesIO(content.encode()),
@@ -1955,19 +1956,17 @@ def create_app(config_name=None):
         )
 
         is_client = current_user.role == ROLE_CLIENT
-        commission_rows = [] if is_client else policy.commission_breakdown()
-        commissions = [
-            {
+        row = None if is_client else policy.commission_breakdown()
+        commissions = []
+        if row:
+            commissions = [{
                 "date_earned": row["date_earned"],
                 "amount": row["gross"],
                 "notes": (
                     f"Base ${row['base']:,.2f} x {row['rate_percent']}% = ${row['gross']:,.2f}; "
-                    f"WHT ${row['withholding_tax']:,.2f}; "
-                    f"recorded ${row['recorded']:,.2f}"
+                    f"WHT ${row['withholding_tax']:,.2f}; recorded ${row['recorded']:,.2f}"
                 ),
-            }
-            for row in commission_rows
-        ]
+            }]
 
         return render_template(
             "policy_detail.html",
@@ -1975,9 +1974,10 @@ def create_app(config_name=None):
             remittances=remittances,
             premiums=remittances,
             commissions=commissions,
-            commission_gross=sum(r["gross"] for r in commission_rows),
-            commission_wht=sum(r["withholding_tax"] for r in commission_rows),
-            commission_recorded=sum(r["recorded"] for r in commission_rows),
+            commission_base=row["base"] if row else 0.0,
+            commission_gross=row["gross"] if row else 0.0,
+            commission_wht=row["withholding_tax"] if row else 0.0,
+            commission_recorded=row["recorded"] if row else 0.0,
             total_paid=total_paid,
             total_commission=total_commission,
             is_client=is_client,
