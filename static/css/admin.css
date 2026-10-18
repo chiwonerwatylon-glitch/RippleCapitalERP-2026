@@ -12,7 +12,7 @@ body.admin-layout {
     border-radius: 0.75rem;
     border: 1px solid var(--ripple-gray-200);
     box-shadow: var(--ripple-shadow-md);
-    background-color: #ffffff;
+    background-color: var(--bs-card-bg);
 }
 
 .card-admin-header {
@@ -38,7 +38,7 @@ body.admin-layout {
 .card-admin-footer {
     padding: 0.75rem 1.25rem;
     border-top: 1px solid var(--ripple-gray-200);
-    background-color: #ffffff;
+    background-color: var(--bs-card-bg);
 }
 
 /* Hover elevation for cards used as main blocks */
@@ -223,7 +223,7 @@ body.admin-layout {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #f9fafb;
+    color: var(--ripple-gray-50);
     font-size: 1.8rem;
     font-weight: 600;
     box-shadow: var(--ripple-shadow-brand);

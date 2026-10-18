@@ -11,29 +11,9 @@
     <style>
         :root {
             /* Ripple Capital brand system */
-            --ripple-primary: #1B702D;
-            --ripple-primary-light: #2D9F42;
-            --ripple-primary-lighter: #E8F5EA;
-            --ripple-secondary: #FBA300;
-            --ripple-secondary-light: #FDB833;
-            --ripple-secondary-lighter: #FFF3E0;
 
-            --ripple-gray-900: #111827;
-            --ripple-gray-800: #1F2937;
-            --ripple-gray-700: #374151;
-            --ripple-gray-600: #4B5563;
-            --ripple-gray-500: #6B7280;
-            --ripple-gray-400: #9CA3AF;
-            --ripple-gray-300: #D1D5DB;
-            --ripple-gray-200: #E5E7EB;
-            --ripple-gray-100: #F3F4F6;
-            --ripple-gray-50: #F9FAFB;
 
-            --ripple-success: #10B981;
-            --ripple-error: #EF4444;
 
-            --ripple-shadow-md: 0 10px 25px rgba(15, 23, 42, 0.18);
-            --ripple-shadow-strong: 0 22px 45px rgba(15, 23, 42, 0.35);
         }
 
         * {
@@ -76,7 +56,7 @@
 
         /* Brand / Marketing Panel */
         .brand-panel {
-            color: #f9fafb;
+            color: var(--ripple-gray-50);
             display: flex;
             flex-direction: column;
             gap: 1.1rem;
@@ -91,7 +71,7 @@
             border-radius: 999px;
             border: 1px solid rgba(148, 163, 184, 0.7);
             font-size: 0.75rem;
-            color: #e5e7eb;
+            color: var(--ripple-gray-200);
         }
 
         .brand-dot {
@@ -282,7 +262,7 @@
             transition: all 0.18s ease;
             font-family: inherit;
             color: var(--ripple-gray-900);
-            background: #ffffff;
+            background: var(--bs-card-bg);
         }
 
         .form-input::placeholder {
@@ -294,7 +274,7 @@
             border-color: var(--ripple-primary);
             box-shadow: 0 0 0 1px var(--ripple-primary),
                         0 0 0 4px rgba(27, 112, 45, 0.16);
-            background: #ffffff;
+            background: var(--bs-card-bg);
         }
 
         .form-input.error {

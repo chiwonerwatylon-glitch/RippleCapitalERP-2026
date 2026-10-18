@@ -9,25 +9,8 @@
 <style>
     :root {
         /* Ripple brand tokens */
-        --ripple-primary: #1B702D;
-        --ripple-primary-light: #2D9F42;
-        --ripple-primary-lighter: #E8F5EA;
-        --ripple-secondary: #FBA300;
-        --ripple-secondary-lighter: #FFF3E0;
 
-        --ripple-gray-900: #111827;
-        --ripple-gray-800: #1F2937;
-        --ripple-gray-700: #374151;
-        --ripple-gray-600: #4B5563;
-        --ripple-gray-500: #6B7280;
-        --ripple-gray-400: #9CA3AF;
-        --ripple-gray-300: #D1D5DB;
-        --ripple-gray-200: #E5E7EB;
-        --ripple-gray-100: #F3F4F6;
-        --ripple-gray-50: #F9FAFB;
 
-        --ripple-shadow-md: 0 10px 25px rgba(15, 23, 42, 0.08);
-        --ripple-shadow-strong: 0 22px 45px rgba(15, 23, 42, 0.18);
     }
 
     .form-shell {
@@ -36,7 +19,7 @@
     }
 
     .form-card {
-        background: #ffffff;
+        background: var(--bs-card-bg);
         border-radius: 1rem;
         border: 1px solid var(--ripple-gray-200);
         box-shadow: var(--ripple-shadow-md), 0 0 0 1px rgba(148, 163, 184, 0.18);
@@ -126,7 +109,7 @@
         font-size: 0.95rem;
         font-family: inherit;
         transition: border 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-        background: #ffffff;
+        background: var(--bs-card-bg);
         color: var(--ripple-gray-900);
     }
 
@@ -138,7 +121,7 @@
         outline: none;
         border-color: var(--ripple-primary);
         box-shadow: 0 0 0 1px var(--ripple-primary), 0 0 0 4px rgba(27, 112, 45, 0.15);
-        background: #ffffff;
+        background: var(--bs-card-bg);
     }
 
     .form-hint {
@@ -165,7 +148,7 @@
     }
 
     .product-card {
-        background: #ffffff;
+        background: var(--bs-card-bg);
         border: 1.6px solid var(--ripple-gray-200);
         border-radius: 0.75rem;
         padding: 1.25rem 1rem;
@@ -227,7 +210,7 @@
         border-radius: 0.55rem;
         font-size: 0.9rem;
         font-family: inherit;
-        background: #ffffff;
+        background: var(--bs-card-bg);
         color: var(--ripple-gray-900);
         transition: border 0.18s ease, box-shadow 0.18s ease;
     }
@@ -327,7 +310,7 @@
     }
 
     .btn-secondary {
-        background: #ffffff;
+        background: var(--bs-card-bg);
         color: var(--ripple-gray-800);
         border: 1px solid var(--ripple-gray-300);
     }
