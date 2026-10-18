@@ -8,26 +8,8 @@
     <!-- Brand tokens could also live in a shared CSS, duplicated here for safety -->
     <style>
         :root {
-            --ripple-primary: #1B702D;
-            --ripple-primary-light: #2D9F42;
-            --ripple-primary-lighter: #E8F5EA;
-            --ripple-secondary: #FBA300;
-            --ripple-secondary-light: #FDB833;
-            --ripple-secondary-lighter: #FFF3E0;
 
-            --ripple-gray-900: #111827;
-            --ripple-gray-800: #1F2937;
-            --ripple-gray-700: #374151;
-            --ripple-gray-600: #4B5563;
-            --ripple-gray-500: #6B7280;
-            --ripple-gray-400: #9CA3AF;
-            --ripple-gray-300: #D1D5DB;
-            --ripple-gray-200: #E5E7EB;
-            --ripple-gray-100: #F3F4F6;
-            --ripple-gray-50: #F9FAFB;
 
-            --ripple-shadow-md: 0 10px 25px rgba(15, 23, 42, 0.08);
-            --ripple-shadow-strong: 0 24px 50px rgba(15, 23, 42, 0.25);
         }
 
         * {
@@ -214,7 +196,7 @@
         }
 
         .stat-card {
-            background: #ffffff;
+            background: var(--bs-card-bg);
             border-radius: 1rem;
             padding: 1.35rem 1.4rem;
             box-shadow: var(--ripple-shadow-md);
@@ -250,7 +232,7 @@
 
         /* Cards */
         .content-card {
-            background: #ffffff;
+            background: var(--bs-card-bg);
             border-radius: 1rem;
             box-shadow: var(--ripple-shadow-md);
             overflow: hidden;
@@ -282,7 +264,7 @@
             padding: 1.4rem 1.5rem;
             margin-bottom: 1rem;
             transition: border 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
-            background: #ffffff;
+            background: var(--bs-card-bg);
         }
 
         .policy-card:hover {

@@ -9,26 +9,8 @@
 <style>
     :root {
         /* Ripple brand tokens (if not already global) */
-        --ripple-primary: #1B702D;
-        --ripple-primary-light: #2D9F42;
-        --ripple-primary-lighter: #E8F5EA;
-        --ripple-secondary: #FBA300;
-        --ripple-secondary-light: #FDB833;
-        --ripple-secondary-lighter: #FFF3E0;
 
-        --ripple-gray-900: #111827;
-        --ripple-gray-800: #1F2937;
-        --ripple-gray-700: #374151;
-        --ripple-gray-600: #4B5563;
-        --ripple-gray-500: #6B7280;
-        --ripple-gray-400: #9CA3AF;
-        --ripple-gray-300: #D1D5DB;
-        --ripple-gray-200: #E5E7EB;
-        --ripple-gray-100: #F3F4F6;
-        --ripple-gray-50: #F9FAFB;
 
-        --ripple-shadow-md: 0 10px 25px rgba(15, 23, 42, 0.08);
-        --ripple-shadow-strong: 0 22px 45px rgba(15, 23, 42, 0.18);
     }
 
     .reports-shell {
@@ -37,7 +19,7 @@
     }
 
     .reports-container {
-        background: #ffffff;
+        background: var(--bs-card-bg);
         border-radius: 1rem;
         padding: 2rem 2rem 2.3rem;
         box-shadow: var(--ripple-shadow-md), 0 0 0 1px rgba(148, 163, 184, 0.14);
@@ -69,7 +51,7 @@
     .stat-card {
         border-radius: 0.9rem;
         padding: 1.3rem 1.25rem;
-        color: #f9fafb;
+        color: var(--ripple-gray-50);
         position: relative;
         overflow: hidden;
         box-shadow: var(--ripple-shadow-md);
@@ -91,7 +73,7 @@
         background: linear-gradient(135deg, #7c2d12 0%, var(--ripple-secondary) 100%);
     }
     .stat-card:nth-child(5) {
-        background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+        background: linear-gradient(135deg, var(--ripple-gray-600) 0%, var(--ripple-gray-500) 100%);
     }
     .stat-card:nth-child(6) {
         background: linear-gradient(135deg, #6b21a8 0%, #a855f7 100%);
@@ -168,7 +150,7 @@
         border-color: var(--ripple-primary);
         box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
         transform: translateY(-2px);
-        background: #ffffff;
+        background: var(--bs-card-bg);
     }
 
     .report-header {

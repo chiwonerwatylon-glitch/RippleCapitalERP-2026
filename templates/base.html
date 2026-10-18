@@ -36,31 +36,13 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 
     <!-- Theme layer (light + dark). Loaded last so it governs shared surfaces. -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 
     <style>
         :root {
             /* Ripple brand (should match brand.css) */
-            --ripple-primary: #1B702D;
-            --ripple-primary-light: #2D9F42;
-            --ripple-primary-lighter: #E8F5EA;
-            --ripple-secondary: #FBA300;
-            --ripple-secondary-light: #FDB833;
-            --ripple-secondary-lighter: #FFF3E0;
 
-            --ripple-gray-900: #111827;
-            --ripple-gray-800: #1F2937;
-            --ripple-gray-700: #374151;
-            --ripple-gray-600: #4B5563;
-            --ripple-gray-500: #6B7280;
-            --ripple-gray-400: #9CA3AF;
-            --ripple-gray-300: #D1D5DB;
-            --ripple-gray-200: #E5E7EB;
-            --ripple-gray-100: #F3F4F6;
-            --ripple-gray-50: #F9FAFB;
 
-            --ripple-shadow-soft: 0 10px 20px rgba(15, 23, 42, 0.08);
-            --ripple-shadow-strong: 0 22px 45px rgba(15, 23, 42, 0.26);
         }
 
         /* NAVBAR (top) */
@@ -269,7 +251,7 @@
     {% block content %}{% endblock %}
 </div>
 
-<footer class="text-center py-4">
+<footer class="site-footer text-center py-4">
     <div class="container">
         <div class="row align-items-center gy-3">
             <div class="col-md-4">

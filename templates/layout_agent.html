@@ -6,22 +6,7 @@
 <style>
     :root {
         /* Ripple brand tokens (if not already global from brand.css) */
-        --ripple-primary: #1B702D;
-        --ripple-primary-light: #2D9F42;
-        --ripple-primary-lighter: #E8F5EA;
-        --ripple-secondary: #FBA300;
-        --ripple-secondary-lighter: #FFF3E0;
 
-        --ripple-gray-900: #111827;
-        --ripple-gray-800: #1F2937;
-        --ripple-gray-700: #374151;
-        --ripple-gray-600: #4B5563;
-        --ripple-gray-500: #6B7280;
-        --ripple-gray-400: #9CA3AF;
-        --ripple-gray-300: #D1D5DB;
-        --ripple-gray-200: #E5E7EB;
-        --ripple-gray-100: #F3F4F6;
-        --ripple-gray-50: #F9FAFB;
     }
 
     .agent-layout-row {
@@ -29,7 +14,7 @@
     }
 
     .agent-sidebar-card {
-        background: #ffffff;
+        background: var(--bs-card-bg);
         border-radius: 1rem;
         border: 1px solid var(--ripple-gray-200);
         box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
@@ -39,7 +24,7 @@
     .agent-sidebar-header {
         padding: 1rem 1.1rem;
         background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
-        color: #f9fafb;
+        color: var(--ripple-gray-50);
         font-size: 0.9rem;
         font-weight: 600;
         display: flex;

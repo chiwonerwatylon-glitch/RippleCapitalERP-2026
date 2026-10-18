@@ -10,54 +10,54 @@
     .cd-shell { max-width: 1120px; margin: 0 auto; }
 
     .cd-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
-    .cd-back { color: #4B5563; text-decoration: none; font-weight: 600; font-size: 0.9rem; }
-    .cd-back:hover { color: #1B702D; }
+    .cd-back { color: var(--ripple-gray-600); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+    .cd-back:hover { color: var(--ripple-primary); }
 
-    .cd-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.6rem 1.25rem; border-radius: 999px; font-weight: 600; font-size: 0.9rem; text-decoration: none; background: linear-gradient(135deg, #1B702D 0%, #2D9F42 100%); color: #fff; box-shadow: 0 10px 22px rgba(27,112,45,0.3); transition: transform .15s ease; }
+    .cd-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.6rem 1.25rem; border-radius: 999px; font-weight: 600; font-size: 0.9rem; text-decoration: none; background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%); color: #fff; box-shadow: 0 10px 22px rgba(27,112,45,0.3); transition: transform .15s ease; }
     .cd-btn:hover { transform: translateY(-1px); }
 
     .cd-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-    .cd-stat { background: #fff; border: 1px solid #E5E7EB; border-radius: 1rem; padding: 1.1rem 1.25rem; box-shadow: 0 10px 25px rgba(15,23,42,0.06); border-left: 4px solid #1B702D; }
-    .cd-stat.amber { border-left-color: #FBA300; }
+    .cd-stat { background: var(--bs-card-bg); border: 1px solid var(--ripple-gray-200); border-radius: 1rem; padding: 1.1rem 1.25rem; box-shadow: 0 10px 25px rgba(15,23,42,0.06); border-left: 4px solid var(--ripple-primary); }
+    .cd-stat.amber { border-left-color: var(--ripple-secondary); }
     .cd-stat.red { border-left-color: #EF4444; }
     .cd-stat.teal { border-left-color: #0f766e; }
-    .cd-stat-label { font-size: 0.75rem; color: #6B7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-    .cd-stat-value { font-size: 1.45rem; font-weight: 700; color: #111827; margin-top: 0.3rem; }
+    .cd-stat-label { font-size: 0.75rem; color: var(--ripple-gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .cd-stat-value { font-size: 1.45rem; font-weight: 700; color: var(--ripple-gray-900); margin-top: 0.3rem; }
 
-    .cd-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 1rem; box-shadow: 0 10px 25px rgba(15,23,42,0.08); padding: 1.6rem 1.7rem; margin-bottom: 1.5rem; position: relative; overflow: hidden; }
-    .cd-card-title { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; font-size: 1.05rem; font-weight: 700; color: #111827; padding-bottom: 0.9rem; margin-bottom: 1.2rem; border-bottom: 1px solid #E5E7EB; }
-    .cd-card-title .cd-count { font-size: 0.8rem; font-weight: 600; color: #1B702D; background: #E8F5EA; padding: 0.2rem 0.7rem; border-radius: 999px; }
+    .cd-card { background: var(--bs-card-bg); border: 1px solid var(--ripple-gray-200); border-radius: 1rem; box-shadow: 0 10px 25px rgba(15,23,42,0.08); padding: 1.6rem 1.7rem; margin-bottom: 1.5rem; position: relative; overflow: hidden; }
+    .cd-card-title { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; font-size: 1.05rem; font-weight: 700; color: var(--ripple-gray-900); padding-bottom: 0.9rem; margin-bottom: 1.2rem; border-bottom: 1px solid var(--ripple-gray-200); }
+    .cd-card-title .cd-count { font-size: 0.8rem; font-weight: 600; color: var(--ripple-primary); background: var(--ripple-primary-lighter); padding: 0.2rem 0.7rem; border-radius: 999px; }
 
     .cd-profile { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem 1.25rem; }
-    .cd-field { padding: 0.85rem 1rem; background: #F9FAFB; border-radius: 0.75rem; border-left: 4px solid #1B702D; }
+    .cd-field { padding: 0.85rem 1rem; background: var(--ripple-gray-50); border-radius: 0.75rem; border-left: 4px solid var(--ripple-primary); }
     .cd-field.wide { grid-column: 1 / -1; }
-    .cd-label { font-size: 0.75rem; color: #6B7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
-    .cd-value { font-size: 0.98rem; font-weight: 600; color: #111827; word-break: break-word; }
-    .cd-value a { color: #1B702D; text-decoration: none; }
+    .cd-label { font-size: 0.75rem; color: var(--ripple-gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+    .cd-value { font-size: 0.98rem; font-weight: 600; color: var(--ripple-gray-900); word-break: break-word; }
+    .cd-value a { color: var(--ripple-primary); text-decoration: none; }
     .cd-value a:hover { text-decoration: underline; }
-    .cd-muted { color: #9CA3AF; font-weight: 500; }
+    .cd-muted { color: var(--ripple-gray-400); font-weight: 500; }
 
-    .cd-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 0.75rem; border: 1px solid #E5E7EB; }
+    .cd-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 0.75rem; border: 1px solid var(--ripple-gray-200); }
     .cd-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.9rem; min-width: 640px; }
-    .cd-table thead th { background: #F9FAFB; text-align: left; padding: 0.8rem 0.9rem; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #374151; border-bottom: 1px solid #E5E7EB; white-space: nowrap; }
-    .cd-table tbody td { padding: 0.85rem 0.9rem; border-bottom: 1px solid #F3F4F6; color: #4B5563; vertical-align: middle; white-space: nowrap; }
+    .cd-table thead th { background: var(--ripple-gray-50); text-align: left; padding: 0.8rem 0.9rem; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ripple-gray-700); border-bottom: 1px solid var(--ripple-gray-200); white-space: nowrap; }
+    .cd-table tbody td { padding: 0.85rem 0.9rem; border-bottom: 1px solid var(--ripple-gray-100); color: var(--ripple-gray-600); vertical-align: middle; white-space: nowrap; }
     .cd-table tbody tr:last-child td { border-bottom: none; }
-    .cd-table tbody tr:hover { background: #F9FAFB; }
+    .cd-table tbody tr:hover { background: var(--ripple-gray-50); }
     .cd-table td.num, .cd-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
-    .cd-table a { color: #1B702D; font-weight: 600; text-decoration: none; }
+    .cd-table a { color: var(--ripple-primary); font-weight: 600; text-decoration: none; }
     .cd-table a:hover { text-decoration: underline; }
-    .cd-table tfoot td { background: #F9FAFB; font-weight: 700; color: #111827; border-top: 1px solid #E5E7EB; }
+    .cd-table tfoot td { background: var(--ripple-gray-50); font-weight: 700; color: var(--ripple-gray-900); border-top: 1px solid var(--ripple-gray-200); }
 
     .cd-pill { display: inline-block; padding: 0.25rem 0.7rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
     .cd-pill.active, .cd-pill.approved, .cd-pill.paid, .cd-pill.yes { background: #d1fae5; color: #065f46; }
     .cd-pill.expired, .cd-pill.denied, .cd-pill.cancelled, .cd-pill.no { background: #fee2e2; color: #7f1d1d; }
     .cd-pill.pending, .cd-pill.under_review { background: #fef3c7; color: #78350f; }
-    .cd-pill.neutral { background: #F3F4F6; color: #374151; }
+    .cd-pill.neutral { background: var(--ripple-gray-100); color: var(--ripple-gray-700); }
 
     .cd-amount-out { color: #B45309; font-weight: 700; }
     .cd-amount-zero { color: #047857; font-weight: 700; }
 
-    .cd-empty { text-align: center; padding: 1.6rem 1rem; color: #6B7280; font-size: 0.92rem; background: #F9FAFB; border-radius: 0.75rem; }
+    .cd-empty { text-align: center; padding: 1.6rem 1rem; color: var(--ripple-gray-500); font-size: 0.92rem; background: var(--ripple-gray-50); border-radius: 0.75rem; }
 
     @media (max-width: 768px) {
         .cd-card { padding: 1.2rem 1.1rem; }

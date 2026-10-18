@@ -9,25 +9,8 @@
 <style>
     :root {
         /* Use global Ripple palette */
-        --ripple-primary: #1B702D;
-        --ripple-primary-light: #2D9F42;
-        --ripple-primary-lighter: #E8F5EA;
-        --ripple-secondary: #FBA300;
-        --ripple-secondary-lighter: #FFF3E0;
 
-        --ripple-gray-900: #111827;
-        --ripple-gray-800: #1F2937;
-        --ripple-gray-700: #374151;
-        --ripple-gray-600: #4B5563;
-        --ripple-gray-500: #6B7280;
-        --ripple-gray-400: #9CA3AF;
-        --ripple-gray-300: #D1D5DB;
-        --ripple-gray-200: #E5E7EB;
-        --ripple-gray-100: #F3F4F6;
-        --ripple-gray-50: #F9FAFB;
 
-        --ripple-shadow-md: 0 14px 35px rgba(15, 23, 42, 0.06);
-        --ripple-shadow-strong: 0 22px 45px rgba(15, 23, 42, 0.18);
 
         --rc-bg-card: #ffffff;
         --rc-bg-soft: var(--ripple-gray-50);
@@ -85,7 +68,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #f9fafb;
+        color: var(--ripple-gray-50);
         font-size: 3rem;
         overflow: hidden;
         box-shadow:
@@ -107,11 +90,11 @@
         height: 42px;
         border-radius: 999px;
         background: #0b1120;
-        border: 3px solid #f9fafb;
+        border: 3px solid var(--ripple-gray-50);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #f9fafb;
+        color: var(--ripple-gray-50);
         cursor: pointer;
         font-size: 0.9rem;
         box-shadow: 0 10px 25px rgba(15, 23, 42, 0.6);
@@ -263,7 +246,7 @@
         border: 1.5px solid var(--rc-border-subtle);
         font-size: 0.95rem;
         font-family: inherit;
-        background: #ffffff;
+        background: var(--bs-card-bg);
         color: var(--rc-text-main);
         transition: border 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
     }
@@ -348,7 +331,7 @@
 
     .rc-btn-primary {
         background: linear-gradient(135deg, var(--ripple-primary) 0%, var(--ripple-primary-light) 100%);
-        color: #f9fafb;
+        color: var(--ripple-gray-50);
         box-shadow: 0 12px 30px rgba(27, 112, 45, 0.5);
     }
 

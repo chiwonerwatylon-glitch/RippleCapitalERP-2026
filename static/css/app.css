@@ -1,0 +1,157 @@
+/*
+ * Ripple Capital - single theme layer built on Bootstrap 5.3 theming.
+ * Mode is set by data-bs-theme on <html>. Bootstrap components read the --bs-* tokens,
+ * so cards, forms, tables, dropdowns and alerts switch mode without per-page overrides.
+ * Loaded after Bootstrap and after the page CSS. Do not add !important here.
+ */
+
+/* ---------- Light ---------- */
+:root,
+[data-bs-theme="light"] {
+    /* Brand */
+    --ripple-primary: #1B702D;
+    --ripple-primary-light: #2D9F42;
+    --ripple-primary-lighter: #E8F5EA;
+    --ripple-primary-soft: #E8F5EA;
+    --ripple-secondary: #FBA300;
+    --ripple-secondary-light: #FDB833;
+    --ripple-secondary-lighter: #FFF3E0;
+    --ripple-secondary-soft: #FFF3E0;
+    --ripple-dark: #0F1419;
+
+    /* Neutral scale (inverted in dark mode so existing references adapt) */
+    --ripple-gray-50: #F9FAFB;
+    --ripple-gray-100: #F3F4F6;
+    --ripple-gray-200: #E5E7EB;
+    --ripple-gray-300: #D1D5DB;
+    --ripple-gray-400: #9CA3AF;
+    --ripple-gray-500: #6B7280;
+    --ripple-gray-600: #4B5563;
+    --ripple-gray-700: #374151;
+    --ripple-gray-800: #1F2937;
+    --ripple-gray-900: #111827;
+
+    /* Status */
+    --ripple-success: #10B981;
+    --ripple-warning: #F59E0B;
+    --ripple-error: #EF4444;
+    --ripple-info: #3B82F6;
+
+    /* Gradients and shadows */
+    --ripple-gradient-primary: linear-gradient(135deg, #1B702D 0%, #2D9F42 100%);
+    --ripple-gradient-secondary: linear-gradient(135deg, #FBA300 0%, #FDB833 100%);
+    --ripple-gradient-mixed: linear-gradient(135deg, #1B702D 0%, #FBA300 100%);
+    --ripple-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --ripple-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --ripple-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --ripple-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --ripple-shadow-soft: 0 10px 20px rgba(15, 23, 42, 0.08);
+    --ripple-shadow-strong: 0 22px 45px rgba(15, 23, 42, 0.26);
+    --ripple-shadow-brand: 0 10px 30px rgba(27, 112, 45, 0.20);
+
+    /* Bootstrap tokens */
+    --bs-primary: #1B702D;
+    --bs-primary-rgb: 27, 112, 45;
+    --bs-body-bg: #F9FAFB;
+    --bs-body-color: #111827;
+    --bs-secondary-bg: #F3F4F6;
+    --bs-tertiary-bg: #F9FAFB;
+    --bs-card-bg: #FFFFFF;
+    --bs-border-color: #E5E7EB;
+    --bs-secondary-color: #6B7280;
+    --bs-link-color: #1B702D;
+    --bs-link-hover-color: #2D9F42;
+}
+
+/* ---------- Dark ---------- */
+[data-bs-theme="dark"] {
+    --ripple-primary-lighter: #13261A;
+    --ripple-primary-soft: #13261A;
+    --ripple-secondary-lighter: #2B2110;
+    --ripple-secondary-soft: #2B2110;
+
+    --ripple-gray-50: #0F1419;
+    --ripple-gray-100: #141C26;
+    --ripple-gray-200: #2A3441;
+    --ripple-gray-300: #374151;
+    --ripple-gray-400: #6B7280;
+    --ripple-gray-500: #9CA3AF;
+    --ripple-gray-600: #C7CDD6;
+    --ripple-gray-700: #D1D5DB;
+    --ripple-gray-800: #E5E7EB;
+    --ripple-gray-900: #F3F4F6;
+
+    --ripple-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --ripple-shadow-md: 0 4px 10px rgba(0, 0, 0, 0.35);
+    --ripple-shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.4);
+    --ripple-shadow-xl: 0 20px 30px rgba(0, 0, 0, 0.45);
+    --ripple-shadow-soft: 0 10px 20px rgba(0, 0, 0, 0.35);
+    --ripple-shadow-strong: 0 22px 45px rgba(0, 0, 0, 0.5);
+    --ripple-shadow-brand: 0 10px 30px rgba(45, 159, 66, 0.25);
+
+    --bs-primary: #2D9F42;
+    --bs-primary-rgb: 45, 159, 66;
+    --bs-body-bg: #0F1419;
+    --bs-body-color: #E5E7EB;
+    --bs-secondary-bg: #141C26;
+    --bs-tertiary-bg: #1A2330;
+    --bs-card-bg: #1A2330;
+    --bs-border-color: #2A3441;
+    --bs-secondary-color: #9CA3AF;
+    --bs-link-color: #6FD182;
+    --bs-link-hover-color: #9BE3A8;
+}
+
+/* ---------- Brand buttons via Bootstrap's button tokens ---------- */
+.btn-primary {
+    --bs-btn-bg: #1B702D;
+    --bs-btn-border-color: #1B702D;
+    --bs-btn-hover-bg: #2D9F42;
+    --bs-btn-hover-border-color: #2D9F42;
+    --bs-btn-active-bg: #145A23;
+    --bs-btn-active-border-color: #145A23;
+    --bs-btn-disabled-bg: #1B702D;
+    --bs-btn-disabled-border-color: #1B702D;
+    --bs-btn-color: #FFFFFF;
+    --bs-btn-hover-color: #FFFFFF;
+    --bs-btn-active-color: #FFFFFF;
+    --bs-btn-focus-shadow-rgb: 45, 159, 66;
+}
+
+/* ---------- Smooth switch after first paint (set by theme.js) ---------- */
+html.theme-ready,
+html.theme-ready body,
+html.theme-ready .card,
+html.theme-ready .form-control,
+html.theme-ready .form-select,
+html.theme-ready .table,
+html.theme-ready .table td,
+html.theme-ready .table th,
+html.theme-ready .dropdown-menu,
+html.theme-ready .modal-content,
+html.theme-ready .list-group-item,
+html.theme-ready .alert {
+    transition: background-color 0.25s ease, color 0.25s ease,
+                border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html.theme-ready *,
+    html.theme-ready *::before,
+    html.theme-ready *::after {
+        transition: none !important;
+    }
+}
+
+
+/* ---------- Navbar and footer surfaces ---------- */
+.navbar {
+    background: var(--ripple-gradient-primary);
+    border-bottom: 3px solid var(--ripple-secondary);
+}
+
+footer.site-footer {
+    background-color: var(--bs-tertiary-bg);
+    border-top: 1px solid var(--bs-border-color);
+    color: var(--bs-secondary-color);
+}
