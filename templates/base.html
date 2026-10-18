@@ -171,11 +171,6 @@
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Ripple Capital Logo">
             <span class="navbar-brand-text">Ripple Capital</span>
         </a>
-        {% if not current_user.is_authenticated %}
-        <button type="button" id="themeToggle" class="theme-toggle ms-auto" aria-label="Switch to dark mode" title="Switch to dark mode">
-            <i class="fas fa-moon"></i>
-        </button>
-        {% endif %}
         {% if current_user.is_authenticated %}
         <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup"
@@ -202,9 +197,6 @@
                 <a class="nav-link" href="{{ url_for('auth.logout') }}">
                     <i class="fas fa-sign-out-alt me-1"></i>Logout
                 </a>
-                <button type="button" id="themeToggle" class="theme-toggle ms-lg-2 mt-2 mt-lg-0" aria-label="Switch to dark mode" title="Switch to dark mode">
-                    <i class="fas fa-moon"></i>
-                </button>
             </div>
         </div>
         {% endif %}
