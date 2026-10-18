@@ -90,26 +90,6 @@
         .navbar-text i {
             opacity: 0.9;
         }
-
-        .theme-toggle {
-            width: 2.25rem;
-            height: 2.25rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 999px;
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.45);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .theme-toggle:hover,
-        .theme-toggle:focus-visible {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.18);
-            border-color: rgba(255, 255, 255, 0.7);
-        }
-
         /* Flash messages container */
         .flash-container {
             max-width: 1140px;
@@ -280,13 +260,6 @@
 
         function applyTheme(theme) {
             root.setAttribute('data-bs-theme', theme);
-            document.querySelectorAll('#themeToggle').forEach(function (btn) {
-                var icon = btn.querySelector('i');
-                var dark = theme === 'dark';
-                if (icon) icon.className = dark ? 'fas fa-sun' : 'fas fa-moon';
-                btn.setAttribute('aria-label', label(theme));
-                btn.setAttribute('title', label(theme));
-            });
         }
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -296,14 +269,6 @@
             requestAnimationFrame(function () {
                 requestAnimationFrame(function () {
                     root.classList.add('theme-ready');
-                });
-            });
-
-            document.querySelectorAll('#themeToggle').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    var next = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
-                    try { localStorage.setItem('ripple-theme', next); } catch (e) {}
-                    applyTheme(next);
                 });
             });
         });
